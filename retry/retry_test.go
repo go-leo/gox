@@ -1,4 +1,4 @@
-package retryx
+package retry
 
 import (
 	"context"
@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-leo/backoffx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/go-leo/gox/backoff"
 )
 
 func TestCall(t *testing.T) {
@@ -21,7 +22,7 @@ func TestCall(t *testing.T) {
 		}
 		return nil
 	}
-	backoffFunc := backoffx.Constant(time.Second)
+	backoffFunc := backoff.Constant(time.Second)
 	err := Call(ctx, uint(maxAttempts), backoffFunc, method)
 	assert.Nil(t, err)
 }

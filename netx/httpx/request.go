@@ -19,7 +19,7 @@ import (
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/go-leo/stringx"
+	"github.com/go-leo/gox/stringx"
 )
 
 type RequestBuilder struct {

@@ -1,4 +1,4 @@
-package backoffx
+package backoff
 
 import (
 	"context"

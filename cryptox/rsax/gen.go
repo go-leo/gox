@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 
-	"github.com/go-leo/cryptox/base64x"
+	"github.com/go-leo/gox/cryptox/base64x"
 )
 
 func GenerateKeyHex(bits int) (string, string, error) {

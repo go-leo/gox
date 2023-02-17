@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 
-	"github.com/go-leo/cryptox/base64x"
+	"github.com/go-leo/gox/cryptox/base64x"
 )
 
 func DecodeKeyHex(data []byte) (string, string, error) {

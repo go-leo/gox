@@ -7,8 +7,8 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 
-	"github.com/go-leo/cryptox/base64x"
-	"github.com/go-leo/cryptox/shax"
+	"github.com/go-leo/gox/cryptox/base64x"
+	"github.com/go-leo/gox/cryptox/shax"
 )
 
 func SignWithSha256Hex(data []byte, priKey string) (string, error) {

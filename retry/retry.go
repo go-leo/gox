@@ -1,13 +1,13 @@
-package retryx
+package retry
 
 import (
 	"context"
 	"time"
 
-	"github.com/go-leo/backoffx"
+	"github.com/go-leo/gox/backoff"
 )
 
-func Call(ctx context.Context, maxAttempts uint, backoffFunc backoffx.BackoffFunc, method func(attemptTime int) error) error {
+func Call(ctx context.Context, maxAttempts uint, backoffFunc backoff.BackoffFunc, method func(attemptTime int) error) error {
 	var err error
 	max := int(maxAttempts)
 	for i := 0; i <= max; i++ {

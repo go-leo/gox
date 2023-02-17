@@ -3,7 +3,7 @@ package pagex
 import (
 	"errors"
 
-	"github.com/go-leo/databasex/sqlx"
+	"github.com/go-leo/gox/databasex/sqlx"
 )
 
 type Page struct {

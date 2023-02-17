@@ -6,7 +6,7 @@ import (
 	"crypto/cipher"
 	"errors"
 
-	"github.com/go-leo/cryptox/base64x"
+	"github.com/go-leo/gox/cryptox/base64x"
 )
 
 // Encrypt 加密
