@@ -6,8 +6,8 @@ import (
 	"os/signal"
 )
 
-// SignalContext creates a new context that cancels on the given signals.
-func SignalContext(signals ...os.Signal) (context.Context, context.CancelFunc) {
+// Signal creates a new context that cancels on the given signals.
+func Signal(signals ...os.Signal) (context.Context, context.CancelFunc) {
 	return WithSignal(context.Background(), signals...)
 }
 
