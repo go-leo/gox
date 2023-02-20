@@ -7,6 +7,14 @@ import (
 	"os/signal"
 )
 
+type signalReceivedError struct{ incomingSignal os.Signal }
+
+func (s signalReceivedError) Error() string {
+	return fmt.Sprintf("signal received, %s", s.incomingSignal)
+}
+func (s signalReceivedError) Timeout() bool   { return false }
+func (s signalReceivedError) Temporary() bool { return false }
+
 // Signal creates a new context that cancels on the given signals.
 func Signal(signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 	return WithSignal(context.Background(), signals...)
@@ -22,7 +30,7 @@ func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, con
 	go func() {
 		select {
 		case incomingSignal := <-signalC:
-			cancelFunc(fmt.Errorf("receive signal, %s", incomingSignal))
+			cancelFunc(signalReceivedError{incomingSignal: incomingSignal})
 		case <-ctx.Done():
 			signal.Stop(signalC)
 		}
