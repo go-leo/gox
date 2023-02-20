@@ -1,6 +1,6 @@
 module github.com/go-leo/gox
 
-go 1.19
+go 1.20
 
 require (
 	github.com/spf13/cast v1.5.0
