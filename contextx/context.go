@@ -13,19 +13,16 @@ func SignalContext(signals ...os.Signal) (context.Context, context.CancelFunc) {
 
 // WithSignal creates a new context that cancels on the given signals.
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelFunc) {
-	ctx, closer := context.WithCancel(ctx)
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, signals...)
-
+	ctx, cancelFunc := context.WithCancel(ctx)
+	signalC := make(chan os.Signal, 1)
+	signal.Notify(signalC, signals...)
 	go func() {
 		select {
-		case <-c:
-			closer()
+		case <-signalC:
+			cancelFunc()
 		case <-ctx.Done():
-			signal.Stop(c)
+			signal.Stop(signalC)
 		}
 	}()
-
-	return ctx, closer
+	return ctx, cancelFunc
 }
