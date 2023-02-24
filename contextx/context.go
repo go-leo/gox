@@ -2,6 +2,7 @@ package contextx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -24,15 +25,15 @@ func Signal(signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 	ctx, cancelFunc := context.WithCancelCause(ctx)
 	signalC := make(chan os.Signal, 1)
-	defer close(signalC)
 	signal.Notify(signalC, signals...)
-	defer signal.Stop(signalC)
 	go func() {
+		defer signal.Stop(signalC)
+		defer close(signalC)
 		select {
 		case incomingSignal := <-signalC:
 			cancelFunc(signalReceivedError{incomingSignal: incomingSignal})
 		case <-ctx.Done():
-			signal.Stop(signalC)
+			cancelFunc(errors.New("received context done"))
 		}
 	}()
 	return ctx, cancelFunc
