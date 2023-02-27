@@ -2,7 +2,6 @@ package contextx
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -32,8 +31,9 @@ func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, con
 		select {
 		case incomingSignal := <-signalC:
 			cancelFunc(signalReceivedError{incomingSignal: incomingSignal})
+			return
 		case <-ctx.Done():
-			cancelFunc(errors.New("received context done"))
+			return
 		}
 	}()
 	return ctx, cancelFunc

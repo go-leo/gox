@@ -4,7 +4,6 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/spf13/cast"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -32,7 +31,7 @@ func (m *OnceCreator[T]) LoadOrCreate(key string) T {
 	if ok {
 		return v.(T)
 	}
-	v, _, _ = m.sfg.Do(cast.ToString(key), func() (any, error) {
+	v, _, _ = m.sfg.Do(key, func() (any, error) {
 		if v, ok := m.m.Load(key); ok {
 			return v, nil
 		}
