@@ -10,7 +10,7 @@ import (
 type signalReceivedError struct{ incomingSignal os.Signal }
 
 func (s signalReceivedError) Error() string {
-	return fmt.Sprintf("signal received, %s", s.incomingSignal)
+	return fmt.Sprintf("%s signal received", s.incomingSignal.String())
 }
 func (s signalReceivedError) Timeout() bool   { return false }
 func (s signalReceivedError) Temporary() bool { return false }
@@ -22,6 +22,7 @@ func Signal(signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 
 // WithSignal creates a new context that cancels on the given signals.
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
+
 	ctx, cancelFunc := context.WithCancelCause(ctx)
 	signalC := make(chan os.Signal, 1)
 	signal.Notify(signalC, signals...)
