@@ -11,7 +11,7 @@ type contextError struct {
 }
 
 func (c contextError) Error() string {
-	return fmt.Sprintf("%v, because of %v", c.err, c.causeErr)
+	return fmt.Sprintf("%v, because %v", c.err, c.causeErr)
 }
 
 func (s contextError) Timeout() bool   { return false }

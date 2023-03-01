@@ -10,7 +10,7 @@ import (
 type signalReceivedError struct{ incomingSignal os.Signal }
 
 func (s signalReceivedError) Error() string {
-	return fmt.Sprintf("%s signal received", s.incomingSignal.String())
+	return fmt.Sprintf("the %s signal was received", s.incomingSignal.String())
 }
 func (s signalReceivedError) Timeout() bool   { return false }
 func (s signalReceivedError) Temporary() bool { return false }
