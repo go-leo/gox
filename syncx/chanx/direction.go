@@ -1,15 +1,13 @@
 package chanx
 
-func SendChannels[T any](channels ...chan T) []<-chan T {
-	c := make([]<-chan T, len(channels))
+func AppendSendChannel[T any](c []<-chan T, channels ...chan T) []<-chan T {
 	for _, ch := range channels {
 		c = append(c, ch)
 	}
 	return c
 }
 
-func ReceiveChannels[T any](channels ...chan T) []chan<- T {
-	c := make([]chan<- T, len(channels))
+func AppendReceiveChannel[T any](c []chan<- T, channels ...chan T) []chan<- T {
 	for _, ch := range channels {
 		c = append(c, ch)
 	}
