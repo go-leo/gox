@@ -161,9 +161,10 @@ func (builder *TransportBuilder) Build() *http.Transport {
 // DisableKeepAlivesTransport returns a new http.Transport with similar default values to
 // http.DefaultTransport, but with idle connections and keepalives disabled.
 func DisableKeepAlivesTransport() *http.Transport {
+	dialer := &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
 	return new(TransportBuilder).
 		Proxy(http.ProxyFromEnvironment).
-		Dial((&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext).
+		Dial(dialer.DialContext).
 		ForceAttemptHTTP2(true).
 		MaxIdleConns(100).
 		IdleConnTimeout(90 * time.Second).
@@ -178,9 +179,10 @@ func DisableKeepAlivesTransport() *http.Transport {
 // it can leak file descriptors over time. Only use this for transports that
 // will be re-used for the same host(s).
 func PooledTransport() *http.Transport {
+	dialer := &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
 	return new(TransportBuilder).
 		Proxy(http.ProxyFromEnvironment).
-		Dial((&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext).
+		Dial(dialer.DialContext).
 		ForceAttemptHTTP2(true).
 		MaxIdleConns(100).
 		IdleConnTimeout(90 * time.Second).
