@@ -24,7 +24,7 @@ func Signal(signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 	ctx, cancelFunc := context.WithCancelCause(ctx)
 	go func() {
-		signalC := make(chan os.Signal, 1)
+		signalC := make(chan os.Signal)
 		defer close(signalC)
 		signal.Notify(signalC, signals...)
 		defer signal.Stop(signalC)
