@@ -2,11 +2,11 @@ package randx
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 )
 
-var r *rand.Rand
-
-func init() {
-	r = rand.New(rand.NewSource(time.Now().UnixNano()))
-}
+var (
+	r  = rand.New(rand.NewSource(time.Now().UnixNano()))
+	mu sync.Mutex
+)
