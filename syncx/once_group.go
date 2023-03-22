@@ -5,11 +5,11 @@ import (
 )
 
 type OnceGroup struct {
-	sync.Map
+	m sync.Map
 }
 
 func (o *OnceGroup) Do(key string, f func()) {
-	actual, loaded := o.LoadOrStore(key, &sync.Once{})
+	actual, loaded := o.m.LoadOrStore(key, &sync.Once{})
 	if !loaded {
 		return
 	}
