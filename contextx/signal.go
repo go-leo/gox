@@ -22,7 +22,7 @@ func Signal(signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
 
 // WithSignal creates a new context that cancels on the given signals.
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelCauseFunc) {
-	ctx, cancelFunc := context.WithCancelCause(ctx)
+	newCtx, cancelFunc := context.WithCancelCause(ctx)
 	go func() {
 		signalC := make(chan os.Signal)
 		defer close(signalC)
@@ -32,9 +32,9 @@ func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, con
 		case incomingSignal := <-signalC:
 			cancelFunc(signalReceivedError{incomingSignal: incomingSignal})
 			return
-		case <-ctx.Done():
+		case <-newCtx.Done():
 			return
 		}
 	}()
-	return ctx, cancelFunc
+	return newCtx, cancelFunc
 }
