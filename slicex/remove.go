@@ -7,5 +7,5 @@ func Remove[S ~[]E, E comparable](s S, v E) S {
 	if i < 0 {
 		return s
 	}
-	return slices.Delete(s, i, i)
+	return slices.Delete(s, i, i+1)
 }
