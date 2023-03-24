@@ -1,4 +1,4 @@
-package mapx
+package _map
 
 type Hash[K comparable] interface {
 	Sum(k K) int64

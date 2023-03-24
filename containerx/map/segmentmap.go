@@ -1,4 +1,4 @@
-package mapx
+package _map
 
 import "golang.org/x/exp/maps"
 

@@ -1,4 +1,4 @@
-package mapx
+package _map
 
 type Map[K comparable, V any] interface {
 	Load(key K) (value V, ok bool)
