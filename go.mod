@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
+	github.com/caarlos0/env/v7 v7.1.0
 	github.com/frankban/quicktest v1.14.4
 	github.com/goccy/go-json v0.10.2
 	github.com/json-iterator/go v1.1.12
