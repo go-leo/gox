@@ -39,3 +39,37 @@ func IsDesc[E constraints.Ordered](x []E) bool {
 	}
 	return true
 }
+
+func BubbleSort[E constraints.Ordered](x []E) {
+	for i := 0; i < len(x)-1; i++ {
+		for j := 1; j < len(x)-i; j++ {
+			if x[j] < x[j-1] {
+				x[j], x[j-1] = x[j-1], x[j]
+			}
+		}
+	}
+}
+
+func SelectSort[E constraints.Ordered](x []E) {
+	for i := 0; i < len(x); i++ {
+		min := i
+		for j := i + 1; j < len(x); j++ {
+			if x[min] > x[j] {
+				min = j
+			}
+		}
+		x[i], x[min] = x[min], x[i]
+	}
+}
+
+func InsertSort[E constraints.Ordered](x []E) {
+	for i := 0; i < len(x); i++ {
+		for j := i - 1; j >= 0; j-- {
+			if x[j+1] < x[j] {
+				x[j+1], x[j] = x[j], x[j+1]
+			} else {
+				break
+			}
+		}
+	}
+}
