@@ -1,9 +1,12 @@
-package mapstructure
+package mapstructurex
 
 import (
+	"reflect"
+
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/go-leo/gox/encodingx"
+	"github.com/go-leo/gox/stringx"
 )
 
 // options is the configuration that is used to create a new decoder
@@ -14,6 +17,14 @@ type options struct {
 	DecodeHookFuncTypes  []mapstructure.DecodeHookFuncType
 	DecodeHookFuncKinds  []mapstructure.DecodeHookFuncKind
 	DecodeHookFuncValues []mapstructure.DecodeHookFuncValue
+	Separators           []string
+	StringToTimeDuration bool
+	StringToIP           bool
+	StringToIPNet        bool
+	TimeLayout           string
+	WeaklyTyped          bool
+	RecursiveStructToMap bool
+	TextUnmarshaller     bool
 }
 
 func (o *options) apply(opts ...Option) {
@@ -23,6 +34,31 @@ func (o *options) apply(opts ...Option) {
 }
 
 func (o *options) init() {
+	o.DecodeHooks = []mapstructure.DecodeHookFunc{}
+	for _, sep := range o.Separators {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.StringToSliceHookFunc(sep))
+	}
+	if o.StringToTimeDuration {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.StringToTimeDurationHookFunc())
+	}
+	if o.StringToIP {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.StringToIPHookFunc())
+	}
+	if o.StringToIPNet {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.StringToIPNetHookFunc())
+	}
+	if stringx.IsNotBlank(o.TimeLayout) {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.StringToTimeHookFunc(o.TimeLayout))
+	}
+	if o.WeaklyTyped {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.WeaklyTypedHook)
+	}
+	if o.RecursiveStructToMap {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.RecursiveStructToMapHookFunc())
+	}
+	if o.TextUnmarshaller {
+		o.DecodeHooks = append(o.DecodeHooks, mapstructure.TextUnmarshallerHookFunc())
+	}
 	for _, f := range o.DecodeHookFuncTypes {
 		o.DecodeHooks = append(o.DecodeHooks, f)
 	}
@@ -134,24 +170,85 @@ func MatchName(f func(mapKey, fieldName string) bool) Option {
 	}
 }
 
-// DecodeHookFuncTypes is a DecodeHookFunc which has complete information about the source and target types.
-func DecodeHookFuncTypes(fs ...mapstructure.DecodeHookFuncType) Option {
+// StringToSlice converts string to []string by splitting on the given sep.
+func StringToSlice(separators ...string) Option {
 	return func(o *options) {
-		o.DecodeHookFuncTypes = append(o.DecodeHookFuncTypes, fs...)
+		o.Separators = append(o.Separators, separators...)
+	}
+}
+
+// StringToTimeDuration converts strings to time.Duration.
+func StringToTimeDuration() Option {
+	return func(o *options) {
+		o.StringToTimeDuration = true
+	}
+}
+
+// StringToIP converts strings to net.IP
+func StringToIP() Option {
+	return func(o *options) {
+		o.StringToIP = true
+	}
+}
+
+// StringToIPNet converts  strings to net.IPNet
+func StringToIPNet() Option {
+	return func(o *options) {
+		o.StringToIPNet = true
+	}
+}
+
+// StringToTimeTime converts strings to time.Time.
+func StringToTimeTime(layout string) Option {
+	return func(o *options) {
+		o.TimeLayout = layout
+	}
+}
+
+func WeaklyTyped() Option {
+	return func(o *options) {
+		o.WeaklyTyped = true
+	}
+}
+
+func RecursiveStructToMap() Option {
+	return func(o *options) {
+		o.RecursiveStructToMap = true
+	}
+}
+
+// TextUnmarshaller that applies strings to the UnmarshalText function, when the target type
+// implements the encoding.TextUnmarshaler interface
+func TextUnmarshaller() Option {
+	return func(o *options) {
+		o.TextUnmarshaller = true
+	}
+}
+
+// DecodeHookFuncTypes is a DecodeHookFunc which has complete information about the source and target types.
+func DecodeHookFuncTypes(fs ...func(reflect.Type, reflect.Type, interface{}) (interface{}, error)) Option {
+	return func(o *options) {
+		for _, f := range fs {
+			o.DecodeHookFuncTypes = append(o.DecodeHookFuncTypes, f)
+		}
 	}
 }
 
 // DecodeHookFuncKinds is a DecodeHookFunc which knows only the Kinds of the source and target types.
-func DecodeHookFuncKinds(fs ...mapstructure.DecodeHookFuncKind) Option {
+func DecodeHookFuncKinds(fs ...func(reflect.Kind, reflect.Kind, interface{}) (interface{}, error)) Option {
 	return func(o *options) {
-		o.DecodeHookFuncKinds = append(o.DecodeHookFuncKinds, fs...)
+		for _, f := range fs {
+			o.DecodeHookFuncKinds = append(o.DecodeHookFuncKinds, f)
+		}
 	}
 }
 
 // DecodeHookFuncValues is a DecodeHookFunc which has complete access to both the source and target values.
 func DecodeHookFuncValues(fs ...mapstructure.DecodeHookFuncValue) Option {
 	return func(o *options) {
-		o.DecodeHookFuncValues = append(o.DecodeHookFuncValues, fs...)
+		for _, f := range fs {
+			o.DecodeHookFuncValues = append(o.DecodeHookFuncValues, f)
+		}
 	}
 }
 
