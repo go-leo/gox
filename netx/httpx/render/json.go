@@ -49,12 +49,18 @@ func (o *jsonOptions) init() {
 
 type JSONOption func(o *jsonOptions)
 
-func Indented(prefix, indent string) JSONOption {
+func IndentedJSON(prefix, indent string) JSONOption {
 	return func(o *jsonOptions) {
 		o.IndentedOptions = &indentedOptions{
 			Prefix: prefix,
 			Indent: indent,
 		}
+	}
+}
+
+func PureJSON() JSONOption {
+	return func(o *jsonOptions) {
+		o.Pure = true
 	}
 }
 
@@ -73,12 +79,6 @@ func JsonpJSON(callback string) JSONOption {
 func AsciiJSON() JSONOption {
 	return func(o *jsonOptions) {
 		o.Ascii = true
-	}
-}
-
-func PureJSON() JSONOption {
-	return func(o *jsonOptions) {
-		o.Pure = true
 	}
 }
 
