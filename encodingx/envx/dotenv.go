@@ -11,7 +11,11 @@ import (
 	"github.com/go-leo/gox/encodingx"
 )
 
-func Marshal(envMap map[string]string) ([]byte, error) {
+func Marshal(val any) ([]byte, error) {
+	envMap, ok := val.(map[string]string)
+	if !ok {
+		return nil, errors.New("any not convert to map[string]string")
+	}
 	data, err := godotenv.Marshal(envMap)
 	if err != nil {
 		return nil, err
@@ -19,7 +23,11 @@ func Marshal(envMap map[string]string) ([]byte, error) {
 	return bytesconvx.StringToBytes(data), nil
 }
 
-func Unmarshal(data []byte, envMap map[string]string) error {
+func Unmarshal(data []byte, val any) error {
+	envMap, ok := val.(map[string]string)
+	if !ok {
+		return errors.New("any not convert to map[string]string")
+	}
 	m, err := godotenv.UnmarshalBytes(data)
 	if err != nil {
 		return err
@@ -41,11 +49,11 @@ type encoder struct {
 }
 
 func (e *encoder) Encode(val any) error {
-	m, ok := val.(map[string]string)
+	envMap, ok := val.(map[string]string)
 	if !ok {
 		return errors.New("any not convert to map[string]string")
 	}
-	data, err := godotenv.Marshal(m)
+	data, err := godotenv.Marshal(envMap)
 	if err != nil {
 		return err
 	}
