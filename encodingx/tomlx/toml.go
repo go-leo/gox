@@ -34,7 +34,7 @@ type decoder struct {
 	Decoder *toml.Decoder
 }
 
-func (d *decoder) Decode(obj interface{}) error {
+func (d *decoder) Decode(obj any) error {
 	_, err := d.Decoder.Decode(obj)
 	return err
 }

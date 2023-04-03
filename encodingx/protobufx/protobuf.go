@@ -38,7 +38,7 @@ type encoder struct {
 	w              io.Writer
 }
 
-func (e *encoder) Encode(val interface{}) error {
+func (e *encoder) Encode(val any) error {
 	m, ok := val.(proto.Message)
 	if !ok {
 		return errors.New("failed convert to proto.Message")
@@ -59,7 +59,7 @@ type decoder struct {
 	r                io.Reader
 }
 
-func (d *decoder) Decode(obj interface{}) error {
+func (d *decoder) Decode(obj any) error {
 	m, ok := obj.(proto.Message)
 	if !ok {
 		return errors.New("failed convert to proto.Message")

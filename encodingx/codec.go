@@ -1,13 +1,9 @@
 package encodingx
 
-import "io"
-
 type Encoder interface {
-	Encode(val interface{}) error
+	Encode(val any) error
 }
 
 type Decoder interface {
-	Decode(obj interface{}) error
+	Decode(obj any) error
 }
-
-type NewDecoder func(r io.Reader) Decoder

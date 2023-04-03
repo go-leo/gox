@@ -7,6 +7,7 @@ require (
 	github.com/caarlos0/env/v7 v7.1.0
 	github.com/frankban/quicktest v1.14.4
 	github.com/goccy/go-json v0.10.2
+	github.com/joho/godotenv v1.5.1
 	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml/v2 v2.0.7

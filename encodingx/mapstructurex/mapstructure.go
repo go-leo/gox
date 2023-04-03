@@ -226,7 +226,7 @@ func TextUnmarshaller() Option {
 }
 
 // DecodeHookFuncTypes is a DecodeHookFunc which has complete information about the source and target types.
-func DecodeHookFuncTypes(fs ...func(reflect.Type, reflect.Type, interface{}) (interface{}, error)) Option {
+func DecodeHookFuncTypes(fs ...func(reflect.Type, reflect.Type, any) (any, error)) Option {
 	return func(o *options) {
 		for _, f := range fs {
 			o.DecodeHookFuncTypes = append(o.DecodeHookFuncTypes, f)
@@ -235,7 +235,7 @@ func DecodeHookFuncTypes(fs ...func(reflect.Type, reflect.Type, interface{}) (in
 }
 
 // DecodeHookFuncKinds is a DecodeHookFunc which knows only the Kinds of the source and target types.
-func DecodeHookFuncKinds(fs ...func(reflect.Kind, reflect.Kind, interface{}) (interface{}, error)) Option {
+func DecodeHookFuncKinds(fs ...func(reflect.Kind, reflect.Kind, any) (any, error)) Option {
 	return func(o *options) {
 		for _, f := range fs {
 			o.DecodeHookFuncKinds = append(o.DecodeHookFuncKinds, f)
@@ -286,7 +286,7 @@ type decoder struct {
 	options *options
 }
 
-func (d *decoder) Decode(input interface{}) error {
+func (d *decoder) Decode(input any) error {
 	decoder, err := mapstructure.NewDecoder(&d.options.DecoderConfig)
 	if err != nil {
 		return err
