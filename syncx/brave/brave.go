@@ -1,8 +1,11 @@
 package brave
 
-func Do(f func(), r func(p any)) {
+func Do(f func(), rs ...func(p any)) {
 	defer func() {
-		// if r is nil, which means panics are not recovered.
+		if len(rs) <= 0 {
+			return
+		}
+		r := rs[0]
 		if r == nil {
 			return
 		}
@@ -13,9 +16,16 @@ func Do(f func(), r func(p any)) {
 	f()
 }
 
-func DoE(f func() error, r func(p any) error) (err error) {
+func Go(f func(), rs ...func(p any)) {
+	go Do(f, rs...)
+}
+
+func DoE(f func() error, rs ...func(p any) error) (err error) {
 	defer func() {
-		// if r is nil, which means panics are not recovered.
+		if len(rs) <= 0 {
+			return
+		}
+		r := rs[0]
 		if r == nil {
 			return
 		}
@@ -26,28 +36,11 @@ func DoE(f func() error, r func(p any) error) (err error) {
 	return f()
 }
 
-func DoRE(f func() (any, error), r func(p any) error) (ret any, err error) {
-	defer func() {
-		// if r is nil, which means panics are not recovered.
-		if r == nil {
-			return
-		}
-		if p := recover(); p != nil {
-			err = r(p)
-		}
-	}()
-	return f()
-}
-
-func Go(f func(), r func(p any)) {
-	go Do(f, r)
-}
-
-func GoE(f func() error, r func(p any) error) <-chan error {
+func GoE(f func() error, rs ...func(p any) error) <-chan error {
 	errC := make(chan error)
 	go func() {
 		defer close(errC)
-		err := DoE(f, r)
+		err := DoE(f, rs...)
 		if err != nil {
 			errC <- err
 		}
@@ -55,13 +48,29 @@ func GoE(f func() error, r func(p any) error) <-chan error {
 	return errC
 }
 
-func GoRE(f func() (any, error), r func(p any) error) (<-chan any, <-chan error) {
+func DoRE(f func() (any, error), rs ...func(p any) error) (ret any, err error) {
+	defer func() {
+		if len(rs) <= 0 {
+			return
+		}
+		r := rs[0]
+		if r == nil {
+			return
+		}
+		if p := recover(); p != nil {
+			err = r(p)
+		}
+	}()
+	return f()
+}
+
+func GoRE(f func() (any, error), rs ...func(p any) error) (<-chan any, <-chan error) {
 	retC := make(chan any)
 	errC := make(chan error)
 	go func() {
 		defer close(errC)
 		defer close(retC)
-		ret, err := DoRE(f, r)
+		ret, err := DoRE(f, rs...)
 		if err != nil {
 			errC <- err
 			return
