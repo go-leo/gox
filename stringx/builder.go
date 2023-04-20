@@ -150,3 +150,7 @@ func (b *Builder) WriteQuoteToGraphic(s string) error {
 func NewBuilder() *Builder {
 	return &Builder{b: &strings.Builder{}}
 }
+
+func NewBuilderBuilder(b *strings.Builder) *Builder {
+	return &Builder{b: b}
+}

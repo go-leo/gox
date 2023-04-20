@@ -203,6 +203,27 @@ func (b *Buffer) ReadString(delim byte) (line string, err error) {
 	return b.b.ReadString(delim)
 }
 
+// NewBuffer creates and initializes a new Buffer using buf as its
+// initial contents. The new Buffer takes ownership of buf, and the
+// caller should not use buf after this call. NewBuffer is intended to
+// prepare a Buffer to read existing data. It can also be used to set
+// the initial size of the internal buffer for writing. To do that,
+// buf should have the desired capacity but a length of zero.
+//
+// In most cases, new(Buffer) (or just declaring a Buffer variable) is
+// sufficient to initialize a Buffer.
+func NewBuffer(buf []byte) *Buffer { return &Buffer{b: bytes.NewBuffer(buf)} }
+
+// NewBufferString creates and initializes a new Buffer using string s as its
+// initial contents. It is intended to prepare a buffer to read an existing
+// string.
+//
+// In most cases, new(Buffer) (or just declaring a Buffer variable) is
+// sufficient to initialize a Buffer.
+func NewBufferString(s string) *Buffer {
+	return &Buffer{b: bytes.NewBufferString(s)}
+}
+
 // WriteInt appends the string form of the integer i.
 func (b *Buffer) WriteInt(i int64, base int) error {
 	b.checkNil()
@@ -273,23 +294,6 @@ func (b *Buffer) WriteQuoteToGraphic(s string) error {
 	return err
 }
 
-// NewBuffer creates and initializes a new Buffer using buf as its
-// initial contents. The new Buffer takes ownership of buf, and the
-// caller should not use buf after this call. NewBuffer is intended to
-// prepare a Buffer to read existing data. It can also be used to set
-// the initial size of the internal buffer for writing. To do that,
-// buf should have the desired capacity but a length of zero.
-//
-// In most cases, new(Buffer) (or just declaring a Buffer variable) is
-// sufficient to initialize a Buffer.
-func NewBuffer(buf []byte) *Buffer { return &Buffer{b: bytes.NewBuffer(buf)} }
-
-// NewBufferString creates and initializes a new Buffer using string s as its
-// initial contents. It is intended to prepare a buffer to read an existing
-// string.
-//
-// In most cases, new(Buffer) (or just declaring a Buffer variable) is
-// sufficient to initialize a Buffer.
-func NewBufferString(s string) *Buffer {
-	return &Buffer{b: bytes.NewBufferString(s)}
+func NewBufferBuffer(b *bytes.Buffer) *Buffer {
+	return &Buffer{b: b}
 }
