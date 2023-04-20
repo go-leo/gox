@@ -1,178 +1,152 @@
-// Copyright 2017 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package stringx
 
 import (
 	"strconv"
-	"unicode/utf8"
-	"unsafe"
+	"strings"
 )
 
-// A Builder is used to efficiently build a string using Write methods.
-// It minimizes memory copying. The zero value is ready to use.
-// Do not copy a non-zero Builder.
 type Builder struct {
-	addr *Builder // of receiver, to detect copies by value
-	buf  []byte
+	b *strings.Builder
 }
 
-// noescape hides a pointer from escape analysis. It is the identity function
-// but escape analysis doesn't think the output depends on the input.
-// noescape is inlined and currently compiles down to zero instructions.
-// USE CAREFULLY!
-// This was copied from the runtime; see issues 23382 and 7921.
-//
-//go:nosplit
-//go:nocheckptr
-func noescape(p unsafe.Pointer) unsafe.Pointer {
-	x := uintptr(p)
-	return unsafe.Pointer(x ^ 0)
-}
-
-func (b *Builder) copyCheck() {
-	if b.addr == nil {
-		// This hack works around a failing of Go's escape analysis
-		// that was causing b to escape and be heap allocated.
-		// See issue 23382.
-		// TODO: once issue 7921 is fixed, this should be reverted to
-		// just "b.addr = b".
-		b.addr = (*Builder)(noescape(unsafe.Pointer(b)))
-	} else if b.addr != b {
-		panic("strings: illegal use of non-zero Builder copied by value")
+func (b *Builder) checkNil() {
+	if b.b == nil {
+		b.b = &strings.Builder{}
 	}
 }
 
 // String returns the accumulated string.
 func (b *Builder) String() string {
-	return unsafe.String(unsafe.SliceData(b.buf), len(b.buf))
+	b.checkNil()
+	return b.b.String()
 }
 
 // Len returns the number of accumulated bytes; b.Len() == len(b.String()).
-func (b *Builder) Len() int { return len(b.buf) }
+func (b *Builder) Len() int {
+	b.checkNil()
+	return b.b.Len()
+}
 
 // Cap returns the capacity of the builder's underlying byte slice. It is the
 // total space allocated for the string being built and includes any bytes
 // already written.
-func (b *Builder) Cap() int { return cap(b.buf) }
+func (b *Builder) Cap() int {
+	b.checkNil()
+	return b.b.Cap()
+}
 
 // Reset resets the Builder to be empty.
 func (b *Builder) Reset() {
-	b.addr = nil
-	b.buf = nil
-}
-
-// grow copies the buffer to a new, larger buffer so that there are at least n
-// bytes of capacity beyond len(b.buf).
-func (b *Builder) grow(n int) {
-	buf := make([]byte, len(b.buf), 2*cap(b.buf)+n)
-	copy(buf, b.buf)
-	b.buf = buf
+	b.checkNil()
+	b.b.Reset()
 }
 
 // Grow grows b's capacity, if necessary, to guarantee space for
 // another n bytes. After Grow(n), at least n bytes can be written to b
 // without another allocation. If n is negative, Grow panics.
 func (b *Builder) Grow(n int) {
-	b.copyCheck()
-	if n < 0 {
-		panic("strings.Builder.Grow: negative count")
-	}
-	if cap(b.buf)-len(b.buf) < n {
-		b.grow(n)
-	}
+	b.checkNil()
+	b.b.Grow(n)
 }
 
 // Write appends the contents of p to b's buffer.
 // Write always returns len(p), nil.
 func (b *Builder) Write(p []byte) (int, error) {
-	b.copyCheck()
-	b.buf = append(b.buf, p...)
-	return len(p), nil
+	b.checkNil()
+	return b.b.Write(p)
 }
 
 // WriteByte appends the byte c to b's buffer.
 // The returned error is always nil.
 func (b *Builder) WriteByte(c byte) error {
-	b.copyCheck()
-	b.buf = append(b.buf, c)
-	return nil
+	b.checkNil()
+	return b.b.WriteByte(c)
 }
 
 // WriteRune appends the UTF-8 encoding of Unicode code point r to b's buffer.
 // It returns the length of r and a nil error.
 func (b *Builder) WriteRune(r rune) (int, error) {
-	b.copyCheck()
-	n := len(b.buf)
-	b.buf = utf8.AppendRune(b.buf, r)
-	return len(b.buf) - n, nil
+	b.checkNil()
+	return b.b.WriteRune(r)
 }
 
 // WriteString appends the contents of s to b's buffer.
 // It returns the length of s and a nil error.
 func (b *Builder) WriteString(s string) (int, error) {
-	b.copyCheck()
-	b.buf = append(b.buf, s...)
-	return len(s), nil
+	b.checkNil()
+	return b.b.WriteString(s)
 }
 
+// WriteInt appends the string form of the integer i.
 func (b *Builder) WriteInt(i int64, base int) error {
-	b.copyCheck()
-	b.buf = strconv.AppendInt(b.buf, i, base)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendInt(nil, i, base))
+	return err
 }
 
+// WriteUint appends the string form of the unsigned integer i.
 func (b *Builder) WriteUint(i uint64, base int) error {
-	b.copyCheck()
-	b.buf = strconv.AppendUint(b.buf, i, base)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendUint(nil, i, base))
+	return err
 }
 
+// WriteBool appends "true" or "false".
 func (b *Builder) WriteBool(bl bool) error {
-	b.copyCheck()
-	b.buf = strconv.AppendBool(b.buf, bl)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendBool(nil, bl))
+	return err
 }
 
+// WriteFloat appends the string form of the floating-point number f.
 func (b *Builder) WriteFloat(f float64, fmt byte, prec, bitSize int) error {
-	b.copyCheck()
-	b.buf = strconv.AppendFloat(b.buf, f, fmt, prec, bitSize)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendFloat(nil, f, fmt, prec, bitSize))
+	return err
 }
 
+// WriteQuote appends a double-quoted Go string literal representing s.
 func (b *Builder) WriteQuote(s string) error {
-	b.copyCheck()
-	b.buf = strconv.AppendQuote(b.buf, s)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendQuote(nil, s))
+	return err
 }
 
+// WriteQuoteRune appends a single-quoted Go character literal representing the rune.
 func (b *Builder) WriteQuoteRune(r rune) error {
-	b.copyCheck()
-	b.buf = strconv.AppendQuoteRune(b.buf, r)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendQuoteRune(nil, r))
+	return err
 }
 
+// WriteQuoteRuneToASCII appends a single-quoted Go character literal representing the rune.
 func (b *Builder) WriteQuoteRuneToASCII(r rune) error {
-	b.copyCheck()
-	b.buf = strconv.AppendQuoteRuneToASCII(b.buf, r)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendQuoteRuneToASCII(nil, r))
+	return err
 }
 
+// WriteQuoteRuneToGraphic appends a single-quoted Go character literal representing the rune.
 func (b *Builder) WriteQuoteRuneToGraphic(r rune) error {
-	b.copyCheck()
-	b.buf = strconv.AppendQuoteRuneToGraphic(b.buf, r)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendQuoteRuneToGraphic(nil, r))
+	return err
 }
 
+// WriteQuoteToASCII appends a double-quoted Go string literal representing s.
 func (b *Builder) WriteQuoteToASCII(s string) error {
-	b.copyCheck()
-	b.buf = strconv.AppendQuoteToASCII(b.buf, s)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendQuoteToASCII(nil, s))
+	return err
 }
 
+// WriteQuoteToGraphic appends a double-quoted Go string literal representing s.
 func (b *Builder) WriteQuoteToGraphic(s string) error {
-	b.copyCheck()
-	b.buf = strconv.AppendQuoteToGraphic(b.buf, s)
-	return nil
+	b.checkNil()
+	_, err := b.b.Write(strconv.AppendQuoteToGraphic(nil, s))
+	return err
+}
+
+func NewBuilder() *Builder {
+	return &Builder{b: &strings.Builder{}}
 }
