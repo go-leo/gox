@@ -12,7 +12,7 @@ var kNumericLen = len(kNumericCharacters)
 
 var kHexCharacters = []byte{
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F',
+	'a', 'b', 'c', 'd', 'e', 'f',
 }
 
 var kHexLen = len(kHexCharacters)
