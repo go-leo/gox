@@ -16,7 +16,7 @@ func DumpInCSVFormat(fields []string, rows [][]string) string {
 		fields[i] = strings.Replace(field, "\n", "\\n", -1)
 	}
 	if len(fields) > 0 {
-		writer.Write(fields)
+		_ = writer.Write(fields) // nolint
 	}
 
 	for _, row := range rows {
@@ -25,7 +25,7 @@ func DumpInCSVFormat(fields []string, rows [][]string) string {
 			field = strings.Replace(field, "\r", "\\r", -1)
 			row[i] = field
 		}
-		writer.Write(row)
+		_ = writer.Write(row) // nolint
 	}
 	writer.Flush()
 

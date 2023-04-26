@@ -246,9 +246,7 @@ func DecodeHookFuncKinds(fs ...func(reflect.Kind, reflect.Kind, any) (any, error
 // DecodeHookFuncValues is a DecodeHookFunc which has complete access to both the source and target values.
 func DecodeHookFuncValues(fs ...mapstructure.DecodeHookFuncValue) Option {
 	return func(o *options) {
-		for _, f := range fs {
-			o.DecodeHookFuncValues = append(o.DecodeHookFuncValues, f)
-		}
+		o.DecodeHookFuncValues = append(o.DecodeHookFuncValues, fs...)
 	}
 }
 

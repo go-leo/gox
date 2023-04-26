@@ -99,7 +99,7 @@ func HumanReadableSize(size int64) string {
 
 	if s >= Byte {
 		b := s / Byte
-		s = s % Byte
+		// s = s % Byte
 		_ = builder.WriteInt(b, 10)
 		_, _ = builder.WriteString("B")
 	}

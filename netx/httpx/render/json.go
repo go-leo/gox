@@ -85,6 +85,8 @@ func AsciiJSON() JSONOption {
 // JSON marshals the given interface object and writes it with custom ContentType.
 func JSON(w http.ResponseWriter, data any, opts ...JSONOption) (err error) {
 	o := &jsonOptions{}
+	o.apply(opts...)
+	o.init()
 	if o.SecureOptions != nil {
 		return secureJSON(w, data, o)
 	}

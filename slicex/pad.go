@@ -12,7 +12,7 @@ func PadStart[S ~[]E, E any](s S, size int, val E) S {
 		r = append(r, val)
 	}
 	r = append(r, s...)
-	return s
+	return r
 }
 
 // PadEnd 如果slice长度小于 length 则在右侧填充val。

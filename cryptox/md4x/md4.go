@@ -3,7 +3,7 @@ package md4x
 import (
 	"encoding/hex"
 
-	"golang.org/x/crypto/md4"
+	"golang.org/x/crypto/md4" // nolint
 )
 
 func MD4(data []byte) []byte {

@@ -44,13 +44,13 @@ func TestBuilder(t *testing.T) {
 
 func TestBuilderString(t *testing.T) {
 	var b stringx.Builder
-	b.WriteString("alpha")
+	_, _ = b.WriteString("alpha")
 	check(t, &b, "alpha")
 	s1 := b.String()
-	b.WriteString("beta")
+	_, _ = b.WriteString("beta")
 	check(t, &b, "alphabeta")
 	s2 := b.String()
-	b.WriteString("gamma")
+	_, _ = b.WriteString("gamma")
 	check(t, &b, "alphabetagamma")
 	s3 := b.String()
 
@@ -69,7 +69,7 @@ func TestBuilderString(t *testing.T) {
 func TestBuilderReset(t *testing.T) {
 	var b stringx.Builder
 	check(t, &b, "")
-	b.WriteString("aaa")
+	_, _ = b.WriteString("aaa")
 	s := b.String()
 	check(t, &b, "aaa")
 	b.Reset()
@@ -77,7 +77,7 @@ func TestBuilderReset(t *testing.T) {
 
 	// Ensure that writing after Reset doesn't alter
 	// previously returned strings.
-	b.WriteString("bbb")
+	_, _ = b.WriteString("bbb")
 	check(t, &b, "bbb")
 	if want := "aaa"; s != want {
 		t.Errorf("previous String result changed after Reset: got %q; want %q", s, want)
@@ -93,7 +93,7 @@ func TestBuilderGrow(t *testing.T) {
 			if b.Cap() < growLen {
 				t.Fatalf("growLen=%d: Cap() is lower than growLen", growLen)
 			}
-			b.Write(p)
+			_, _ = b.Write(p)
 			if b.String() != string(p) {
 				t.Fatalf("growLen=%d: bad data written after Grow", growLen)
 			}
@@ -190,7 +190,7 @@ func TestBuilderAllocs(t *testing.T) {
 	n := testing.AllocsPerRun(10000, func() {
 		var b stringx.Builder
 		b.Grow(5)
-		b.WriteString("abcde")
+		_, _ = b.WriteString("abcde")
 		_ = b.String()
 	})
 	if n != 1 {
@@ -209,7 +209,7 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: false,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteByte('x')
+				_ = a.WriteByte('x')
 				b := a
 				_ = b.String() // appease vet
 			},
@@ -219,7 +219,7 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: false,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteByte('x')
+				_ = a.WriteByte('x')
 				b := a
 				b.Len()
 			},
@@ -229,7 +229,7 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: false,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteByte('x')
+				_ = a.WriteByte('x')
 				b := a
 				b.Cap()
 			},
@@ -239,10 +239,10 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: false,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteByte('x')
+				_ = a.WriteByte('x')
 				b := a
 				b.Reset()
-				b.WriteByte('y')
+				_ = b.WriteByte('y')
 			},
 		},
 		{
@@ -250,9 +250,9 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: true,
 			fn: func() {
 				var a stringx.Builder
-				a.Write([]byte("x"))
+				_, _ = a.Write([]byte("x"))
 				b := a
-				b.Write([]byte("y"))
+				_, _ = b.Write([]byte("y"))
 			},
 		},
 		{
@@ -260,9 +260,9 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: true,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteByte('x')
+				_ = a.WriteByte('x')
 				b := a
-				b.WriteByte('y')
+				_ = b.WriteByte('y')
 			},
 		},
 		{
@@ -270,9 +270,9 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: true,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteString("x")
+				_, _ = a.WriteString("x")
 				b := a
-				b.WriteString("y")
+				_, _ = b.WriteString("y")
 			},
 		},
 		{
@@ -280,9 +280,9 @@ func TestBuilderCopyPanic(t *testing.T) {
 			wantPanic: true,
 			fn: func() {
 				var a stringx.Builder
-				a.WriteRune('x')
+				_, _ = a.WriteRune('x')
 				b := a
-				b.WriteRune('y')
+				_, _ = b.WriteRune('y')
 			},
 		},
 		{
@@ -313,7 +313,7 @@ func TestBuilderWriteInvalidRune(t *testing.T) {
 	// utf8.RuneError.
 	for _, r := range []rune{-1, utf8.MaxRune + 1} {
 		var b stringx.Builder
-		b.WriteRune(r)
+		_, _ = b.WriteRune(r)
 		check(t, &b, "\uFFFD")
 	}
 }
@@ -345,7 +345,7 @@ func BenchmarkBuildString_Builder(b *testing.B) {
 				buf.Grow(len(someBytes) * numWrite)
 			}
 			for i := 0; i < numWrite; i++ {
-				buf.Write(someBytes)
+				_, _ = buf.Write(someBytes)
 			}
 			sinkS = buf.String()
 		}

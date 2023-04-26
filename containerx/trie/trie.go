@@ -36,7 +36,7 @@ func (a ByKeys) Less(i, j int) bool { return len(a[i]) < len(a[j]) }
 
 const nul = 0x0
 
-// Creates a new Trie with an initialized root Node.
+// New Creates a new Trie with an initialized root Node.
 func New() *Trie {
 	return &Trie{
 		root: &Node{children: make(map[rune]*Node), depth: 0},
@@ -44,12 +44,12 @@ func New() *Trie {
 	}
 }
 
-// Returns the root node for the Trie.
+// Root Returns the root node for the Trie.
 func (t *Trie) Root() *Node {
 	return t.root
 }
 
-// Adds the key to the Trie, including meta data. Meta data
+// Add Adds the key to the Trie, including meta data. Meta data
 // is stored as `interface{}` and must be type cast by
 // the caller.
 func (t *Trie) Add(key string, meta interface{}) *Node {
@@ -78,7 +78,7 @@ func (t *Trie) Add(key string, meta interface{}) *Node {
 	return node
 }
 
-// Finds and returns meta data associated
+// Find Finds and returns meta data associated
 // with `key`.
 func (t *Trie) Find(key string) (*Node, bool) {
 	node := findNode(t.Root(), []rune(key))
@@ -99,7 +99,7 @@ func (t *Trie) HasKeysWithPrefix(key string) bool {
 	return node != nil
 }
 
-// Removes a key from the trie, ensuring that
+// Remove Removes a key from the trie, ensuring that
 // all bitmasks up to root are appropriately recalculated.
 func (t *Trie) Remove(key string) {
 	var (
@@ -132,7 +132,7 @@ func (t *Trie) Remove(key string) {
 	t.mu.Unlock()
 }
 
-// Returns all the keys currently stored in the trie.
+// Keys Returns all the keys currently stored in the trie.
 func (t *Trie) Keys() []string {
 	if t.size == 0 {
 		return []string{}
@@ -141,15 +141,15 @@ func (t *Trie) Keys() []string {
 	return t.PrefixSearch("")
 }
 
-// Performs a fuzzy search against the keys in the trie.
-func (t Trie) FuzzySearch(pre string) []string {
+// FuzzySearch Performs a fuzzy search against the keys in the trie.
+func (t *Trie) FuzzySearch(pre string) []string {
 	keys := fuzzycollect(t.Root(), []rune(pre))
 	sort.Sort(ByKeys(keys))
 	return keys
 }
 
-// Performs a prefix search against the keys in the trie.
-func (t Trie) PrefixSearch(pre string) []string {
+// PrefixSearch Performs a prefix search against the keys in the trie.
+func (t *Trie) PrefixSearch(pre string) []string {
 	node := findNode(t.Root(), []rune(pre))
 	if node == nil {
 		return nil
@@ -158,7 +158,7 @@ func (t Trie) PrefixSearch(pre string) []string {
 	return collect(node)
 }
 
-// Creates and returns a pointer to a new child for the node.
+// NewChild Creates and returns a pointer to a new child for the node.
 func (parent *Node) NewChild(val rune, path string, bitmask uint64, meta interface{}, term bool) *Node {
 	node := &Node{
 		val:      val,

@@ -36,7 +36,6 @@ func TestDoE(t *testing.T) {
 func TestDoEWithPanic(t *testing.T) {
 	err := DoE(func() error {
 		panic("this is a panic")
-		return nil
 	}, func(p any) error {
 		return fmt.Errorf("%v", p)
 	})
@@ -55,7 +54,6 @@ func TestGoE(t *testing.T) {
 func TestGoEWithPanic(t *testing.T) {
 	errC := GoE(func() error {
 		panic("this is a panic")
-		return nil
 	}, func(p any) error {
 		return fmt.Errorf("%v", p)
 	})
