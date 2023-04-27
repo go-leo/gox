@@ -13,7 +13,7 @@ func Signal(signals ...os.Signal) (context.Context, context.CancelFunc) {
 	return WithSignal(context.Background(), signals...)
 }
 
-// WithSignal creates a new context that cancels on the given signals.
+// WithSignal like signal.NotifyContext.
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelFunc) {
 	newCtx, cancelFunc := context.WithCancel(ctx)
 	if Error(ctx) != nil {
