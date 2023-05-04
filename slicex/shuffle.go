@@ -1,16 +1,15 @@
 package slicex
 
 import (
-	"math/rand"
-	"time"
+	"github.com/go-leo/gox/mathx/randx"
 )
-
-var shuffleRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Shuffle 打乱数组顺序
 func Shuffle[S ~[]E, E any](s S) S {
-	shuffleRand.Shuffle(len(s), func(i, j int) {
+	r := randx.Get()
+	r.Shuffle(len(s), func(i, j int) {
 		s[i], s[j] = s[j], s[i]
 	})
+	randx.Put(r)
 	return s
 }
