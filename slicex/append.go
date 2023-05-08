@@ -6,7 +6,7 @@ func appendFirst[S ~[]E, E any](s S, e E) S {
 	if len(s) == 0 {
 		return append(s, e)
 	}
-	return Insert(s, e, 0)
+	return Insert(0, s, e)
 }
 
 func AppendIfNotContains[S ~[]E, E comparable](s S, v E) S {
