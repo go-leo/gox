@@ -1,23 +1,21 @@
 package sortx
 
 import (
-	"sort"
-
 	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
+
+	"github.com/go-leo/gox/slicex"
 )
 
 // Asc sorts a slice of any ordered type in ascending order.
-func Asc[E constraints.Ordered](x []E) {
-	sort.Slice(x, func(i, j int) bool {
-		return x[i] < x[j]
-	})
+func Asc[E constraints.Ordered](x []E) []E {
+	slices.Sort(x)
+	return x
 }
 
 // Desc sorts a slice of any ordered type in descending order.
-func Desc[E constraints.Ordered](x []E) {
-	sort.Slice(x, func(i, j int) bool {
-		return x[i] > x[j]
-	})
+func Desc[E constraints.Ordered](x []E) []E {
+	return slicex.Reverse(x)
 }
 
 // IsAsc reports whether x is sorted in ascending order.
@@ -40,7 +38,7 @@ func IsDesc[E constraints.Ordered](x []E) bool {
 	return true
 }
 
-func BubbleSort[E constraints.Ordered](x []E) {
+func BubbleSort[E constraints.Ordered](x []E) []E {
 	for i := 0; i < len(x)-1; i++ {
 		for j := 1; j < len(x)-i; j++ {
 			if x[j] < x[j-1] {
@@ -48,9 +46,10 @@ func BubbleSort[E constraints.Ordered](x []E) {
 			}
 		}
 	}
+	return x
 }
 
-func SelectSort[E constraints.Ordered](x []E) {
+func SelectSort[E constraints.Ordered](x []E) []E {
 	for i := 0; i < len(x); i++ {
 		min := i
 		for j := i + 1; j < len(x); j++ {
@@ -60,9 +59,10 @@ func SelectSort[E constraints.Ordered](x []E) {
 		}
 		x[i], x[min] = x[min], x[i]
 	}
+	return x
 }
 
-func InsertSort[E constraints.Ordered](x []E) {
+func InsertSort[E constraints.Ordered](x []E) []E {
 	for i := 0; i < len(x); i++ {
 		for j := i - 1; j >= 0; j-- {
 			if x[j+1] < x[j] {
@@ -72,4 +72,5 @@ func InsertSort[E constraints.Ordered](x []E) {
 			}
 		}
 	}
+	return x
 }

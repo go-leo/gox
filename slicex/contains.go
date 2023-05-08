@@ -2,7 +2,12 @@ package slicex
 
 import "golang.org/x/exp/slices"
 
-// ContainsFunc reports whether v is present in s.
-func ContainsFunc[E any](s []E, f func(E) bool) bool {
-	return slices.ContainsFunc(s, f)
+// ContainsAny checks if any of the elem are in the given slice.
+func ContainsAny[E comparable](s []E, vs ...E) bool {
+	for _, v := range vs {
+		if slices.Contains(s, v) {
+			return true
+		}
+	}
+	return false
 }
