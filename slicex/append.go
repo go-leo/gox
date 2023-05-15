@@ -2,11 +2,8 @@ package slicex
 
 import "golang.org/x/exp/slices"
 
-func appendFirst[S ~[]E, E any](s S, e E) S {
-	if len(s) == 0 {
-		return append(s, e)
-	}
-	return Insert(0, s, e)
+func AppendFirst[S ~[]E, E any](s S, e E) S {
+	return slices.Insert(s, 0, e)
 }
 
 func AppendIfNotContains[S ~[]E, E comparable](s S, v E) S {
