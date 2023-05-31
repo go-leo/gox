@@ -2,12 +2,12 @@ package envx
 
 import (
 	"errors"
+	"github.com/go-leo/gox/convx"
 	"io"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/exp/maps"
 
-	"github.com/go-leo/gox/bytesconvx"
 	"github.com/go-leo/gox/encodingx"
 )
 
@@ -20,7 +20,7 @@ func Marshal(val any) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bytesconvx.StringToBytes(data), nil
+	return convx.StringToBytes(data), nil
 }
 
 func Unmarshal(data []byte, val any) error {
@@ -57,7 +57,7 @@ func (e *encoder) Encode(val any) error {
 	if err != nil {
 		return err
 	}
-	_, err = e.w.Write(bytesconvx.StringToBytes(data))
+	_, err = e.w.Write(convx.StringToBytes(data))
 	return err
 }
 
