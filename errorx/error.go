@@ -7,10 +7,20 @@ func Must[T any](v T, err error) T {
 	return v
 }
 
+func Value[T any](v T, _ error) T {
+	return v
+}
+
+func Error[T any](_ T, err error) error {
+	return err
+}
+
+// Quiet alias Value
 func Quiet[T any](v T, _ error) T {
 	return v
 }
 
+// Ignore alias Error
 func Ignore[T any](_ T, err error) error {
 	return err
 }
