@@ -15,24 +15,5 @@ func Signal(signals ...os.Signal) (context.Context, context.CancelFunc) {
 
 // WithSignal like signal.NotifyContext.
 func WithSignal(ctx context.Context, signals ...os.Signal) (context.Context, context.CancelFunc) {
-	newCtx, cancelFunc := context.WithCancel(ctx)
-	if Error(ctx) != nil {
-		return newCtx, cancelFunc
-	}
-	go func() {
-		signalC := make(chan os.Signal, 1)
-		defer close(signalC)
-
-		signal.Notify(signalC, signals...)
-		defer signal.Stop(signalC)
-
-		select {
-		case <-signalC:
-			cancelFunc()
-			return
-		case <-newCtx.Done():
-			return
-		}
-	}()
-	return newCtx, cancelFunc
+	return signal.NotifyContext(ctx, signals...)
 }

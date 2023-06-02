@@ -1,5 +1,3 @@
-//go:build go1.20
-
 package contextx
 
 import (
@@ -15,9 +13,6 @@ type contextError struct {
 func (c contextError) Error() string {
 	return fmt.Sprintf("%v, because %v", c.err, c.causeErr)
 }
-
-func (s contextError) Timeout() bool   { return false }
-func (s contextError) Temporary() bool { return false }
 
 func Error(ctx context.Context) error {
 	err := ctx.Err()

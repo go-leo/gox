@@ -1,9 +1,3 @@
-// Copyright 2023 Gin Core Team. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
-
-//go:build go1.20
-
 package convx
 
 import (
