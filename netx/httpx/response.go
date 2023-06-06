@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 type ResponseHelper struct {
 	err        error
 	resp       *http.Response
@@ -22,6 +23,7 @@ type ResponseHelper struct {
 	bodyBytes  []byte
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func NewResponseHelper(resp *http.Response, err error) *ResponseHelper {
 	respHelper := &ResponseHelper{resp: resp, err: err}
 	if err != nil {
@@ -48,10 +50,12 @@ func NewResponseHelper(resp *http.Response, err error) *ResponseHelper {
 	return respHelper
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) Err() error {
 	return helper.err
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) StatusCode() (int, error) {
 	if helper.err != nil {
 		return 0, helper.err
@@ -59,6 +63,7 @@ func (helper *ResponseHelper) StatusCode() (int, error) {
 	return helper.statusCode, nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) Headers() (http.Header, error) {
 	if helper.err != nil {
 		return nil, helper.err
@@ -66,6 +71,7 @@ func (helper *ResponseHelper) Headers() (http.Header, error) {
 	return helper.headers, nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) Trailer() (http.Header, error) {
 	if helper.err != nil {
 		return nil, helper.err
@@ -73,6 +79,7 @@ func (helper *ResponseHelper) Trailer() (http.Header, error) {
 	return helper.trailers, nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) Cookies() ([]*http.Cookie, error) {
 	if helper.err != nil {
 		return nil, helper.err
@@ -80,6 +87,7 @@ func (helper *ResponseHelper) Cookies() ([]*http.Cookie, error) {
 	return helper.cookies, nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) Body() (io.ReadCloser, error) {
 	if helper.err != nil {
 		return nil, helper.err
@@ -87,6 +95,7 @@ func (helper *ResponseHelper) Body() (io.ReadCloser, error) {
 	return io.NopCloser(bytes.NewReader(helper.bodyBytes)), nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) BytesBody() ([]byte, error) {
 	if helper.err != nil {
 		return nil, helper.err
@@ -94,6 +103,7 @@ func (helper *ResponseHelper) BytesBody() ([]byte, error) {
 	return helper.bodyBytes, nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) TextBody() (string, error) {
 	if helper.err != nil {
 		return "", helper.err
@@ -101,6 +111,7 @@ func (helper *ResponseHelper) TextBody() (string, error) {
 	return string(helper.bodyBytes), nil
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) ObjectBody(body any, unmarshal func([]byte, any) error) error {
 	if helper.err != nil {
 		return helper.err
@@ -112,6 +123,7 @@ func (helper *ResponseHelper) ObjectBody(body any, unmarshal func([]byte, any) e
 	return err
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) JSONBody(body any) error {
 	if helper.err != nil {
 		return helper.err
@@ -119,6 +131,7 @@ func (helper *ResponseHelper) JSONBody(body any) error {
 	return helper.ObjectBody(body, json.Unmarshal)
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) XMLBody(body any) error {
 	if helper.err != nil {
 		return helper.err
@@ -126,6 +139,7 @@ func (helper *ResponseHelper) XMLBody(body any) error {
 	return helper.ObjectBody(body, xml.Unmarshal)
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) ProtobufBody(body proto.Message) error {
 	if helper.err != nil {
 		return helper.err
@@ -137,6 +151,7 @@ func (helper *ResponseHelper) ProtobufBody(body proto.Message) error {
 	return helper.ObjectBody(body, unmarshal)
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) GobBody(body proto.Message) error {
 	if helper.err != nil {
 		return helper.err
@@ -147,6 +162,7 @@ func (helper *ResponseHelper) GobBody(body proto.Message) error {
 	return helper.ObjectBody(body, unmarshal)
 }
 
+// Deprecated: Do not use. use github.com/go-leo/netx/httpx/receiver instead.
 func (helper *ResponseHelper) FileBody(file io.Writer) error {
 	if helper.err != nil {
 		return helper.err
