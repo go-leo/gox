@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"errors"
+	"github.com/go-leo/gox/convx"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/netx/httpx/receiver"
@@ -18,6 +19,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -58,8 +60,8 @@ type AuthSender interface {
 }
 
 type CacheControlSender interface {
-	IfModifiedSince(time string) PayloadSender
-	IfUnmodifiedSince(time string) PayloadSender
+	IfModifiedSince(t time.Time) PayloadSender
+	IfUnmodifiedSince(t time.Time) PayloadSender
 	IfNoneMatch(etag string) PayloadSender
 	IfMatch(etags ...string) PayloadSender
 	CacheControl(directives ...string) PayloadSender
@@ -182,7 +184,8 @@ func (s *sender) URLString(urlString string) PayloadSender {
 		s.err = err
 		return s
 	}
-	return s.URL(uri)
+	s.uri = uri
+	return s
 }
 
 func (s *sender) Query(name, value string) PayloadSender {
@@ -273,7 +276,7 @@ func (s *sender) BasicAuth(username, password string) PayloadSender {
 	if s.err != nil {
 		return s
 	}
-	token := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	token := base64.StdEncoding.EncodeToString(convx.StringToBytes(username + ":" + password))
 	return s.CustomAuth("Basic", token)
 }
 
@@ -289,12 +292,12 @@ func (s *sender) UserAgent(ua string) PayloadSender {
 	return s.Header("User-Agent", ua)
 }
 
-func (s *sender) IfModifiedSince(time string) PayloadSender {
-	return s.Header("If-Modified-Since", time)
+func (s *sender) IfModifiedSince(t time.Time) PayloadSender {
+	return s.Header("If-Modified-Since", t.UTC().Format(http.TimeFormat))
 }
 
-func (s *sender) IfUnmodifiedSince(time string) PayloadSender {
-	return s.Header("If-Unmodified-Since", time)
+func (s *sender) IfUnmodifiedSince(t time.Time) PayloadSender {
+	return s.Header("If-Unmodified-Since", t.UTC().Format(http.TimeFormat))
 }
 
 func (s *sender) IfNoneMatch(etag string) PayloadSender {
