@@ -3,17 +3,17 @@ package stringx
 import "strings"
 
 // IsBlank Checks if a string is empty ("") or whitespace only.
-func IsBlank(s string) bool {
-	return len(strings.TrimSpace(s)) == 0
+func IsBlank[S ~string](s S) bool {
+	return len(strings.TrimSpace(string(s))) == 0
 }
 
 // IsNotBlank Checks if a string is not empty ("") and not whitespace only.
-func IsNotBlank(s string) bool {
+func IsNotBlank[S ~string](s S) bool {
 	return !IsBlank(s)
 }
 
 // IsAllBlank Checks if all of the CharSequences are empty ("") or whitespace only.
-func IsAllBlank(ss ...string) bool {
+func IsAllBlank[S ~string](ss ...S) bool {
 	for _, s := range ss {
 		if IsNotBlank(s) {
 			return false
@@ -23,7 +23,7 @@ func IsAllBlank(ss ...string) bool {
 }
 
 // IsAnyBlank Checks if any of the string are empty ("") or whitespace only.
-func IsAnyBlank(ss ...string) bool {
+func IsAnyBlank[S ~string](ss ...S) bool {
 	for _, s := range ss {
 		if IsBlank(s) {
 			return true

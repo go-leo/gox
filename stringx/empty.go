@@ -1,17 +1,17 @@
 package stringx
 
 // IsEmpty checks if a string is empty ("")
-func IsEmpty(s string) bool {
+func IsEmpty[S ~string](s S) bool {
 	return len(s) == 0
 }
 
 // IsNotEmpty Checks if a string is not empty ("")
-func IsNotEmpty(s string) bool {
+func IsNotEmpty[S ~string](s S) bool {
 	return !IsEmpty(s)
 }
 
 // IsAllEmpty Checks if all of the strings are empty ("")
-func IsAllEmpty(ss ...string) bool {
+func IsAllEmpty[S ~string](ss ...S) bool {
 	for _, s := range ss {
 		if IsNotEmpty(s) {
 			return false
@@ -21,7 +21,7 @@ func IsAllEmpty(ss ...string) bool {
 }
 
 // IsAnyEmpty Checks if any of the strings are empty ("")
-func IsAnyEmpty(ss ...string) bool {
+func IsAnyEmpty[S ~string](ss ...S) bool {
 	for _, s := range ss {
 		if IsEmpty(s) {
 			return true
