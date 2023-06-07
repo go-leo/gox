@@ -8,7 +8,6 @@ import (
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/errorx"
-	"github.com/go-leo/gox/slicex"
 	"google.golang.org/protobuf/proto"
 	"io"
 	"net/http"
@@ -37,10 +36,7 @@ type Receiver interface {
 }
 
 type receiver struct {
-	resp      *http.Response
-	err       error
-	bodyBytes []byte
-	read      bool
+	resp *http.Response
 }
 
 func (r *receiver) Response() *http.Response {
@@ -88,16 +84,11 @@ func (r *receiver) Cookies() []*http.Cookie {
 }
 
 func (r *receiver) BytesBody() ([]byte, error) {
-	if r.read {
-		return r.bodyBytes, nil
-	}
-	r.read = true
 	body, err := io.ReadAll(r.resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	defer errorx.Silence(r.resp.Body.Close())
-	r.bodyBytes = body
 	return body, nil
 }
 
@@ -115,7 +106,7 @@ func (r *receiver) ObjectBody(body any, unmarshal func([]byte, any) error) error
 		return err
 	}
 	if err := unmarshal(bodyBytes, body); err != nil {
-		err = fmt.Errorf("failed to unmarshal body, body is %s, %w", r.bodyBytes, err)
+		err = fmt.Errorf("failed to unmarshal body, body is %s, %w", bodyBytes, err)
 	}
 	return nil
 }
@@ -139,19 +130,10 @@ func (r *receiver) GobBody(body any) error {
 }
 
 func (r *receiver) WriterBody(file io.Writer) error {
-	r.read = true
 	_, err := io.Copy(file, r.resp.Body)
 	return err
 }
 
-func NewReceiver(resp *http.Response, errs ...error) Receiver {
-	var err error
-	if slicex.IsNotEmpty(errs) {
-		err = errs[0]
-	}
-	r := &receiver{
-		err:  err,
-		resp: resp,
-	}
-	return r
+func NewReceiver(resp *http.Response) Receiver {
+	return &receiver{resp: resp}
 }

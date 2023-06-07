@@ -108,7 +108,7 @@ type PayloadSender interface {
 	CookieSender
 	BodySender
 	Build(ctx context.Context) (*http.Request, error)
-	Send(ctx context.Context, cli *http.Client) receiver.Receiver
+	Send(ctx context.Context, cli *http.Client) (receiver.Receiver, error)
 }
 
 type sender struct {
@@ -453,12 +453,16 @@ func (s *sender) Build(ctx context.Context) (*http.Request, error) {
 	return s.build(ctx)
 }
 
-func (s *sender) Send(ctx context.Context, cli *http.Client) receiver.Receiver {
+func (s *sender) Send(ctx context.Context, cli *http.Client) (receiver.Receiver, error) {
 	req, err := s.Build(ctx)
 	if err != nil {
-		return receiver.NewReceiver(nil, err)
+		return nil, err
 	}
-	return receiver.NewReceiver(cli.Do(req))
+	resp, err := cli.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return receiver.NewReceiver(resp), nil
 }
 
 func (s *sender) query() url.Values {
