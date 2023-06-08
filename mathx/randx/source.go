@@ -3,9 +3,20 @@ package randx
 import (
 	"math/rand"
 	"sync"
+	"time"
 )
 
-func SyncSource(seed int64) rand.Source {
+var globalSyncSource rand.Source
+
+func init() {
+	globalSyncSource = NewSyncSource(time.Now().UnixNano())
+}
+
+func SyncSource() rand.Source {
+	return globalSyncSource
+}
+
+func NewSyncSource(seed int64) rand.Source {
 	source := rand.NewSource(seed)
 	return &syncSource{
 		lk:    sync.Mutex{},
