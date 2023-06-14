@@ -10,6 +10,7 @@ import (
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/netx/httpx/receiver"
+	"github.com/go-leo/gox/slicex"
 	"github.com/go-leo/gox/stringx"
 	"google.golang.org/protobuf/proto"
 	"io"
@@ -68,8 +69,8 @@ type CacheControlSender interface {
 }
 
 type HeaderSender interface {
-	Header(name, value string) PayloadSender
-	AddHeader(name, value string) PayloadSender
+	Header(name, value string, uncanonical ...bool) PayloadSender
+	AddHeader(name, value string, uncanonical ...bool) PayloadSender
 	DelHeader(name string) PayloadSender
 	Headers(header http.Header) PayloadSender
 	AuthSender
@@ -236,16 +237,24 @@ func (s *sender) Queries(queries url.Values) PayloadSender {
 	return s
 }
 
-func (s *sender) Header(name, value string) PayloadSender {
+func (s *sender) Header(name, value string, uncanonical ...bool) PayloadSender {
 	if s.err != nil {
+		return s
+	}
+	if slicex.IsNotEmpty(uncanonical) && uncanonical[0] {
+		s.header()[name] = []string{value}
 		return s
 	}
 	s.header().Set(name, value)
 	return s
 }
 
-func (s *sender) AddHeader(name, value string) PayloadSender {
+func (s *sender) AddHeader(name, value string, uncanonical ...bool) PayloadSender {
 	if s.err != nil {
+		return s
+	}
+	if slicex.IsNotEmpty(uncanonical) && uncanonical[0] {
+		s.header()[name] = append(s.header()[name], value)
 		return s
 	}
 	s.header().Add(name, value)
@@ -511,9 +520,7 @@ func (s *sender) build(ctx context.Context) (*http.Request, error) {
 		return nil, err
 	}
 	for key, values := range s.header() {
-		for _, value := range values {
-			req.Header.Add(key, value)
-		}
+		req.Header[key] = append(req.Header[key], values...)
 	}
 	for _, cookies := range s.cookie() {
 		for _, cookie := range cookies {
