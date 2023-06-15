@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"github.com/go-leo/gox/convx"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
@@ -26,6 +27,15 @@ var (
 	ErrMethodEmpty = errors.New("method is empty")
 	ErrURLEmpty    = errors.New("url is empty")
 )
+
+type MarshalError struct {
+	Object any
+	Err    error
+}
+
+func (e MarshalError) Error() string {
+	return fmt.Sprintf("failed to marshal body")
+}
 
 type RequestSender interface {
 	Method(method string) URLSender
@@ -391,7 +401,7 @@ func (s *sender) ObjectBody(body any, marshal func(any) ([]byte, error), content
 	}
 	data, err := marshal(body)
 	if err != nil {
-		s.err = err
+		s.err = MarshalError{Object: body, Err: err}
 		return s
 	}
 	return s.BytesBody(data, contentType)

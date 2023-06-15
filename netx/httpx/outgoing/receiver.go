@@ -13,6 +13,15 @@ import (
 	"net/http"
 )
 
+type UnmarshalError struct {
+	Body []byte
+	Err  error
+}
+
+func (e UnmarshalError) Error() string {
+	return fmt.Sprintf("failed to unmarshal body")
+}
+
 type ResponseReceiver interface {
 	Response() *http.Response
 	Status() string
@@ -106,7 +115,7 @@ func (r *receiver) ObjectBody(body any, unmarshal func([]byte, any) error) error
 		return err
 	}
 	if err := unmarshal(bodyBytes, body); err != nil {
-		err = fmt.Errorf("failed to unmarshal body, body is %s, %w", bodyBytes, err)
+		return UnmarshalError{Body: bodyBytes, Err: err}
 	}
 	return nil
 }
