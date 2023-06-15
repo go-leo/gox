@@ -27,7 +27,7 @@ var (
 	ErrURLEmpty    = errors.New("url is empty")
 )
 
-type MethodSender interface {
+type RequestSender interface {
 	Method(method string) URLSender
 	Get() URLSender
 	Head() URLSender
@@ -529,6 +529,6 @@ func (s *sender) build(ctx context.Context) (*http.Request, error) {
 	return req, nil
 }
 
-func Sender() MethodSender {
+func Sender() RequestSender {
 	return new(sender)
 }
