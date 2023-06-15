@@ -1,4 +1,4 @@
-package receiver
+package outgoing
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-type Receiver interface {
+type ResponseReceiver interface {
 	Response() *http.Response
 	Status() string
 	StatusCode() int
@@ -134,6 +134,6 @@ func (r *receiver) WriterBody(file io.Writer) error {
 	return err
 }
 
-func NewReceiver(resp *http.Response) Receiver {
+func Receiver(resp *http.Response) ResponseReceiver {
 	return &receiver{resp: resp}
 }

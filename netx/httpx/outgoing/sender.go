@@ -1,4 +1,4 @@
-package sender
+package outgoing
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 	"github.com/go-leo/gox/convx"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
-	"github.com/go-leo/gox/netx/httpx/receiver"
 	"github.com/go-leo/gox/slicex"
 	"github.com/go-leo/gox/stringx"
 	"google.golang.org/protobuf/proto"
@@ -111,7 +110,7 @@ type PayloadSender interface {
 	CookieSender
 	BodySender
 	Build(ctx context.Context) (*http.Request, error)
-	Send(ctx context.Context, cli *http.Client) (receiver.Receiver, error)
+	Send(ctx context.Context, cli *http.Client) (ResponseReceiver, error)
 }
 
 type sender struct {
@@ -465,7 +464,7 @@ func (s *sender) Build(ctx context.Context) (*http.Request, error) {
 	return s.build(ctx)
 }
 
-func (s *sender) Send(ctx context.Context, cli *http.Client) (receiver.Receiver, error) {
+func (s *sender) Send(ctx context.Context, cli *http.Client) (ResponseReceiver, error) {
 	req, err := s.Build(ctx)
 	if err != nil {
 		return nil, err
@@ -474,7 +473,7 @@ func (s *sender) Send(ctx context.Context, cli *http.Client) (receiver.Receiver,
 	if err != nil {
 		return nil, err
 	}
-	return receiver.NewReceiver(resp), nil
+	return Receiver(resp), nil
 }
 
 func (s *sender) query() url.Values {
