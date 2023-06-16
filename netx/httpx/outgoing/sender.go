@@ -10,6 +10,7 @@ import (
 	"github.com/go-leo/gox/convx"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
+	"github.com/go-leo/gox/iox"
 	"github.com/go-leo/gox/slicex"
 	"github.com/go-leo/gox/stringx"
 	"google.golang.org/protobuf/proto"
@@ -18,7 +19,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -366,19 +366,9 @@ func (s *sender) Body(body io.Reader, contentType string) PayloadSender {
 	}
 	s.body = body
 	s.Header("Content-Type", contentType)
-	switch lener := body.(type) {
-	case interface{ Len() int }:
-		s.Header("Content-Length", strconv.Itoa(lener.Len()))
-	case interface{ Length() int }:
-		s.Header("Content-Length", strconv.Itoa(lener.Length()))
-	case interface{ Size() int }:
-		s.Header("Content-Length", strconv.Itoa(lener.Size()))
-	case interface{ Len() int64 }:
-		s.Header("Content-Length", strconv.FormatInt(lener.Len(), 10))
-	case interface{ Length() int64 }:
-		s.Header("Content-Length", strconv.FormatInt(lener.Length(), 10))
-	case interface{ Size() int64 }:
-		s.Header("Content-Length", strconv.FormatInt(lener.Size(), 10))
+	l, ok := iox.Len(body)
+	if ok {
+		s.Header("Content-Length", convx.ToString(l))
 	}
 	return s
 }
