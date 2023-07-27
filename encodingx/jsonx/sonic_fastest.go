@@ -1,12 +1,14 @@
-//go:build !jsoniter && !go_json && !jsoniter_fastest && !sonic
+//go:build sonic_fastest
 
 package jsonx
 
 import (
-	"encoding/json"
+	"github.com/bytedance/sonic"
 	"github.com/go-leo/gox/encodingx"
 	"io"
 )
+
+var json = sonic.ConfigFastest
 
 func Marshal(v any) ([]byte, error) {
 	return json.Marshal(v)
@@ -14,6 +16,14 @@ func Marshal(v any) ([]byte, error) {
 
 func Unmarshal(data []byte, v any) error {
 	return json.Unmarshal(data, v)
+}
+
+func MarshalString(v any) (string, error) {
+	return json.MarshalToString(v)
+}
+
+func UnmarshalString(str string, v interface{}) error {
+	return json.UnmarshalFromString(str, v)
 }
 
 func MarshalIndent(v any, prefix, indent string) ([]byte, error) {

@@ -1,14 +1,11 @@
 //go:build go_json
-// +build go_json
 
 package jsonx
 
 import (
-	"io"
-
-	json "github.com/goccy/go-json"
-
 	"github.com/go-leo/gox/encodingx"
+	json "github.com/goccy/go-json"
+	"io"
 )
 
 func Marshal(v any) ([]byte, error) {

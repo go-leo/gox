@@ -1,14 +1,11 @@
 //go:build jsoniter
-// +build jsoniter
 
 package jsonx
 
 import (
-	"io"
-
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/go-leo/gox/encodingx"
+	jsoniter "github.com/json-iterator/go"
+	"io"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

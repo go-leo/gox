@@ -1,12 +1,14 @@
-//go:build !jsoniter && !go_json && !jsoniter_fastest && !sonic
+//go:build jsoniter_fastest
 
 package jsonx
 
 import (
-	"encoding/json"
 	"github.com/go-leo/gox/encodingx"
+	jsoniter "github.com/json-iterator/go"
 	"io"
 )
+
+var json = jsoniter.ConfigFastest
 
 func Marshal(v any) ([]byte, error) {
 	return json.Marshal(v)
