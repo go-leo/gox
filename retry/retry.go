@@ -29,3 +29,17 @@ func Call(ctx context.Context, maxAttempts uint, backoffFunc backoff.BackoffFunc
 	}
 	return err
 }
+
+func Endpoint[Req any, Resp any](ctx context.Context, req Req, maxAttempts uint, backoffFunc backoff.BackoffFunc, endpoint func(ctx context.Context, req Req) (Resp, error)) (Resp, error) {
+	for i := uint(0); i < maxAttempts; i++ {
+		resp, err := endpoint(ctx, req)
+		// return if err is nil.
+		if err == nil {
+			return resp, err
+		}
+		// sleep and wait retry
+		time.Sleep(backoffFunc(ctx, i+1))
+	}
+
+	return endpoint(ctx, req)
+}
