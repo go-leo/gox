@@ -1,113 +1,96 @@
 package formx
 
 import (
-	"errors"
 	"github.com/go-leo/gox/encodingx"
-	"github.com/go-leo/gox/slicex"
 	"github.com/go-playground/form/v4"
+	"io"
 	"net/url"
-	"sync"
 )
 
-var defaultEncoder = form.NewEncoder()
-var encoders = map[string]*form.Encoder{}
-var encoderMu sync.RWMutex
-
-func init() {
-	//defaultEncoder.SetNamespacePrefix()
-}
-
-func RegisterEncoder(tag string, encoderFunc func() *form.Encoder) {
-	encoderMu.Lock()
-	defer encoderMu.Unlock()
-	encoders[tag] = encoderFunc()
-}
-
-var defaultDecoder = form.NewDecoder()
-var decoders = map[string]*form.Decoder{}
-var decoderMu sync.RWMutex
-
-func RegisterDecoder(tag string, decoderFunc func() *form.Decoder) {
-	decoderMu.Lock()
-	defer decoderMu.Unlock()
-	decoders[tag] = decoderFunc()
-}
-
-func Marshal(v any, tag ...string) (url.Values, error) {
-	encoder, err := getEncoder(tag)
-	if err != nil {
-		return nil, err
+func Marshal(encoders ...*form.Encoder) func(v any) ([]byte, error) {
+	return func(v any) ([]byte, error) {
+		var encoder *form.Encoder
+		if len(encoders) > 0 {
+			encoder = encoders[0]
+		} else {
+			encoder = form.NewEncoder()
+		}
+		values, err := encoder.Encode(v)
+		if err != nil {
+			return nil, err
+		}
+		return []byte(values.Encode()), nil
 	}
-	return encoder.Encode(v)
 }
 
-func Unmarshal(form url.Values, v any, tag ...string) error {
-	decoder, err := getDecoder(tag)
-	if err != nil {
-		return err
+func Unmarshal(decoders ...*form.Decoder) func(data []byte, v any) error {
+	return func(data []byte, v any) error {
+		var decoder *form.Decoder
+		if len(decoders) > 0 {
+			decoder = decoders[0]
+		} else {
+			decoder = form.NewDecoder()
+		}
+		values, err := url.ParseQuery(string(data))
+		if err != nil {
+			return err
+		}
+		return decoder.Decode(v, values)
 	}
-
-	return decoder.Decode(v, form)
 }
 
-func NewEncoder(form url.Values, tag ...string) encodingx.Encoder {
-	return &encoder{form: form, tag: tag}
+func NewEncoder(encoders ...*form.Encoder) func(w io.Writer) encodingx.Encoder {
+	var enc *form.Encoder
+	if len(encoders) > 0 {
+		enc = encoders[0]
+	} else {
+		enc = form.NewEncoder()
+	}
+	return func(w io.Writer) encodingx.Encoder {
+		return &encoder{w: w, enc: enc}
+	}
 }
 
-func NewDecoder(form url.Values, tag ...string) encodingx.Decoder {
-	return &decoder{form: form, tag: tag}
+func NewDecoder(decoders ...*form.Decoder) func(r io.Reader) encodingx.Decoder {
+	var dec *form.Decoder
+	if len(decoders) > 0 {
+		dec = decoders[0]
+	} else {
+		dec = form.NewDecoder()
+	}
+	return func(r io.Reader) encodingx.Decoder {
+		return &decoder{r: r, dec: dec}
+	}
 }
 
 type encoder struct {
-	tag  []string
-	form url.Values
+	enc *form.Encoder
+	w   io.Writer
 }
 
 func (e *encoder) Encode(val any) error {
-	data, err := Marshal(val, e.tag...)
+	values, err := e.enc.Encode(val)
 	if err != nil {
 		return err
 	}
-	for key, vals := range data {
-		for _, val := range vals {
-			e.form.Add(key, val)
-		}
-	}
-	return nil
+	data := values.Encode()
+	_, err = e.w.Write([]byte(data))
+	return err
 }
 
 type decoder struct {
-	tag  []string
-	form url.Values
+	r   io.Reader
+	dec *form.Decoder
 }
 
 func (d *decoder) Decode(obj any) error {
-	return Unmarshal(d.form, obj, d.tag...)
-}
-
-func getEncoder(tag []string) (*form.Encoder, error) {
-	var encoder *form.Encoder
-	if slicex.IsEmpty(tag) {
-		return defaultEncoder, nil
+	data, err := io.ReadAll(d.r)
+	if err != nil {
+		return nil
 	}
-	encoderMu.RLock()
-	encoder, ok := encoders[tag[0]]
-	encoderMu.RUnlock()
-	if !ok {
-		return nil, errors.New("not found encoder for tag: " + tag[0])
+	values, err := url.ParseQuery(string(data))
+	if err != nil {
+		return err
 	}
-	return encoder, nil
-}
-
-func getDecoder(tag []string) (*form.Decoder, error) {
-	if slicex.IsEmpty(tag) {
-		return defaultDecoder, nil
-	}
-	decoderMu.RLock()
-	decoder, ok := decoders[tag[0]]
-	decoderMu.RUnlock()
-	if !ok {
-		return nil, errors.New("not found decoder for tag: " + tag[0])
-	}
-	return decoder, nil
+	return d.dec.Decode(obj, values)
 }

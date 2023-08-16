@@ -1,6 +1,7 @@
 package formx
 
 import (
+	"github.com/go-playground/form/v4"
 	"github.com/stretchr/testify/assert"
 	"net/url"
 	"testing"
@@ -14,7 +15,7 @@ type Data struct {
 }
 
 func TestMarshalDefault(t *testing.T) {
-	data, err := Marshal(&Data{
+	data, err := Marshal()(&Data{
 		Name:    "jax",
 		Age:     10,
 		Height:  1.30,
@@ -32,7 +33,20 @@ type DataJson struct {
 }
 
 func TestMarshalDefaultJson(t *testing.T) {
-	data, err := Marshal(&DataJson{
+	data, err := Marshal()(&DataJson{
+		Name:    "jax",
+		Age:     10,
+		Height:  1.30,
+		IsChild: true,
+	})
+	assert.NoError(t, err)
+	t.Log(string(data))
+}
+
+func TestMarshalDefaultJsonTag(t *testing.T) {
+	en := form.NewEncoder()
+	en.SetTagName("json")
+	data, err := Marshal(en)(&DataJson{
 		Name:    "jax",
 		Age:     10,
 		Height:  1.30,
@@ -43,7 +57,7 @@ func TestMarshalDefaultJson(t *testing.T) {
 }
 
 func TestMarshalDefaultMap(t *testing.T) {
-	data, err := Marshal(map[string]any{
+	data, err := Marshal()(map[string]any{
 		"Name":    "jax",
 		"Age":     10,
 		"Height":  1.30,
