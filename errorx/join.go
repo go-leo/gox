@@ -3,6 +3,9 @@ package errorx
 import "errors"
 
 func Join(err error, errs ...error) error {
+	if err == nil {
+		return errors.Join(errs...)
+	}
 	// standard join error
 	if joinError, ok := err.(interface{ Unwrap() []error }); ok {
 		return errors.Join(append(joinError.Unwrap(), errs...)...)
