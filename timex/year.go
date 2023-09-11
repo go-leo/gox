@@ -3,7 +3,7 @@ package timex
 import "time"
 
 func Year(t time.Time) time.Time {
-	return time.Date(t.Year(), 0, 0, 0, 0, 0, 0, t.Location())
+	return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
 }
 
 func ThisYear(ts ...time.Time) time.Time {
