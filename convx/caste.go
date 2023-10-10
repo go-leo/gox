@@ -6,6 +6,7 @@
 package convx
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,6 +41,11 @@ func ToTimeInDefaultLocationE(i interface{}, location *time.Location) (tim time.
 			return time.Time{}, fmt.Errorf("unable to cast %#v of type %T to Time", i, i)
 		}
 		return time.Unix(s, 0), nil
+	case sql.NullTime:
+		if v.Valid {
+			return v.Time, nil
+		}
+		return time.Time{}, errors.New("time is null")
 	case int:
 		return time.Unix(int64(v), 0), nil
 	case int64:
@@ -1337,6 +1343,35 @@ func ToIntSliceE(i interface{}) ([]int, error) {
 		return a, nil
 	default:
 		return []int{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
+	}
+}
+
+// ToInt64SliceE casts an interface to a []int64 type.
+func ToInt64SliceE(i interface{}) ([]int64, error) {
+	if i == nil {
+		return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int64", i, i)
+	}
+
+	switch v := i.(type) {
+	case []int64:
+		return v, nil
+	}
+
+	kind := reflect.TypeOf(i).Kind()
+	switch kind {
+	case reflect.Slice, reflect.Array:
+		s := reflect.ValueOf(i)
+		a := make([]int64, s.Len())
+		for j := 0; j < s.Len(); j++ {
+			val, err := ToInt64E(s.Index(j).Interface())
+			if err != nil {
+				return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int64", i, i)
+			}
+			a[j] = val
+		}
+		return a, nil
+	default:
+		return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int64", i, i)
 	}
 }
 
