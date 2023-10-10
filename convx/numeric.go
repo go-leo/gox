@@ -188,8 +188,6 @@ func toSignedE[N constraints.Signed](i any) (N, error) {
 			return N(v), nil
 		}
 		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
-	case json.Number:
-		return toSignedE[N](string(s))
 	case time.Weekday:
 		return N(s), nil
 	case time.Month:
@@ -228,6 +226,12 @@ func toSignedE[N constraints.Signed](i any) (N, error) {
 			return N(v), nil
 		}
 		return zero, fmt.Errorf("unable to cast %#v of type %T to int", i, i)
+	case interface{ Int64() (int64, error) }:
+		v, err := s.Int64()
+		return N(v), err
+	case interface{ Float64() (float64, error) }:
+		v, err := s.Float64()
+		return N(v), err
 	case nil:
 		return zero, nil
 	default:
@@ -360,6 +364,12 @@ func toUnsignedE[N constraints.Unsigned](i any) (N, error) {
 			return N(v), nil
 		}
 		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
+	case interface{ Int64() (int64, error) }:
+		v, err := s.Int64()
+		return N(v), err
+	case interface{ Float64() (float64, error) }:
+		v, err := s.Float64()
+		return N(v), err
 	case nil:
 		return zero, nil
 	default:
@@ -432,6 +442,12 @@ func toFloatE[N constraints.Float](i any) (N, error) {
 			return N(v), nil
 		}
 		return zero, fmt.Errorf("unable to cast %#v of type %T to %T", i, i, zero)
+	case interface{ Int64() (int64, error) }:
+		v, err := s.Int64()
+		return N(v), err
+	case interface{ Float64() (float64, error) }:
+		v, err := s.Float64()
+		return N(v), err
 	case nil:
 		return zero, nil
 	default:
