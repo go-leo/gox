@@ -2,8 +2,9 @@ package pagex
 
 import (
 	"errors"
-
-	"github.com/go-leo/gox/databasex/sqlx"
+	"github.com/go-leo/gox/databasex/sqls"
+	"github.com/go-leo/gox/stringx"
+	"time"
 )
 
 type Page struct {
@@ -23,10 +24,14 @@ type Page struct {
 	count bool
 	// countColumn 进行count查询的列名
 	countColumn string
-	// orderBy 排序
+	// orderBy 排序,
 	orderBy string
-	// orderByOnly 只增加排序
-	orderByOnly bool
+	// checkOrderBySqlInjection 做了sql注入检查
+	checkOrderBySqlInjection bool
+	// startTime 开始时间
+	startTime time.Time
+	// endTime 结束时间
+	endTime time.Time
 }
 
 func (p *Page) init() {
@@ -54,25 +59,24 @@ func CountColumn(countColumn string) Option {
 }
 
 // OrderBy 设置排序字段
-func OrderBy(orderBy string) Option {
+func OrderBy(orderBy string, check ...bool) Option {
 	return func(p *Page) {
-		if sqlx.CheckSqlInjection(orderBy, false) {
-			panic("order by [" + orderBy + "] 存在 SQL 注入风险, 如想避免 SQL 注入校验，可以调用 UnsafeOrderBy")
+		p.orderBy = orderBy
+		if len(check) > 0 {
+			p.checkOrderBySqlInjection = check[0]
 		}
-		p.orderBy = orderBy
 	}
 }
 
-// UnsafeOrderBy 不安全的设置排序方法，如果从前端接收参数，请自行做好注入校验。
-func UnsafeOrderBy(orderBy string) Option {
+func StartTime(t time.Time) Option {
 	return func(p *Page) {
-		p.orderBy = orderBy
+		p.startTime = t
 	}
 }
 
-func OrderByOnly(orderByOnly bool) Option {
+func EndTime(t time.Time) Option {
 	return func(p *Page) {
-		p.orderByOnly = orderByOnly
+		p.endTime = t
 	}
 }
 
@@ -84,16 +88,24 @@ func NewPage(pageNum uint64, pageSize uint64, opts ...Option) (*Page, error) {
 		return nil, errors.New("pageSize is zero")
 	}
 	p := &Page{
-		pageNum:     pageNum,
-		pageSize:    pageSize,
-		total:       0,
-		pages:       0,
-		count:       true,
-		countColumn: "",
-		orderBy:     "",
+		pageNum:                  pageNum,
+		pageSize:                 pageSize,
+		offset:                   0,
+		limit:                    0,
+		total:                    0,
+		pages:                    0,
+		count:                    true,
+		countColumn:              "",
+		orderBy:                  "",
+		checkOrderBySqlInjection: false,
+		startTime:                time.Time{},
+		endTime:                  time.Time{},
 	}
 	p.apply(opts...)
 	p.init()
+	if stringx.IsNotBlank(p.orderBy) && p.checkOrderBySqlInjection && sqls.CheckSqlInjection(p.orderBy, false) {
+		return nil, errors.New("order by [" + p.orderBy + "] 存在 SQL 注入风险, 如想避免 SQL 注入校验，选用 UnsafeOrderBy")
+	}
 	// 计算出 offset 和 limit
 	p.offset = (p.pageNum - 1) * p.pageSize
 	p.limit = p.pageSize
@@ -127,6 +139,14 @@ func (p *Page) SetTotal(total uint64) {
 	} else {
 		p.pages = total/p.pageSize + 1
 	}
+}
+
+func (p *Page) StartTime() time.Time {
+	return p.startTime
+}
+
+func (p *Page) EndTime() time.Time {
+	return p.endTime
 }
 
 func (p *Page) Pages() uint64 {
