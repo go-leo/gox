@@ -1,9 +1,16 @@
 package brave
 
+import (
+	"fmt"
+	"log"
+)
+
 func Do(f func(), rs ...func(p any)) {
 	defer func() {
 		if len(rs) <= 0 {
-			return
+			rs = append(rs, func(p any) {
+				log.Printf("panic triggered: %v\n", p)
+			})
 		}
 		r := rs[0]
 		if r == nil {
@@ -23,7 +30,9 @@ func Go(f func(), rs ...func(p any)) {
 func DoE(f func() error, rs ...func(p any) error) (err error) {
 	defer func() {
 		if len(rs) <= 0 {
-			return
+			rs = append(rs, func(p any) error {
+				return fmt.Errorf("panic triggered: %v", p)
+			})
 		}
 		r := rs[0]
 		if r == nil {
@@ -51,7 +60,9 @@ func GoE(f func() error, rs ...func(p any) error) <-chan error {
 func DoRE(f func() (any, error), rs ...func(p any) error) (ret any, err error) {
 	defer func() {
 		if len(rs) <= 0 {
-			return
+			rs = append(rs, func(p any) error {
+				return fmt.Errorf("panic triggered: %v", p)
+			})
 		}
 		r := rs[0]
 		if r == nil {
