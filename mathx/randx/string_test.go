@@ -37,3 +37,20 @@ func TestWordString(t *testing.T) {
 	permString = WordString(16)
 	t.Log(permString)
 }
+
+func TestHexString(t *testing.T) {
+	permString := HexString(10)
+	assert.Len(t, permString, 10)
+	permString = HexString(15)
+	assert.Len(t, permString, 15)
+	permString = HexString(20)
+	assert.Len(t, permString, 20)
+	permString = HexString(21)
+	assert.Len(t, permString, 21)
+	permString = HexString(30)
+	assert.Len(t, permString, 30)
+	permString = HexString(39)
+	assert.Len(t, permString, 39)
+	permString = HexString(16)
+	assert.Len(t, permString, 16)
+}

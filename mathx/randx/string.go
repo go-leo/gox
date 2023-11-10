@@ -2,6 +2,8 @@ package randx
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 )
 
 var kNumericCharacters = []byte{
@@ -9,13 +11,6 @@ var kNumericCharacters = []byte{
 }
 
 var kNumericLen = len(kNumericCharacters)
-
-var kHexCharacters = []byte{
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'a', 'b', 'c', 'd', 'e', 'f',
-}
-
-var kHexLen = len(kHexCharacters)
 
 var kWordCharacters = []byte{
 	'_',
@@ -30,26 +25,16 @@ var kWordLen = len(kWordCharacters)
 
 // NumericString Generate a random number sequence of a given length
 func NumericString(length int) string {
-	if length < 1 {
-		return ""
-	}
-	buffer := bytes.NewBuffer(make([]byte, 0, length))
-	for i := 0; i < length; i++ {
-		buffer.WriteByte(kNumericCharacters[Intn(kNumericLen)])
-	}
-	return buffer.String()
+	b := make([]byte, length)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)[:length]
 }
 
 // HexString Generate a random number sequence of a given length
 func HexString(length int) string {
-	if length < 1 {
-		return ""
-	}
-	buffer := bytes.NewBuffer(make([]byte, 0, length))
-	for i := 0; i < length; i++ {
-		buffer.WriteByte(kHexCharacters[Intn(kHexLen)])
-	}
-	return buffer.String()
+	b := make([]byte, length)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)[:length]
 }
 
 func WordString(length int) string {
