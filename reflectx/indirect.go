@@ -31,6 +31,13 @@ func IndirectValue(v reflect.Value) reflect.Value {
 	return v
 }
 
+func IndirectType(t reflect.Type) reflect.Type {
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	return t
+}
+
 var (
 	errorType       = reflect.TypeOf((*error)(nil)).Elem()
 	fmtStringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
