@@ -11,6 +11,7 @@ import (
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/iox"
+	"github.com/go-leo/gox/netx/httpx"
 	"github.com/go-leo/gox/slicex"
 	"github.com/go-leo/gox/stringx"
 	"google.golang.org/protobuf/proto"
@@ -120,7 +121,7 @@ type PayloadSender interface {
 	CookieSender
 	BodySender
 	Build(ctx context.Context) (*http.Request, error)
-	Send(ctx context.Context, cli *http.Client) (ResponseReceiver, error)
+	Send(ctx context.Context, clis ...*http.Client) (ResponseReceiver, error)
 }
 
 type sender struct {
@@ -464,10 +465,16 @@ func (s *sender) Build(ctx context.Context) (*http.Request, error) {
 	return s.build(ctx)
 }
 
-func (s *sender) Send(ctx context.Context, cli *http.Client) (ResponseReceiver, error) {
+func (s *sender) Send(ctx context.Context, clis ...*http.Client) (ResponseReceiver, error) {
 	req, err := s.Build(ctx)
 	if err != nil {
 		return nil, err
+	}
+	var cli *http.Client
+	if len(clis) > 0 && clis[0] != nil {
+		cli = clis[0]
+	} else {
+		cli = httpx.PooledClient()
 	}
 	resp, err := cli.Do(req)
 	if err != nil {
