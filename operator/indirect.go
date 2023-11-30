@@ -1,17 +1,17 @@
 package operator
 
 func Indirect[P *E, E any](p P) (E, bool) {
-	var e E
 	if p == nil {
+		var e E
 		return e, false
 	}
 	return *p, true
 }
 
-func IndirectOrZero[P *E, E any](p P) (E, bool) {
-	var e E
+func IndirectOrZero[P *E, E any](p P) E {
 	if p == nil {
-		return e, false
+		var e E
+		return e
 	}
-	return *p, true
+	return *p
 }
