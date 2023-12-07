@@ -56,36 +56,6 @@ func ToStringMap(i interface{}) map[string]interface{} {
 	return v
 }
 
-// ToSlice casts an interface to a []interface{} type.
-func ToSlice(i interface{}) []interface{} {
-	v, _ := ToSliceE(i)
-	return v
-}
-
-// ToBoolSlice casts an interface to a []bool type.
-func ToBoolSlice(i interface{}) []bool {
-	v, _ := ToBoolSliceE(i)
-	return v
-}
-
-// ToStringSlice casts an interface to a []string type.
-func ToStringSlice(i interface{}) []string {
-	v, _ := ToStringSliceE(i)
-	return v
-}
-
-// ToIntSlice casts an interface to a []int type.
-func ToIntSlice(i interface{}) []int {
-	v, _ := ToIntSliceE(i)
-	return v
-}
-
-// ToInt64Slice casts an interface to a []int64 type.
-func ToInt64Slice(i interface{}) []int64 {
-	v, _ := ToInt64SliceE(i)
-	return v
-}
-
 // ToDurationSlice casts an interface to a []time.Duration type.
 func ToDurationSlice(i interface{}) []time.Duration {
 	v, _ := ToDurationSliceE(i)
