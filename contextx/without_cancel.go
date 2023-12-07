@@ -10,6 +10,7 @@ import (
 // WithoutCancel returns a copy of parent that is not canceled when parent is canceled.
 // The returned context returns no Deadline or Err, and its Done channel is nil.
 // Calling [Cause] on the returned context returns nil.
+// copy from go1.21 "context"
 func WithoutCancel(parent context.Context) context.Context {
 	if parent == nil {
 		panic("cannot create context from nil parent")
