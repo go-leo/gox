@@ -1,6 +1,8 @@
 package pagex
 
-import "context"
+import (
+	"context"
+)
 
 type key struct{}
 
@@ -15,4 +17,8 @@ func NewContext(ctx context.Context, pageNum uint64, pageSize uint64, opts ...Op
 func FromContext(ctx context.Context) (*Page, bool) {
 	v, ok := ctx.Value(key{}).(*Page)
 	return v, ok
+}
+
+func WithoutPage(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key{}, nil)
 }
