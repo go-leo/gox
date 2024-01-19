@@ -76,8 +76,8 @@ func DoRE[R any](f func() (R, error), rs ...func(p any) error) (ret R, err error
 }
 
 func GoRE[R any](f func() (R, error), rs ...func(p any) error) (<-chan R, <-chan error) {
-	retC := make(chan R)
-	errC := make(chan error)
+	retC := make(chan R, 1)
+	errC := make(chan error, 1)
 	go func() {
 		defer close(errC)
 		defer close(retC)

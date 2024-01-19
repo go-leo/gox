@@ -3,6 +3,8 @@ package brave
 import (
 	"errors"
 	"fmt"
+	"github.com/go-leo/gox/syncx/chanx"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -58,4 +60,30 @@ func TestGoEWithPanic(t *testing.T) {
 		return fmt.Errorf("%v", p)
 	})
 	t.Log(<-errC)
+}
+
+func TestGoRE(t *testing.T) {
+	r1C, e1C := GoRE(func() (int, error) {
+		<-time.After(time.Second)
+		return 10, nil
+	})
+	r2C, e2C := GoRE(func() (int, error) {
+		<-time.After(2 * time.Second)
+		return 20, nil
+	})
+	r3C, e3C := GoRE(func() (int, error) {
+		<-time.After(3 * time.Second)
+		return 30, nil
+	})
+
+	ch := chanx.Combine(e1C, e2C, e3C)
+	err, ok := <-ch
+	if ok {
+		panic(err)
+	}
+
+	assert.Equal(t, 10, <-r1C)
+	assert.Equal(t, 20, <-r2C)
+	assert.Equal(t, 30, <-r3C)
+
 }
