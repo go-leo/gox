@@ -57,7 +57,7 @@ func GoE(f func() error, rs ...func(p any) error) <-chan error {
 	return errC
 }
 
-func DoRE(f func() (any, error), rs ...func(p any) error) (ret any, err error) {
+func DoRE[R any](f func() (R, error), rs ...func(p any) error) (ret R, err error) {
 	defer func() {
 		if len(rs) <= 0 {
 			rs = append(rs, func(p any) error {
@@ -75,13 +75,13 @@ func DoRE(f func() (any, error), rs ...func(p any) error) (ret any, err error) {
 	return f()
 }
 
-func GoRE(f func() (any, error), rs ...func(p any) error) (<-chan any, <-chan error) {
-	retC := make(chan any)
+func GoRE[R any](f func() (R, error), rs ...func(p any) error) (<-chan R, <-chan error) {
+	retC := make(chan R)
 	errC := make(chan error)
 	go func() {
 		defer close(errC)
 		defer close(retC)
-		ret, err := DoRE(f, rs...)
+		ret, err := DoRE[R](f, rs...)
 		if err != nil {
 			errC <- err
 			return
