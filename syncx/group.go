@@ -1,6 +1,6 @@
 package syncx
 
-func WaitUntil(waiter interface{ Wait() }) <-chan struct{} {
+func WaitNotify(waiter interface{ Wait() }) <-chan struct{} {
 	c := make(chan struct{})
 	go func() {
 		defer close(c)
@@ -9,7 +9,7 @@ func WaitUntil(waiter interface{ Wait() }) <-chan struct{} {
 	return c
 }
 
-func WaitUntilE(waiter interface{ Wait() error }) <-chan error {
+func WaitNotifyE(waiter interface{ Wait() error }) <-chan error {
 	c := make(chan error, 1)
 	go func() {
 		defer close(c)
