@@ -120,18 +120,20 @@ type PayloadSender interface {
 	HeaderSender
 	CookieSender
 	BodySender
+	Middleware(middlewares ...Middleware) PayloadSender
 	Build(ctx context.Context) (*http.Request, error)
 	Send(ctx context.Context, clis ...*http.Client) (ResponseReceiver, error)
 }
 
 type sender struct {
-	err     error
-	method  string
-	uri     *url.URL
-	queries url.Values
-	headers http.Header
-	body    io.Reader
-	cookies map[string][]*http.Cookie
+	err         error
+	method      string
+	uri         *url.URL
+	queries     url.Values
+	headers     http.Header
+	body        io.Reader
+	cookies     map[string][]*http.Cookie
+	middlewares []Middleware
 }
 
 func (s *sender) Method(method string) URLSender {
@@ -461,50 +463,12 @@ func (s *sender) MultipartBody(formData ...*FormData) PayloadSender {
 	return s.Body(payload, writer.FormDataContentType())
 }
 
+func (s *sender) Middleware(middlewares ...Middleware) PayloadSender {
+	s.middlewares = append(s.middlewares, middlewares...)
+	return s
+}
+
 func (s *sender) Build(ctx context.Context) (*http.Request, error) {
-	return s.build(ctx)
-}
-
-func (s *sender) Send(ctx context.Context, clis ...*http.Client) (ResponseReceiver, error) {
-	req, err := s.Build(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var cli *http.Client
-	if len(clis) > 0 && clis[0] != nil {
-		cli = clis[0]
-	} else {
-		cli = httpx.PooledClient()
-	}
-	resp, err := cli.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	return Receiver(resp), nil
-}
-
-func (s *sender) query() url.Values {
-	if s.queries == nil {
-		s.queries = make(url.Values)
-	}
-	return s.queries
-}
-
-func (s *sender) header() http.Header {
-	if s.headers == nil {
-		s.headers = make(http.Header)
-	}
-	return s.headers
-}
-
-func (s *sender) cookie() map[string][]*http.Cookie {
-	if s.cookies == nil {
-		s.cookies = make(map[string][]*http.Cookie)
-	}
-	return s.cookies
-}
-
-func (s *sender) build(ctx context.Context) (*http.Request, error) {
 	if s.err != nil {
 		return nil, s.err
 	}
@@ -534,6 +498,54 @@ func (s *sender) build(ctx context.Context) (*http.Request, error) {
 		}
 	}
 	return req, nil
+}
+
+func (s *sender) Send(ctx context.Context, clients ...*http.Client) (ResponseReceiver, error) {
+	var err error
+	var req *http.Request
+	var resp *http.Response
+	var cli *http.Client
+
+	if req, err = s.Build(ctx); err != nil {
+		return nil, err
+	}
+	if len(clients) > 0 && clients[0] != nil {
+		cli = clients[0]
+	} else {
+		cli = httpx.PooledClient()
+	}
+	middleware := chainMiddlewares(s.middlewares...)
+	if middleware == nil {
+		if resp, err = invoke(ctx, req, cli); err != nil {
+			return nil, err
+		}
+		return Receiver(resp), nil
+	}
+	if resp, err = middleware(ctx, req, cli, invoke); err != nil {
+		return nil, err
+	}
+	return Receiver(resp), nil
+}
+
+func (s *sender) query() url.Values {
+	if s.queries == nil {
+		s.queries = make(url.Values)
+	}
+	return s.queries
+}
+
+func (s *sender) header() http.Header {
+	if s.headers == nil {
+		s.headers = make(http.Header)
+	}
+	return s.headers
+}
+
+func (s *sender) cookie() map[string][]*http.Cookie {
+	if s.cookies == nil {
+		s.cookies = make(map[string][]*http.Cookie)
+	}
+	return s.cookies
 }
 
 func Sender() RequestSender {
