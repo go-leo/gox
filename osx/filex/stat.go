@@ -36,6 +36,15 @@ func IsNotExist(filepath string) bool {
 	return os.IsNotExist(err)
 }
 
+// GetSize 获取文件大小
+func GetSize(path string) (int64, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+	return fileInfo.Size(), nil
+}
+
 const (
 	Byte         int64 = 1
 	Kilobyte           = 1024 * Byte

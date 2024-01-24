@@ -27,3 +27,7 @@ func NewEncoder(w io.Writer) JSONEncoder {
 func NewDecoder(r io.Reader) encodingx.Decoder {
 	return json.NewDecoder(r)
 }
+
+func MarshalNoEscape(v any) ([]byte, error) {
+	return json.MarshalNoEscape(v)
+}

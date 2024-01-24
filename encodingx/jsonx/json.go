@@ -3,6 +3,7 @@
 package jsonx
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/go-leo/gox/encodingx"
 	"io"
@@ -26,4 +27,14 @@ func NewEncoder(w io.Writer) JSONEncoder {
 
 func NewDecoder(r io.Reader) encodingx.Decoder {
 	return json.NewDecoder(r)
+}
+
+func MarshalNoEscape(v any) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	encoder := json.NewEncoder(buf)
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(v); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
