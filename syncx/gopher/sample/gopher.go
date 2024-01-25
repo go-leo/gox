@@ -1,8 +1,12 @@
 package sample
 
-type Gopher struct{}
+import "github.com/go-leo/gox/syncx/brave"
+
+type Gopher struct {
+	Recover func(p any)
+}
 
 func (g Gopher) Go(f func()) error {
-	go f()
+	brave.Go(f, g.Recover)
 	return nil
 }
