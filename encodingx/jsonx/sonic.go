@@ -3,6 +3,7 @@
 package jsonx
 
 import (
+	"bytes"
 	"github.com/bytedance/sonic"
 	"github.com/go-leo/gox/encodingx"
 	"io"

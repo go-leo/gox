@@ -3,6 +3,7 @@
 package jsonx
 
 import (
+	"bytes"
 	"github.com/go-leo/gox/encodingx"
 	jsoniter "github.com/json-iterator/go"
 	"io"
