@@ -1,10 +1,16 @@
 package syncx
 
-import "sync"
+import (
+	"sync"
+)
 
 type Slice[E any] struct {
 	mu    sync.RWMutex
 	slice []E
+}
+
+func NewSlice[E any]() *Slice[E] {
+	return &Slice[E]{}
 }
 
 func WrapSlice[E any](slice []E) *Slice[E] {
@@ -26,6 +32,16 @@ func (s *Slice[E]) Append(elems ...E) *Slice[E] {
 	defer s.mu.Unlock()
 	ns := new(Slice[E])
 	ns.slice = append(s.slice, elems...)
+	return ns
+}
+
+func (s *Slice[E]) Prepend(elems ...E) *Slice[E] {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	ns := new(Slice[E])
+	ns.slice = make([]E, len(elems)+len(s.slice))
+	copy(ns.slice, elems)
+	copy(ns.slice[len(elems):], s.slice)
 	return ns
 }
 
