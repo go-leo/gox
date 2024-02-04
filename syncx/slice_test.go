@@ -8,7 +8,7 @@ import (
 
 func TestSlice(t *testing.T) {
 	// 创建一个初始切片
-	s := syncx.NewSlice[int]()
+	s := syncx.NewSlice[[]int, int]()
 
 	// 添加元素并检查长度
 	s = s.Append(1, 2, 3)
@@ -61,7 +61,7 @@ func TestSlice(t *testing.T) {
 }
 
 func ExampleSlice() {
-	s := syncx.NewSlice[int]()
+	s := syncx.NewSlice[[]int, int]()
 	fmt.Println("len:", s.Len())
 	fmt.Println("cap:", s.Cap())
 	s = s.Append(1, 2, 3, 4, 5)

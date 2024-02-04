@@ -4,20 +4,20 @@ import (
 	"sync"
 )
 
-type Slice[E any] struct {
+type Slice[S ~[]E, E any] struct {
 	mu    sync.RWMutex
-	slice []E
+	slice S
 }
 
-func NewSlice[E any]() *Slice[E] {
-	return &Slice[E]{}
+func NewSlice[S ~[]E, E any]() *Slice[S, E] {
+	return &Slice[S, E]{}
 }
 
-func WrapSlice[E any](slice []E) *Slice[E] {
-	return &Slice[E]{slice: slice}
+func WrapSlice[S ~[]E, E any](slice []E) *Slice[S, E] {
+	return &Slice[S, E]{slice: slice}
 }
 
-func (s *Slice[E]) Range(f func(index int, elem E) bool) {
+func (s *Slice[S, E]) Range(f func(index int, elem E) bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for index, elem := range s.slice {
@@ -27,28 +27,28 @@ func (s *Slice[E]) Range(f func(index int, elem E) bool) {
 	}
 }
 
-func (s *Slice[E]) Append(elems ...E) *Slice[E] {
+func (s *Slice[S, E]) Append(elems ...E) *Slice[S, E] {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	ns := new(Slice[E])
+	ns := new(Slice[S, E])
 	ns.slice = append(s.slice, elems...)
 	return ns
 }
 
-func (s *Slice[E]) Prepend(elems ...E) *Slice[E] {
+func (s *Slice[S, E]) Prepend(elems ...E) *Slice[S, E] {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	ns := new(Slice[E])
+	ns := new(Slice[S, E])
 	ns.slice = make([]E, len(elems)+len(s.slice))
 	copy(ns.slice, elems)
 	copy(ns.slice[len(elems):], s.slice)
 	return ns
 }
 
-func (s *Slice[E]) Slice(low int, high int, max ...int) *Slice[E] {
+func (s *Slice[S, E]) Slice(low int, high int, max ...int) *Slice[S, E] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	ns := new(Slice[E])
+	ns := new(Slice[S, E])
 	if len(max) == 0 {
 		ns.slice = s.slice[low:high]
 		return ns
@@ -60,25 +60,25 @@ func (s *Slice[E]) Slice(low int, high int, max ...int) *Slice[E] {
 	panic("invalid argument")
 }
 
-func (s *Slice[E]) Index(x int) E {
+func (s *Slice[S, E]) Index(x int) E {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.slice[x]
 }
 
-func (s *Slice[E]) Len() int {
+func (s *Slice[S, E]) Len() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return len(s.slice)
 }
 
-func (s *Slice[E]) Cap() int {
+func (s *Slice[S, E]) Cap() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return cap(s.slice)
 }
 
-func (s *Slice[E]) Unwrap() []E {
+func (s *Slice[S, E]) Unwrap() []E {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.slice
