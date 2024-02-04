@@ -8,7 +8,7 @@ import (
 
 func TestSlice(t *testing.T) {
 	// 创建一个初始切片
-	s := syncx.NewSlice[[]int, int]()
+	s := syncx.NewSlice[[]int]()
 
 	// 添加元素并检查长度
 	s = s.Append(1, 2, 3)
@@ -52,11 +52,33 @@ func TestSlice(t *testing.T) {
 
 	// 在切片末尾插入元素并检查结果切片
 	ns = s.Append(4)
-	if ns.Len() != 4 {
+	if ns.Len() != 5 {
 		t.Errorf("Expected length 4, got %d", ns.Len())
 	}
-	if ns.Index(3) != 4 {
+	if ns.Index(4) != 4 {
 		t.Errorf("Expected element 4, got %v", ns.Unwrap())
+	}
+}
+
+func TestWrapSlice(t *testing.T) {
+	// 创建一个初始切片
+	slice := []int{1, 2, 3}
+
+	// 使用WrapSlice函数创建包装切片
+	s := syncx.WrapSlice[[]int](slice)
+
+	// 检查切片长度和元素值
+	if s.Len() != 3 {
+		t.Errorf("Expected length 3, got %d", s.Len())
+	}
+	if s.Index(0) != 1 || s.Index(1) != 2 || s.Index(2) != 3 {
+		t.Errorf("Expected elements [1, 2, 3], got %v", s.Unwrap())
+	}
+
+	// 修改原始切片并检查包装切片是否受影响
+	slice[0] = 0
+	if s.Index(0) != 0 {
+		t.Errorf("Expected element 0, got %v", s.Unwrap())
 	}
 }
 

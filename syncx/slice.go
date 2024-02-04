@@ -1,6 +1,7 @@
 package syncx
 
 import (
+	"golang.org/x/exp/slices"
 	"sync"
 )
 
@@ -30,19 +31,18 @@ func (s *Slice[S, E]) Range(f func(index int, elem E) bool) {
 func (s *Slice[S, E]) Append(elems ...E) *Slice[S, E] {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	ns := new(Slice[S, E])
-	ns.slice = append(s.slice, elems...)
-	return ns
+	s.slice = append(s.slice, elems...)
+	return s
 }
 
 func (s *Slice[S, E]) Prepend(elems ...E) *Slice[S, E] {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	ns := new(Slice[S, E])
-	ns.slice = make([]E, len(elems)+len(s.slice))
-	copy(ns.slice, elems)
-	copy(ns.slice[len(elems):], s.slice)
-	return ns
+	slice := make([]E, len(elems)+len(s.slice))
+	copy(slice, elems)
+	copy(slice[len(elems):], s.slice)
+	s.slice = slice
+	return s
 }
 
 func (s *Slice[S, E]) Slice(low int, high int, max ...int) *Slice[S, E] {
@@ -81,5 +81,5 @@ func (s *Slice[S, E]) Cap() int {
 func (s *Slice[S, E]) Unwrap() []E {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.slice
+	return slices.Clone(s.slice)
 }
