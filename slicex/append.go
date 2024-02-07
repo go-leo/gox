@@ -12,3 +12,7 @@ func AppendIfNotContains[S ~[]E, E comparable](s S, v E) S {
 	}
 	return append(s, v)
 }
+
+func Prepend[S ~[]E, E any](s S, elems ...E) S {
+	return slices.Insert(s, 0, elems...)
+}
