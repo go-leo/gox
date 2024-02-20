@@ -8,11 +8,11 @@ import (
 // MapInterface is the interface map implements.
 // copy from sync/map_reference_test.go
 type MapInterface interface {
-	Load(any) (any, bool)
+	Load(key any) (value any, loaded bool)
 	Store(key, value any)
 	LoadOrStore(key, value any) (actual any, loaded bool)
 	LoadAndDelete(key any) (value any, loaded bool)
-	Delete(any)
+	Delete(key any)
 	Swap(key, value any) (previous any, loaded bool)
 	CompareAndSwap(key, old, new any) (swapped bool)
 	CompareAndDelete(key, old any) (deleted bool)
@@ -25,9 +25,9 @@ type RWMutexMap struct {
 	dirty map[any]any
 }
 
-func (m *RWMutexMap) Load(key any) (value any, ok bool) {
+func (m *RWMutexMap) Load(key any) (value any, loaded bool) {
 	m.mu.RLock()
-	value, ok = m.dirty[key]
+	value, loaded = m.dirty[key]
 	m.mu.RUnlock()
 	return
 }
