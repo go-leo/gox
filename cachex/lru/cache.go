@@ -6,13 +6,13 @@ import (
 
 // Cache LRU缓存
 type Cache struct {
-	Cache *lru.Cache
+	LRUCache *lru.Cache
 }
 
 func (store *Cache) Get(key string) (interface{}, bool) {
-	return store.Cache.Get(key)
+	return store.LRUCache.Get(key)
 }
 
 func (store *Cache) Set(key string, val interface{}) {
-	store.Cache.Add(key, val)
+	store.LRUCache.Add(key, val)
 }

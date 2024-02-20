@@ -6,14 +6,14 @@ import (
 )
 
 type Cache struct {
-	Cache      *bigcache.BigCache
+	BigCache   *bigcache.BigCache
 	Marshal    func(key string, obj interface{}) ([]byte, error)
 	Unmarshal  func(key string, data []byte) (interface{}, error)
 	ErrHandler func(err error)
 }
 
 func (store *Cache) Get(key string) (interface{}, bool) {
-	data, err := store.Cache.Get(key)
+	data, err := store.BigCache.Get(key)
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
 		return nil, false
 	}
@@ -36,16 +36,16 @@ func (store *Cache) Set(key string, val interface{}) {
 	var err error
 	switch value := val.(type) {
 	case []byte:
-		err = store.Cache.Set(key, value)
+		err = store.BigCache.Set(key, value)
 	case string:
-		err = store.Cache.Set(key, []byte(value))
+		err = store.BigCache.Set(key, []byte(value))
 	default:
 		if store.Unmarshal == nil {
 			err = errors.New("unmarshal function is nil")
 		} else {
 			var data []byte
 			if data, err = store.Marshal(key, val); err == nil {
-				err = store.Cache.Set(key, data)
+				err = store.BigCache.Set(key, data)
 			}
 		}
 	}

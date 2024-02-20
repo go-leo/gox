@@ -9,7 +9,7 @@ import (
 )
 
 type Cache struct {
-	Cache      redis.UniversalClient
+	Client     redis.UniversalClient
 	Expiration func(key string) time.Duration
 	Marshal    func(key string, obj interface{}) ([]byte, error)
 	Unmarshal  func(key string, data []byte) (interface{}, error)
@@ -22,7 +22,7 @@ func (store *Cache) Get(key string) (interface{}, bool) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	data, err := store.Cache.Get(ctx, key).Result()
+	data, err := store.Client.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil, false
 	}
@@ -53,16 +53,16 @@ func (store *Cache) Set(key string, val interface{}) {
 	var err error
 	switch value := val.(type) {
 	case []byte:
-		_, err = store.Cache.Set(ctx, key, value, exp).Result()
+		_, err = store.Client.Set(ctx, key, value, exp).Result()
 	case string:
-		_, err = store.Cache.Set(ctx, key, value, exp).Result()
+		_, err = store.Client.Set(ctx, key, value, exp).Result()
 	default:
 		if store.Unmarshal == nil {
 			err = errors.New("unmarshal function is nil")
 		} else {
 			var data []byte
 			if data, err = store.Marshal(key, val); err == nil {
-				_, err = store.Cache.Set(context.Background(), key, data, exp).Result()
+				_, err = store.Client.Set(context.Background(), key, data, exp).Result()
 			}
 		}
 	}
