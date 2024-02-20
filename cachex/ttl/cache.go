@@ -1,6 +1,7 @@
 package ttl
 
 import (
+	"context"
 	"github.com/go-leo/cache"
 	"time"
 )
@@ -12,11 +13,11 @@ type Cache struct {
 	TTL func(key string) time.Duration
 }
 
-func (store *Cache) Get(key string) (interface{}, bool) {
+func (store *Cache) Get(ctx context.Context, key string) (interface{}, bool) {
 	return store.Cache.Get(key)
 }
 
-func (store *Cache) Set(key string, val interface{}) {
+func (store *Cache) Set(ctx context.Context, key string, val interface{}) {
 	ttl := cache.DefaultExpiration
 	if store.TTL != nil {
 		ttl = store.TTL(key)

@@ -1,6 +1,7 @@
 package big
 
 import (
+	"context"
 	"errors"
 	"github.com/allegro/bigcache"
 )
@@ -12,7 +13,7 @@ type Cache struct {
 	ErrHandler func(err error)
 }
 
-func (store *Cache) Get(key string) (interface{}, bool) {
+func (store *Cache) Get(ctx context.Context, key string) (interface{}, bool) {
 	data, err := store.BigCache.Get(key)
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
 		return nil, false
@@ -32,7 +33,7 @@ func (store *Cache) Get(key string) (interface{}, bool) {
 	return nil, false
 }
 
-func (store *Cache) Set(key string, val interface{}) {
+func (store *Cache) Set(ctx context.Context, key string, val interface{}) {
 	var err error
 	switch value := val.(type) {
 	case []byte:
