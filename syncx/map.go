@@ -6,6 +6,7 @@ import (
 )
 
 // MapInterface is the interface map implements.
+// copy from sync/map_reference_test.go
 type MapInterface interface {
 	Load(any) (any, bool)
 	Store(key, value any)
