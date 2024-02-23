@@ -3,69 +3,60 @@ package redis
 import (
 	"context"
 	"errors"
+	"github.com/go-leo/gox/cachex"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
 
+var _ cachex.Store = (*Cache)(nil)
+
+var (
+	ErrUnmarshalNil = errors.New("unmarshal function is nil")
+
+	ErrMarshalNil = errors.New("marshal function is nil")
+)
+
 type Cache struct {
-	Client     redis.UniversalClient
-	Expiration func(key string) time.Duration
-	Marshal    func(key string, obj interface{}) ([]byte, error)
-	Unmarshal  func(key string, data []byte) (interface{}, error)
-	ErrHandler func(err error)
+	Client redis.UniversalClient
+	// 过期时间
+	TTL       func(key string) time.Duration
+	Marshal   func(key string, obj interface{}) ([]byte, error)
+	Unmarshal func(key string, data []byte) (interface{}, error)
 }
 
-func (store *Cache) Get(ctx context.Context, key string) (interface{}, bool) {
+func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 	data, err := store.Client.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
-		return nil, false
+		return nil, cachex.Nil
 	}
 	if err != nil {
-		store.handleErr(err)
-		return nil, false
+		return nil, err
 	}
 	if store.Unmarshal == nil {
-		return data, true
+		return nil, ErrUnmarshalNil
 	}
 	obj, err := store.Unmarshal(key, []byte(data))
-	if err == nil {
-		return obj, true
+	if err != nil {
+		return nil, err
 	}
-	store.handleErr(err)
-	return nil, false
+	return obj, nil
 }
 
-func (store *Cache) Set(ctx context.Context, key string, val interface{}) {
-	var exp time.Duration
-	if store.Expiration != nil {
-		exp = store.Expiration(key)
+func (store *Cache) Set(ctx context.Context, key string, val any) error {
+	if store.Marshal == nil {
+		return ErrMarshalNil
 	}
-	var err error
-	switch value := val.(type) {
-	case []byte:
-		_, err = store.Client.Set(ctx, key, value, exp).Result()
-	case string:
-		_, err = store.Client.Set(ctx, key, value, exp).Result()
-	default:
-		if store.Unmarshal == nil {
-			err = errors.New("unmarshal function is nil")
-		} else {
-			var data []byte
-			if data, err = store.Marshal(key, val); err == nil {
-				_, err = store.Client.Set(context.Background(), key, data, exp).Result()
-			}
-		}
+	data, err := store.Marshal(key, val)
+	if err != nil {
+		return err
 	}
-	if err == nil {
-		return
+	ttl := time.Duration(0)
+	if store.TTL != nil {
+		ttl = store.TTL(key)
 	}
-	store.handleErr(err)
+	return store.Client.Set(ctx, key, data, ttl).Err()
 }
 
-func (store *Cache) handleErr(err error) {
-	if store.ErrHandler != nil {
-		store.ErrHandler(err)
-		return
-	}
-	panic(err)
+func (store *Cache) Delete(ctx context.Context, key string) error {
+	return store.Client.Del(ctx, key).Err()
 }

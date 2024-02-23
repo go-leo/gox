@@ -4,62 +4,52 @@ import (
 	"context"
 	"errors"
 	"github.com/allegro/bigcache"
+	"github.com/go-leo/gox/cachex"
+)
+
+var _ cachex.Store = (*Cache)(nil)
+
+var (
+	ErrUnmarshalNil = errors.New("unmarshal function is nil")
+
+	ErrMarshalNil = errors.New("marshal function is nil")
 )
 
 type Cache struct {
-	BigCache   *bigcache.BigCache
-	Marshal    func(key string, obj interface{}) ([]byte, error)
-	Unmarshal  func(key string, data []byte) (interface{}, error)
-	ErrHandler func(err error)
+	BigCache  *bigcache.BigCache
+	Marshal   func(key string, obj interface{}) ([]byte, error)
+	Unmarshal func(key string, data []byte) (interface{}, error)
 }
 
-func (store *Cache) Get(ctx context.Context, key string) (interface{}, bool) {
+func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 	data, err := store.BigCache.Get(key)
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
-		return nil, false
+		return nil, cachex.Nil
 	}
 	if err != nil {
-		store.handleErr(err)
-		return nil, false
+		return nil, err
 	}
 	if store.Unmarshal == nil {
-		return data, true
+		return nil, ErrUnmarshalNil
 	}
 	obj, err := store.Unmarshal(key, data)
-	if err == nil {
-		return obj, true
+	if err != nil {
+		return nil, err
 	}
-	store.handleErr(err)
-	return nil, false
+	return obj, nil
 }
 
-func (store *Cache) Set(ctx context.Context, key string, val interface{}) {
-	var err error
-	switch value := val.(type) {
-	case []byte:
-		err = store.BigCache.Set(key, value)
-	case string:
-		err = store.BigCache.Set(key, []byte(value))
-	default:
-		if store.Unmarshal == nil {
-			err = errors.New("unmarshal function is nil")
-		} else {
-			var data []byte
-			if data, err = store.Marshal(key, val); err == nil {
-				err = store.BigCache.Set(key, data)
-			}
-		}
+func (store *Cache) Set(ctx context.Context, key string, val any) error {
+	if store.Marshal == nil {
+		return ErrMarshalNil
 	}
-	if err == nil {
-		return
+	data, err := store.Marshal(key, val)
+	if err != nil {
+		return err
 	}
-	store.handleErr(err)
+	return store.BigCache.Set(key, data)
 }
 
-func (store *Cache) handleErr(err error) {
-	if store.ErrHandler != nil {
-		store.ErrHandler(err)
-		return
-	}
-	panic(err)
+func (store *Cache) Delete(ctx context.Context, key string) error {
+	return store.BigCache.Delete(key)
 }
