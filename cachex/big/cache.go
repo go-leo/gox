@@ -24,7 +24,7 @@ type Cache struct {
 func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 	data, err := store.BigCache.Get(key)
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
-		return nil, cachex.Nil
+		return nil, cachex.ErrNil
 	}
 	if err != nil {
 		return nil, err

@@ -2,13 +2,8 @@ package lru
 
 import (
 	"context"
-	"errors"
 	"github.com/go-leo/gox/cachex"
 	lru "github.com/hashicorp/golang-lru"
-)
-
-var (
-	ErrEvicted = errors.New("eviction occurred")
 )
 
 var _ cachex.Store = (*Cache)(nil)
@@ -21,15 +16,13 @@ type Cache struct {
 func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 	val, ok := store.LRUCache.Get(key)
 	if !ok {
-		return nil, cachex.Nil
+		return nil, cachex.ErrNil
 	}
 	return val, nil
 }
 
 func (store *Cache) Set(ctx context.Context, key string, val any) error {
-	if store.LRUCache.Add(key, val) {
-		return ErrEvicted
-	}
+	_ = store.LRUCache.Add(key, val)
 	return nil
 }
 

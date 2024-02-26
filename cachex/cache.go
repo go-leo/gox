@@ -5,8 +5,8 @@ import (
 	"errors"
 )
 
-// Nil reply returned by cache when key does not exist.
-var Nil = errors.New("cachex: nil")
+// ErrNil reply returned by cache when key does not exist.
+var ErrNil = errors.New("cache: nil")
 
 // Store 定义接口
 type Store interface {

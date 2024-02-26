@@ -16,7 +16,7 @@ type Cache struct {
 func (store *Cache) Get(ctx context.Context, key string) (interface{}, error) {
 	val, ok := store.Map.Load(key)
 	if !ok {
-		return nil, cachex.Nil
+		return nil, cachex.ErrNil
 	}
 	return val, nil
 }
