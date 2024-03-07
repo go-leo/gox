@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	_ "embed"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
@@ -11,9 +12,14 @@ import (
 	"github.com/go-leo/gox/cryptox/hmacx"
 	"golang.org/x/crypto/pkcs12"
 	"net/url"
-	"os"
 	"testing"
 )
+
+//go:embed data/test.p12
+var privateKeyFromFile []byte
+
+//go:embed data/test.cer
+var publicKeyFromFile []byte
 
 func TestRsa(t *testing.T) {
 	// 原始数据
@@ -24,13 +30,13 @@ func TestRsa(t *testing.T) {
 	fmt.Println("生成的签名:", originalSign)
 
 	// 获取私钥
-	privateKey, err := LoadPrivateKeyFromFile("/Users/stuff/Workspace/github/go-leo/gox/cryptox/rsax/data/test.p12", "123456")
+	privateKey, err := LoadPrivateKeyFromFile(privateKeyFromFile, "123456")
 	if err != nil {
 		panic(err)
 	}
 
 	// 获取公钥
-	publicKey, err := LoadPublicKeyFromFile("/Users/stuff/Workspace/github/go-leo/gox/cryptox/rsax/data/test.cer")
+	publicKey, err := LoadPublicKeyFromFile(publicKeyFromFile)
 	if err != nil {
 		panic(err)
 	}
@@ -114,12 +120,8 @@ func DecryptByPublicKey(encrypted []byte, privateKey *rsa.PrivateKey) ([]byte, e
 }
 
 // LoadPrivateKeyFromFile 加载PEM格式的私钥文件
-func LoadPrivateKeyFromFile(filePath string, password string) (*rsa.PrivateKey, error) {
-	bytes, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	block, err := pkcs12.ToPEM(bytes, password)
+func LoadPrivateKeyFromFile(pfxData []byte, password string) (*rsa.PrivateKey, error) {
+	block, err := pkcs12.ToPEM(pfxData, password)
 	if err != nil {
 		return nil, err
 	}
@@ -134,16 +136,11 @@ func LoadPrivateKeyFromFile(filePath string, password string) (*rsa.PrivateKey, 
 }
 
 // LoadPublicKeyFromFile 加载PEM格式的公钥证书文件
-func LoadPublicKeyFromFile(filePath string) (*rsa.PublicKey, error) {
-	bytes, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	block, _ := pem.Decode(bytes)
+func LoadPublicKeyFromFile(data []byte) (*rsa.PublicKey, error) {
+	block, _ := pem.Decode(data)
 	if block == nil || block.Type != "CERTIFICATE" {
 		return nil, errors.New("failed to decode PEM block containing the certificate")
 	}
-
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		return nil, err
