@@ -2,34 +2,48 @@ package cachex
 
 import (
 	"context"
+	"crypto/rand"
+	"math"
+	"math/big"
+	insecurerand "math/rand"
 )
 
-var _ Store = (*ShardedCache)(nil)
+var _ Store = (*shardedCache)(nil)
 
-type ShardedCache struct {
+type shardedCache struct {
 	stores []Store
-	shards uint32
 	seed   uint32
 }
 
-func (store *ShardedCache) Get(ctx context.Context, key string) (any, error) {
+func ShardedCache(stores []Store) Store {
+	rnd, err := rand.Int(rand.Reader, big.NewInt(0).SetUint64(uint64(math.MaxUint32)))
+	var seed uint32
+	if err != nil {
+		seed = insecurerand.Uint32()
+	} else {
+		seed = uint32(rnd.Uint64())
+	}
+	return &shardedCache{stores: stores, seed: seed}
+}
+
+func (store *shardedCache) Get(ctx context.Context, key string) (any, error) {
 	return store.bucket(key).Get(ctx, key)
 }
 
-func (store *ShardedCache) Set(ctx context.Context, key string, val any) error {
+func (store *shardedCache) Set(ctx context.Context, key string, val any) error {
 	return store.bucket(key).Set(ctx, key, val)
 }
 
-func (store *ShardedCache) Delete(ctx context.Context, key string) error {
+func (store *shardedCache) Delete(ctx context.Context, key string) error {
 	return store.bucket(key).Delete(ctx, key)
 }
 
-func (store *ShardedCache) bucket(k string) Store {
-	return store.stores[store.djb33(k)%store.shards]
+func (store *shardedCache) bucket(k string) Store {
+	return store.stores[int(store.djb33(k))%len(store.stores)]
 }
 
 // djb2 with better shuffling. 5x faster than FNV with the hash.Hash overhead.
-func (store *ShardedCache) djb33(k string) uint32 {
+func (store *shardedCache) djb33(k string) uint32 {
 	var (
 		l = uint32(len(k))
 		d = 5381 + store.seed + l

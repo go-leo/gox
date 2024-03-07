@@ -1,4 +1,4 @@
 package cachex
 
-//type MultiLevelCache struct {
-//}
+type MultiLevelCache struct {
+}
