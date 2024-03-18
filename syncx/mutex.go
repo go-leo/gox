@@ -2,6 +2,7 @@ package syncx
 
 import (
 	"runtime"
+	"sync"
 	"sync/atomic"
 )
 
@@ -28,4 +29,25 @@ func (m *SpinMutex) Lock() {
 
 func (m *SpinMutex) Unlock() {
 	atomic.StoreInt32(&m.state, 0)
+}
+
+type ChanMutex struct {
+	state chan struct{}
+	once  sync.Once
+}
+
+func NewChanMutex() *ChanMutex {
+	ch := make(chan struct{}, 1)
+	ch <- struct{}{}
+	return &ChanMutex{
+		state: ch,
+	}
+}
+
+func (m *ChanMutex) Lock() {
+	<-m.state
+}
+
+func (m *ChanMutex) Unlock() {
+	m.state <- struct{}{}
 }
