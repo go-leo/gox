@@ -1,23 +1,12 @@
 package syncx
 
 import (
+	"github.com/go-leo/gox/containerx"
 	"sync"
 	"sync/atomic"
 )
 
-// MapInterface is the interface map implements.
-// copy from sync/map_reference_test.go
-type MapInterface interface {
-	Load(key any) (value any, loaded bool)
-	Store(key, value any)
-	LoadOrStore(key, value any) (actual any, loaded bool)
-	LoadAndDelete(key any) (value any, loaded bool)
-	Delete(key any)
-	Swap(key, value any) (previous any, loaded bool)
-	CompareAndSwap(key, old, new any) (swapped bool)
-	CompareAndDelete(key, old any) (deleted bool)
-	Range(func(key, value any) (shouldContinue bool))
-}
+var _ containerx.MapInterface = (*RWMutexMap)(nil)
 
 // RWMutexMap is an implementation of mapInterface using a sync.RWMutex.
 type RWMutexMap struct {
@@ -133,6 +122,8 @@ func (m *RWMutexMap) Range(f func(key, value any) (shouldContinue bool)) {
 		}
 	}
 }
+
+var _ containerx.MapInterface = (*DeepCopyMap)(nil)
 
 // DeepCopyMap is an implementation of mapInterface using a Mutex and
 // atomic.Value.  It makes deep copies of the map on every write to avoid
@@ -260,70 +251,51 @@ func (m *DeepCopyMap) dirty() map[any]any {
 	return dirty
 }
 
-type GenericMap[K comparable, V any] struct {
-	MapInterface MapInterface
+var _ containerx.MapInterface = (*ShardedMap)(nil)
+
+type ShardedMap struct {
+	Segments []containerx.MapInterface
+	Hash     func(key any) int
 }
 
-func (m *GenericMap[K, V]) Load(key K) (V, bool) {
-	var v V
-	load, ok := m.MapInterface.Load(key)
-	if !ok {
-		return v, false
+func (m *ShardedMap) Load(key any) (value any, loaded bool) {
+	return m.bucket(key).Load(key)
+}
+
+func (m *ShardedMap) Store(key, value any) {
+	m.bucket(key).Store(key, value)
+}
+
+func (m *ShardedMap) LoadOrStore(key, value any) (actual any, loaded bool) {
+	return m.bucket(key).LoadOrStore(key, value)
+}
+
+func (m *ShardedMap) LoadAndDelete(key any) (value any, loaded bool) {
+	return m.bucket(key).LoadAndDelete(key)
+}
+
+func (m *ShardedMap) Delete(key any) {
+	m.bucket(key).Delete(key)
+}
+
+func (m *ShardedMap) Swap(key, value any) (previous any, loaded bool) {
+	return m.bucket(key).Swap(key, value)
+}
+
+func (m *ShardedMap) CompareAndSwap(key, old, new any) (swapped bool) {
+	return m.bucket(key).CompareAndSwap(key, old, new)
+}
+
+func (m *ShardedMap) CompareAndDelete(key, old any) (deleted bool) {
+	return m.bucket(key).CompareAndDelete(key, old)
+}
+
+func (m *ShardedMap) Range(f func(key any, value any) (shouldContinue bool)) {
+	for _, segment := range m.Segments {
+		segment.Range(f)
 	}
-	v = load.(V)
-	return v, true
 }
 
-func (m *GenericMap[K, V]) Store(key K, value V) {
-	m.MapInterface.Swap(key, value)
-}
-
-func (m *GenericMap[K, V]) LoadOrStore(key K, value V) (V, bool) {
-	var v V
-	actual, loaded := m.MapInterface.LoadOrStore(key, value)
-	if !loaded {
-		return v, false
-	}
-	v = actual.(V)
-	return v, true
-}
-
-func (m *GenericMap[K, V]) LoadAndDelete(key K) (V, bool) {
-	var v V
-	value, loaded := m.MapInterface.LoadAndDelete(key)
-	if !loaded {
-		return v, false
-	}
-	v = value.(V)
-	return v, true
-}
-
-func (m *GenericMap[K, V]) Delete(key K) {
-	m.MapInterface.Delete(key)
-}
-
-func (m *GenericMap[K, V]) Swap(key K, value V) (V, bool) {
-	var v V
-	previous, loaded := m.MapInterface.Swap(key, value)
-	if !loaded {
-		return v, false
-	}
-	v = previous.(V)
-	return v, true
-}
-
-func (m *GenericMap[K, V]) CompareAndSwap(key K, old, new V) bool {
-	return m.MapInterface.CompareAndSwap(key, old, new)
-}
-
-func (m *GenericMap[K, V]) CompareAndDelete(key K, old V) bool {
-	return m.MapInterface.CompareAndDelete(key, old)
-}
-
-func (m *GenericMap[K, V]) Range(f func(key K, value V) bool) {
-	m.MapInterface.Range(func(key, value any) bool {
-		k := key.(K)
-		v := value.(V)
-		return f(k, v)
-	})
+func (m *ShardedMap) bucket(k any) containerx.MapInterface {
+	return m.Segments[m.Hash(k)%len(m.Segments)]
 }
