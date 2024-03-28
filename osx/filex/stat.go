@@ -20,11 +20,7 @@ var IsDirectory = IsDir
 
 // IsExist returns a boolean indicating whether a file or directory exist.
 func IsExist(filepath string) bool {
-	_, err := os.Stat(filepath)
-	if err == nil {
-		return true
-	}
-	return os.IsExist(err)
+	return !IsNotExist(filepath)
 }
 
 // IsNotExist returns a boolean indicating whether a file or directory not exist.
