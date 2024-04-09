@@ -16,3 +16,8 @@ func AppendIfNotContains[S ~[]E, E comparable](s S, v E) S {
 func Prepend[S ~[]E, E any](s S, elems ...E) S {
 	return slices.Insert(s, 0, elems...)
 }
+
+// AppendUnique appends an element to a slice, if the element is not already in the slice
+func AppendUnique[S ~[]E, E comparable](s S, v E) S {
+	return AppendIfNotContains(s, v)
+}
