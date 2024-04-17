@@ -45,6 +45,8 @@ func DoE(f func() error, rs ...func(p any) error) (err error) {
 	return f()
 }
 
+// GoE If the execution fails, error is sent to errC, and errC is closed,
+// if the execution succeeds, errC is closed directly.
 func GoE(f func() error, rs ...func(p any) error) <-chan error {
 	errC := make(chan error, 1)
 	go func() {
@@ -75,6 +77,8 @@ func DoRE[R any](f func() (R, error), rs ...func(p any) error) (ret R, err error
 	return f()
 }
 
+// GoRE If execution fails, retC is closed directly, error is sent to errC and errC is closed,
+// if execution succeeds, errC is closed and the result is sent to retC, and retC is closed.
 func GoRE[R any](f func() (R, error), rs ...func(p any) error) (<-chan R, <-chan error) {
 	retC := make(chan R, 1)
 	errC := make(chan error, 1)
