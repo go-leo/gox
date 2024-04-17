@@ -46,7 +46,7 @@ func DoE(f func() error, rs ...func(p any) error) (err error) {
 }
 
 func GoE(f func() error, rs ...func(p any) error) <-chan error {
-	errC := make(chan error)
+	errC := make(chan error, 1)
 	go func() {
 		defer close(errC)
 		err := DoE(f, rs...)
