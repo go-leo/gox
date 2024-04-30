@@ -52,3 +52,11 @@ func ParseFloatSlice[Float constraints.Float](s []string, bitSize int) ([]Float,
 	}
 	return r, nil
 }
+
+func ParseBytesSlice(s []string) [][]byte {
+	r := make([][]byte, 0, len(s))
+	for _, str := range s {
+		r = append(r, []byte(str))
+	}
+	return r
+}
