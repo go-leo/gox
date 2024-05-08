@@ -13,3 +13,9 @@ func Indirect[P *E, E any](p P) (E, bool) {
 	}
 	return *p, true
 }
+
+// IndirectOrZero returns the value pointed to by p or zero value of E.
+func IndirectOrZero[P *E, E any](p P) E {
+	e, _ := Indirect(p)
+	return e
+}
