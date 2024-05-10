@@ -9,16 +9,28 @@ import (
 func TestNumericPermString(t *testing.T) {
 	permString := NumericString(10)
 	assert.Len(t, permString, 10)
+	t.Log(permString)
+
 	permString = NumericString(15)
 	assert.Len(t, permString, 15)
+	t.Log(permString)
+
 	permString = NumericString(20)
 	assert.Len(t, permString, 20)
+	t.Log(permString)
+
 	permString = NumericString(21)
 	assert.Len(t, permString, 21)
+	t.Log(permString)
+
 	permString = NumericString(30)
 	assert.Len(t, permString, 30)
+	t.Log(permString)
+
 	permString = NumericString(39)
 	assert.Len(t, permString, 39)
+	t.Log(permString)
+
 }
 
 func TestWordString(t *testing.T) {

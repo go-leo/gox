@@ -25,9 +25,14 @@ var kWordLen = len(kWordCharacters)
 
 // NumericString Generate a random number sequence of a given length
 func NumericString(length int) string {
-	b := make([]byte, length)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)[:length]
+	if length < 1 {
+		return ""
+	}
+	buffer := bytes.NewBuffer(make([]byte, 0, length))
+	for i := 0; i < length; i++ {
+		buffer.WriteByte(kNumericCharacters[Intn(kNumericLen)])
+	}
+	return buffer.String()
 }
 
 // HexString Generate a random number sequence of a given length
