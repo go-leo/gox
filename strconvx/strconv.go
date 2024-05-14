@@ -5,6 +5,10 @@ import (
 	"strconv"
 )
 
+func ParseBool(s string, base int, bitSize int) (bool, error) {
+	return strconv.ParseBool(s)
+}
+
 func ParseInt[Signed constraints.Signed](s string, base int, bitSize int) (Signed, error) {
 	i, err := strconv.ParseInt(s, base, bitSize)
 	return Signed(i), err
