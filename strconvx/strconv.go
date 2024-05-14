@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func ParseBool(s string, base int, bitSize int) (bool, error) {
+func ParseBool(s string) (bool, error) {
 	return strconv.ParseBool(s)
 }
 
