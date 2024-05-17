@@ -22,6 +22,9 @@ func FormatFloat[Float constraints.Float](f Float, fmt byte, prec, bitSize int) 
 }
 
 func FormatBoolSlice(s []bool) []string {
+	if s == nil {
+		return nil
+	}
 	r := make([]string, 0, len(s))
 	for _, b := range s {
 		r = append(r, FormatBool(b))
@@ -30,6 +33,9 @@ func FormatBoolSlice(s []bool) []string {
 }
 
 func FormatUintSlice[Unsigned constraints.Unsigned](s []Unsigned, base int) []string {
+	if s == nil {
+		return nil
+	}
 	r := make([]string, 0, len(s))
 	for _, i := range s {
 		r = append(r, FormatUint(i, base))
@@ -38,6 +44,9 @@ func FormatUintSlice[Unsigned constraints.Unsigned](s []Unsigned, base int) []st
 }
 
 func FormatIntSlice[Signed constraints.Signed](s []Signed, base int) []string {
+	if s == nil {
+		return nil
+	}
 	r := make([]string, 0, len(s))
 	for _, i := range s {
 		r = append(r, FormatInt(i, base))
@@ -46,6 +55,9 @@ func FormatIntSlice[Signed constraints.Signed](s []Signed, base int) []string {
 }
 
 func FormatFloatSlice[Float constraints.Float](s []Float, fmt byte, prec, bitSize int) []string {
+	if s == nil {
+		return nil
+	}
 	r := make([]string, 0, len(s))
 	for _, f := range s {
 		r = append(r, FormatFloat(float64(f), fmt, prec, bitSize))

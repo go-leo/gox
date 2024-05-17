@@ -25,6 +25,9 @@ func ParseFloat[Float constraints.Float](s string, bitSize int) (Float, error) {
 }
 
 func ParseBoolSlice(s []string) ([]bool, error) {
+	if s == nil {
+		return nil, nil
+	}
 	r := make([]bool, 0, len(s))
 	for _, str := range s {
 		b, err := strconv.ParseBool(str)
@@ -37,6 +40,9 @@ func ParseBoolSlice(s []string) ([]bool, error) {
 }
 
 func ParseIntSlice[Signed constraints.Signed](s []string, base int, bitSize int) ([]Signed, error) {
+	if s == nil {
+		return nil, nil
+	}
 	r := make([]Signed, 0, len(s))
 	for _, str := range s {
 		i, err := ParseInt[Signed](str, base, bitSize)
@@ -49,6 +55,9 @@ func ParseIntSlice[Signed constraints.Signed](s []string, base int, bitSize int)
 }
 
 func ParseUintSlice[Unsigned constraints.Unsigned](s []string, base int, bitSize int) ([]Unsigned, error) {
+	if s == nil {
+		return nil, nil
+	}
 	r := make([]Unsigned, 0, len(s))
 	for _, str := range s {
 		i, err := ParseUint[Unsigned](str, base, bitSize)
@@ -61,6 +70,9 @@ func ParseUintSlice[Unsigned constraints.Unsigned](s []string, base int, bitSize
 }
 
 func ParseFloatSlice[Float constraints.Float](s []string, bitSize int) ([]Float, error) {
+	if s == nil {
+		return nil, nil
+	}
 	r := make([]Float, 0, len(s))
 	for _, str := range s {
 		f, err := ParseFloat[Float](str, bitSize)
@@ -73,6 +85,9 @@ func ParseFloatSlice[Float constraints.Float](s []string, bitSize int) ([]Float,
 }
 
 func ParseBytesSlice(s []string) [][]byte {
+	if s == nil {
+		return nil
+	}
 	r := make([][]byte, 0, len(s))
 	for _, str := range s {
 		r = append(r, []byte(str))

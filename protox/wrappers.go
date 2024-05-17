@@ -3,6 +3,9 @@ package protox
 import "google.golang.org/protobuf/types/known/wrapperspb"
 
 func WrapBoolSlice(s []bool) []*wrapperspb.BoolValue {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.BoolValue, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.Bool(v))
@@ -11,6 +14,9 @@ func WrapBoolSlice(s []bool) []*wrapperspb.BoolValue {
 }
 
 func UnwrapBoolSlice(s []*wrapperspb.BoolValue) []bool {
+	if s == nil {
+		return nil
+	}
 	r := make([]bool, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -19,6 +25,9 @@ func UnwrapBoolSlice(s []*wrapperspb.BoolValue) []bool {
 }
 
 func WrapInt32Slice(s []int32) []*wrapperspb.Int32Value {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.Int32Value, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.Int32(v))
@@ -27,6 +36,9 @@ func WrapInt32Slice(s []int32) []*wrapperspb.Int32Value {
 }
 
 func UnwrapInt32Slice(s []*wrapperspb.Int32Value) []int32 {
+	if s == nil {
+		return nil
+	}
 	r := make([]int32, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -35,6 +47,9 @@ func UnwrapInt32Slice(s []*wrapperspb.Int32Value) []int32 {
 }
 
 func WrapInt64Slice(s []int64) []*wrapperspb.Int64Value {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.Int64Value, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.Int64(v))
@@ -43,6 +58,9 @@ func WrapInt64Slice(s []int64) []*wrapperspb.Int64Value {
 }
 
 func UnwrapInt64Slice(s []*wrapperspb.Int64Value) []int64 {
+	if s == nil {
+		return nil
+	}
 	r := make([]int64, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -51,6 +69,9 @@ func UnwrapInt64Slice(s []*wrapperspb.Int64Value) []int64 {
 }
 
 func WrapFloat32Slice(s []float32) []*wrapperspb.FloatValue {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.FloatValue, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.Float(v))
@@ -59,6 +80,9 @@ func WrapFloat32Slice(s []float32) []*wrapperspb.FloatValue {
 }
 
 func UnwrapFloat32Slice(s []*wrapperspb.FloatValue) []float32 {
+	if s == nil {
+		return nil
+	}
 	r := make([]float32, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -67,6 +91,9 @@ func UnwrapFloat32Slice(s []*wrapperspb.FloatValue) []float32 {
 }
 
 func WrapFloat64Slice(s []float64) []*wrapperspb.DoubleValue {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.DoubleValue, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.Double(v))
@@ -75,6 +102,9 @@ func WrapFloat64Slice(s []float64) []*wrapperspb.DoubleValue {
 }
 
 func UnwrapFloat64Slice(s []*wrapperspb.DoubleValue) []float64 {
+	if s == nil {
+		return nil
+	}
 	r := make([]float64, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -83,6 +113,9 @@ func UnwrapFloat64Slice(s []*wrapperspb.DoubleValue) []float64 {
 }
 
 func WrapUint32Slice(s []uint32) []*wrapperspb.UInt32Value {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.UInt32Value, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.UInt32(v))
@@ -91,6 +124,9 @@ func WrapUint32Slice(s []uint32) []*wrapperspb.UInt32Value {
 }
 
 func UnwrapUint32Slice(s []*wrapperspb.UInt32Value) []uint32 {
+	if s == nil {
+		return nil
+	}
 	r := make([]uint32, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -99,6 +135,9 @@ func UnwrapUint32Slice(s []*wrapperspb.UInt32Value) []uint32 {
 }
 
 func WrapUint64Slice(s []uint64) []*wrapperspb.UInt64Value {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.UInt64Value, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.UInt64(v))
@@ -107,6 +146,9 @@ func WrapUint64Slice(s []uint64) []*wrapperspb.UInt64Value {
 }
 
 func UnwrapUint64Slice(s []*wrapperspb.UInt64Value) []uint64 {
+	if s == nil {
+		return nil
+	}
 	r := make([]uint64, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -115,6 +157,9 @@ func UnwrapUint64Slice(s []*wrapperspb.UInt64Value) []uint64 {
 }
 
 func WrapStringSlice(s []string) []*wrapperspb.StringValue {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.StringValue, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.String(v))
@@ -123,6 +168,9 @@ func WrapStringSlice(s []string) []*wrapperspb.StringValue {
 }
 
 func UnwrapStringSlice(s []*wrapperspb.StringValue) []string {
+	if s == nil {
+		return nil
+	}
 	r := make([]string, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
@@ -131,6 +179,9 @@ func UnwrapStringSlice(s []*wrapperspb.StringValue) []string {
 }
 
 func WrapBytesSlice(s [][]byte) []*wrapperspb.BytesValue {
+	if s == nil {
+		return nil
+	}
 	r := make([]*wrapperspb.BytesValue, 0, len(s))
 	for _, v := range s {
 		r = append(r, wrapperspb.Bytes(v))
@@ -139,6 +190,9 @@ func WrapBytesSlice(s [][]byte) []*wrapperspb.BytesValue {
 }
 
 func UnwrapBytesSlice(s []*wrapperspb.BytesValue) [][]byte {
+	if s == nil {
+		return nil
+	}
 	r := make([][]byte, 0, len(s))
 	for _, v := range s {
 		r = append(r, v.GetValue())
