@@ -10,6 +10,10 @@ import (
 
 func GetFloat[Float constraints.Float](queries url.Values, key string) func() (Float, error) {
 	return func() (Float, error) {
+		if _, ok := queries[key]; !ok {
+			var v Float
+			return v, nil
+		}
 		return strconvx.ParseFloat[Float](queries.Get(key), 64)
 	}
 }
@@ -23,6 +27,10 @@ func GetFloatPtr[Float constraints.Float](queries url.Values, key string) func()
 
 func GetFloatSlice[Float constraints.Float](queries url.Values, key string) func() ([]Float, error) {
 	return func() ([]Float, error) {
+		if _, ok := queries[key]; !ok {
+			var v []Float
+			return v, nil
+		}
 		return strconvx.ParseFloatSlice[Float](queries[key], 64)
 	}
 }

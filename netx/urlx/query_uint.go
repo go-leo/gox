@@ -10,6 +10,10 @@ import (
 
 func GetUint[Unsigned constraints.Unsigned](queries url.Values, key string) func() (Unsigned, error) {
 	return func() (Unsigned, error) {
+		if _, ok := queries[key]; !ok {
+			var v Unsigned
+			return v, nil
+		}
 		return strconvx.ParseUint[Unsigned](queries.Get(key), 10, 64)
 	}
 }
@@ -23,6 +27,10 @@ func GetUintPtr[Unsigned constraints.Unsigned](queries url.Values, key string) f
 
 func GetUintSlice[Unsigned constraints.Unsigned](queries url.Values, key string) func() ([]Unsigned, error) {
 	return func() ([]Unsigned, error) {
+		if _, ok := queries[key]; !ok {
+			var v []Unsigned
+			return v, nil
+		}
 		return strconvx.ParseUintSlice[Unsigned](queries[key], 10, 64)
 	}
 }

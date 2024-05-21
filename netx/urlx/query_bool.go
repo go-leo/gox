@@ -9,6 +9,9 @@ import (
 
 func GetBool(queries url.Values, key string) func() (bool, error) {
 	return func() (bool, error) {
+		if _, ok := queries[key]; !ok {
+			return false, nil
+		}
 		return strconvx.ParseBool(queries.Get(key))
 	}
 }
@@ -22,6 +25,9 @@ func GetBoolPtr(queries url.Values, key string) func() (*bool, error) {
 
 func GetBoolSlice(queries url.Values, key string) func() ([]bool, error) {
 	return func() ([]bool, error) {
+		if _, ok := queries[key]; !ok {
+			return nil, nil
+		}
 		return strconvx.ParseBoolSlice(queries[key])
 	}
 }

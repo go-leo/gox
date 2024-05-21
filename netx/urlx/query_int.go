@@ -10,6 +10,10 @@ import (
 
 func GetInt[Signed constraints.Signed](queries url.Values, key string) func() (Signed, error) {
 	return func() (Signed, error) {
+		if _, ok := queries[key]; !ok {
+			var v Signed
+			return v, nil
+		}
 		return strconvx.ParseInt[Signed](queries.Get(key), 10, 64)
 	}
 }
@@ -23,6 +27,10 @@ func GetIntPtr[Signed constraints.Signed](queries url.Values, key string) func()
 
 func GetIntSlice[Signed constraints.Signed](queries url.Values, key string) func() ([]Signed, error) {
 	return func() ([]Signed, error) {
+		if _, ok := queries[key]; !ok {
+			var v []Signed
+			return v, nil
+		}
 		return strconvx.ParseIntSlice[Signed](queries[key], 10, 64)
 	}
 }
