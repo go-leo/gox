@@ -3,7 +3,6 @@ package urlx
 import (
 	"github.com/go-leo/gox/protox"
 	"github.com/go-leo/gox/strconvx"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	"net/url"
 )
@@ -16,8 +15,8 @@ func GetBool(queries url.Values, key string) func() (bool, error) {
 
 func GetBoolPtr(queries url.Values, key string) func() (*bool, error) {
 	return func() (*bool, error) {
-		v, err := strconvx.ParseBool(queries.Get(key))
-		return proto.Bool(v), err
+		v, err := GetBool(queries, key)()
+		return &v, err
 	}
 }
 
