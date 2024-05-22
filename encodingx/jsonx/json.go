@@ -1,4 +1,4 @@
-//go:build !jsoniter && !go_json && !jsoniter_fastest && !sonic
+//go:build !jsoniter && !go_json && !jsoniter_fastest && !sonic && !sonic_fastest
 
 package jsonx
 
@@ -21,7 +21,7 @@ func MarshalIndent(v any, prefix, indent string) ([]byte, error) {
 	return json.MarshalIndent(v, prefix, indent)
 }
 
-func NewEncoder(w io.Writer) JSONEncoder {
+func NewEncoder(w io.Writer) encodingx.JSONEncoder {
 	return json.NewEncoder(w)
 }
 

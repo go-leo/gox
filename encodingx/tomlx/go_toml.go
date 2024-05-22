@@ -1,5 +1,4 @@
-//go:build !toml
-// +build !toml
+//go:build go_toml
 
 package tomlx
 

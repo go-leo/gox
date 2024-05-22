@@ -23,7 +23,7 @@ func MarshalIndent(v any, prefix, indent string) ([]byte, error) {
 	return json.MarshalIndent(v, prefix, indent)
 }
 
-func NewEncoder(w io.Writer) JSONEncoder {
+func NewEncoder(w io.Writer) encodingx.JSONEncoder {
 	return json.NewEncoder(w)
 }
 

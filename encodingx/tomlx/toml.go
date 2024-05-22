@@ -1,15 +1,12 @@
-//go:build toml
-// +build toml
+//go:build !go_toml
 
 package tomlx
 
 import (
 	"bytes"
-	"io"
-
 	"github.com/BurntSushi/toml"
-
 	"github.com/go-leo/gox/encodingx"
+	"io"
 )
 
 func Marshal(v any) ([]byte, error) {
