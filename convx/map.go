@@ -1,162 +1,45 @@
-// Copyright © 2014 Steve Francia <spf@spf13.com>.
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file.
-
 package convx
 
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"reflect"
-	"strconv"
-	"time"
 )
 
-// ToBoolE casts an interface to a bool type.
-func ToBoolE(i interface{}) (bool, error) {
-	i = indirect(i)
-
-	switch b := i.(type) {
-	case bool:
-		return b, nil
-	case nil:
-		return false, nil
-	case int:
-		return b != 0, nil
-	case int64:
-		return b != 0, nil
-	case int32:
-		return b != 0, nil
-	case int16:
-		return b != 0, nil
-	case int8:
-		return b != 0, nil
-	case uint:
-		return b != 0, nil
-	case uint64:
-		return b != 0, nil
-	case uint32:
-		return b != 0, nil
-	case uint16:
-		return b != 0, nil
-	case uint8:
-		return b != 0, nil
-	case float64:
-		return b != 0, nil
-	case float32:
-		return b != 0, nil
-	case time.Duration:
-		return b != 0, nil
-	case string:
-		return strconv.ParseBool(i.(string))
-	case json.Number:
-		v, err := ToInt64E(b)
-		if err == nil {
-			return v != 0, nil
-		}
-		return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
-	default:
-		return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
-	}
+// ToStringMapString casts an interface to a map[string]string type.
+func ToStringMapString(i interface{}) map[string]string {
+	v, _ := ToStringMapStringE(i)
+	return v
 }
 
-// From html/template/content.go
-// Copyright 2011 The Go Authors. All rights reserved.
-// indirect returns the value, after dereferencing as many times
-// as necessary to reach the base type (or nil).
-func indirect(a interface{}) interface{} {
-	if a == nil {
-		return nil
-	}
-	if t := reflect.TypeOf(a); t.Kind() != reflect.Ptr {
-		// Avoid creating a reflect.Value if it's not a pointer.
-		return a
-	}
-	v := reflect.ValueOf(a)
-	for v.Kind() == reflect.Ptr && !v.IsNil() {
-		v = v.Elem()
-	}
-	return v.Interface()
+// ToStringMapStringSlice casts an interface to a map[string][]string type.
+func ToStringMapStringSlice(i interface{}) map[string][]string {
+	v, _ := ToStringMapStringSliceE(i)
+	return v
 }
 
-// From html/template/content.go
-// Copyright 2011 The Go Authors. All rights reserved.
-// indirectToStringerOrError returns the value, after dereferencing as many times
-// as necessary to reach the base type (or nil) or an implementation of fmt.Stringer
-// or error,
-func indirectToStringerOrError(a interface{}) interface{} {
-	if a == nil {
-		return nil
-	}
-
-	var errorType = reflect.TypeOf((*error)(nil)).Elem()
-	var fmtStringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
-
-	v := reflect.ValueOf(a)
-	for !v.Type().Implements(fmtStringerType) && !v.Type().Implements(errorType) && v.Kind() == reflect.Ptr && !v.IsNil() {
-		v = v.Elem()
-	}
-	return v.Interface()
+// ToStringMapBool casts an interface to a map[string]bool type.
+func ToStringMapBool(i interface{}) map[string]bool {
+	v, _ := ToStringMapBoolE(i)
+	return v
 }
 
-// ToStringE casts an interface to a string type.
-func ToStringE(i interface{}) (string, error) {
-	i = indirectToStringerOrError(i)
+// ToStringMapInt casts an interface to a map[string]int type.
+func ToStringMapInt(i interface{}) map[string]int {
+	v, _ := ToStringMapIntE(i)
+	return v
+}
 
-	switch s := i.(type) {
-	case string:
-		return s, nil
-	case bool:
-		return strconv.FormatBool(s), nil
-	case float64:
-		return strconv.FormatFloat(s, 'f', -1, 64), nil
-	case float32:
-		return strconv.FormatFloat(float64(s), 'f', -1, 32), nil
-	case int:
-		return strconv.Itoa(s), nil
-	case int64:
-		return strconv.FormatInt(s, 10), nil
-	case int32:
-		return strconv.Itoa(int(s)), nil
-	case int16:
-		return strconv.FormatInt(int64(s), 10), nil
-	case int8:
-		return strconv.FormatInt(int64(s), 10), nil
-	case uint:
-		return strconv.FormatUint(uint64(s), 10), nil
-	case uint64:
-		return strconv.FormatUint(uint64(s), 10), nil
-	case uint32:
-		return strconv.FormatUint(uint64(s), 10), nil
-	case uint16:
-		return strconv.FormatUint(uint64(s), 10), nil
-	case uint8:
-		return strconv.FormatUint(uint64(s), 10), nil
-	case json.Number:
-		return s.String(), nil
-	case []byte:
-		return string(s), nil
-	case template.HTML:
-		return string(s), nil
-	case template.URL:
-		return string(s), nil
-	case template.JS:
-		return string(s), nil
-	case template.CSS:
-		return string(s), nil
-	case template.HTMLAttr:
-		return string(s), nil
-	case nil:
-		return "", nil
-	case fmt.Stringer:
-		return s.String(), nil
-	case error:
-		return s.Error(), nil
-	default:
-		return "", fmt.Errorf("unable to cast %#v of type %T to string", i, i)
-	}
+// ToStringMapInt64 casts an interface to a map[string]int64 type.
+func ToStringMapInt64(i interface{}) map[string]int64 {
+	v, _ := ToStringMapInt64E(i)
+	return v
+}
+
+// ToStringMap casts an interface to a map[string]interface{} type.
+func ToStringMap(i interface{}) map[string]interface{} {
+	v, _ := ToStringMapE(i)
+	return v
 }
 
 // ToStringMapStringE casts an interface to a map[string]string type.
