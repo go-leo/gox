@@ -12,3 +12,14 @@ func MessageSlice[S []E, E proto.Message](s S) []proto.Message {
 	}
 	return r
 }
+
+func ProtoSlice[S []E, E proto.Message](s []proto.Message) S {
+	if s == nil {
+		return nil
+	}
+	r := make(S, 0, len(s))
+	for _, e := range s {
+		r = append(r, e.(E))
+	}
+	return r
+}
