@@ -19,7 +19,11 @@ func ProtoSlice[S []E, E proto.Message](s []proto.Message) S {
 	}
 	r := make(S, 0, len(s))
 	for _, e := range s {
-		r = append(r, e.(E))
+		p, ok := e.(E)
+		if !ok {
+			continue
+		}
+		r = append(r, p)
 	}
 	return r
 }

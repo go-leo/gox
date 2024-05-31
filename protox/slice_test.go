@@ -18,6 +18,7 @@ func TestProtoSlice(t *testing.T) {
 	protos := ProtoSlice[[]*wrapperspb.BoolValue]([]proto.Message{
 		wrapperspb.Bool(true),
 		wrapperspb.Bool(false),
+		wrapperspb.String("true"),
 	})
 	t.Log(protos)
 }
