@@ -14,7 +14,5 @@ func Constant(delta time.Duration) BackoffFunc {
 
 // Zero it waits for zero time between calls.
 func Zero() BackoffFunc {
-	return func(_ context.Context, _ uint) time.Duration {
-		return 0
-	}
+	return Constant(0)
 }
