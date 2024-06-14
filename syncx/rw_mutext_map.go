@@ -3,7 +3,6 @@ package syncx
 import (
 	"github.com/go-leo/gox/containerx"
 	"sync"
-	"sync/atomic"
 )
 
 var _ containerx.MapInterface = (*RWMutexMap)(nil)
