@@ -11,3 +11,10 @@ func Constant(delta time.Duration) BackoffFunc {
 		return delta
 	}
 }
+
+// Zero it waits for zero time between calls.
+func Zero() BackoffFunc {
+	return func(_ context.Context, _ uint) time.Duration {
+		return 0
+	}
+}
