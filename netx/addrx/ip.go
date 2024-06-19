@@ -27,32 +27,38 @@ func ExtractIP(addr net.Addr) net.IP {
 
 // GlobalUnicastIP get a global unicast IP address
 func GlobalUnicastIP() (net.IP, error) {
-	ips := IPs()
-	for _, ip := range ips {
-		if ip.IsUnspecified() {
-			continue
-		}
-		if ip.IsLoopback() {
-			continue
-		}
-		if ip.IsLinkLocalUnicast() {
-			continue
-		}
-
-		if ip.IsInterfaceLocalMulticast() {
-			continue
-		}
-		if ip.IsLinkLocalMulticast() {
-			continue
-		}
-		if ip.IsMulticast() {
-			continue
-		}
-		if ip.IsGlobalUnicast() {
+	for _, ip := range IPs() {
+		if IsGlobalUnicastIP(ip) {
 			return ip, nil
 		}
 	}
 	return nil, fmt.Errorf("no found global unicast IP")
+}
+
+// IsGlobalUnicastIP check whether the IP is a global unicast IP
+func IsGlobalUnicastIP(ip net.IP) bool {
+	if ip.IsUnspecified() {
+		return false
+	}
+	if ip.IsLoopback() {
+		return false
+	}
+	if ip.IsMulticast() {
+		return false
+	}
+	if ip.IsLinkLocalMulticast() {
+		return false
+	}
+	if ip.IsInterfaceLocalMulticast() {
+		return false
+	}
+	if ip.IsLinkLocalUnicast() {
+		return false
+	}
+	if !ip.IsGlobalUnicast() {
+		return false
+	}
+	return true
 }
 
 // GlobalUnicastIPString get a global unicast IP address string
