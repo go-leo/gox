@@ -3,6 +3,8 @@ package errorx
 import (
 	"errors"
 	"reflect"
+
+	"github.com/go-leo/gox/reflectx"
 )
 
 // Equals 判断两个错误是否相等
@@ -20,8 +22,21 @@ func equals(err error, target error) bool {
 	if errors.Is(err, target) {
 		return true
 	}
-	if reflect.TypeOf(err) != reflect.TypeOf(target) {
+
+	errVal := reflectx.IndirectValue(reflect.ValueOf(err))
+	errType := errVal.Type()
+	targetVal := reflectx.IndirectValue(reflect.ValueOf(target))
+	targetType := targetVal.Type()
+	if errType != targetType {
 		return false
 	}
-	return err.Error() == err.Error()
+	if errType.Comparable() && targetType.Comparable() && errVal.Equal(targetVal) {
+		return true
+	}
+
+	if reflect.DeepEqual(errVal.Interface(), targetVal.Interface()) {
+		return true
+	}
+
+	return false
 }
