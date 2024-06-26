@@ -2,8 +2,10 @@ package pagex
 
 import (
 	"errors"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"sync"
 	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Page struct {
@@ -29,6 +31,8 @@ type Page struct {
 	startTime time.Time
 	// endTime 结束时间
 	endTime time.Time
+	// totalOnce 限制只能设置total一次
+	totalOnce sync.Once
 }
 
 func (p *Page) init() *Page {
@@ -69,8 +73,10 @@ func (p *Page) Total() uint64 {
 
 // SetTotal 设置总行数, 并计算总页数
 func (p *Page) SetTotal(total uint64) {
-	p.total = total
-	p.pages = (total + p.pageSize - 1) / p.pageSize
+	p.totalOnce.Do(func ()  {
+		p.total = total
+		p.pages = (total + p.pageSize - 1) / p.pageSize
+	})
 }
 
 // Pages 获取总页数
