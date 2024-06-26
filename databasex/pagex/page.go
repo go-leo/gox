@@ -70,11 +70,7 @@ func (p *Page) Total() uint64 {
 // SetTotal 设置总行数, 并计算总页数
 func (p *Page) SetTotal(total uint64) {
 	p.total = total
-	if total%p.pageSize == 0 {
-		p.pages = total / p.pageSize
-	} else {
-		p.pages = total/p.pageSize + 1
-	}
+	p.pages = (total + p.pageSize - 1) / p.pageSize
 }
 
 // Pages 获取总页数
