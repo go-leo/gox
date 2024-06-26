@@ -2,8 +2,7 @@ package pagex
 
 import (
 	"errors"
-	"github.com/go-leo/gox/databasex/sqls"
-	"github.com/go-leo/gox/stringx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 )
 
@@ -26,21 +25,101 @@ type Page struct {
 	countColumn string
 	// orderBy 排序,
 	orderBy string
-	// checkOrderBySqlInjection 做了sql注入检查
-	checkOrderBySqlInjection bool
 	// startTime 开始时间
 	startTime time.Time
 	// endTime 结束时间
 	endTime time.Time
 }
 
-func (p *Page) init() {
-
+func (p *Page) init() *Page {
+	return p
 }
 
-func (p *Page) apply(opts ...Option) {
+func (p *Page) apply(opts ...Option) *Page {
 	for _, opt := range opts {
 		opt(p)
+	}
+	return p
+}
+
+// PageNum 获取页码
+func (p *Page) PageNum() uint64 {
+	return p.pageNum
+}
+
+// PageSize 获取页面大小
+func (p *Page) PageSize() uint64 {
+	return p.pageSize
+}
+
+// Offset 获取跳过的行数
+func (p *Page) Offset() uint64 {
+	return p.offset
+}
+
+// Limit 获取限制行数
+func (p *Page) Limit() uint64 {
+	return p.limit
+}
+
+// Total 获取总行数
+func (p *Page) Total() uint64 {
+	return p.total
+}
+
+// SetTotal 设置总行数, 并计算总页数
+func (p *Page) SetTotal(total uint64) {
+	p.total = total
+	if total%p.pageSize == 0 {
+		p.pages = total / p.pageSize
+	} else {
+		p.pages = total/p.pageSize + 1
+	}
+}
+
+// Pages 获取总页数
+func (p *Page) Pages() uint64 {
+	return p.pages
+}
+
+// StartTime 获取开始时间
+func (p *Page) StartTime() time.Time {
+	return p.startTime
+}
+
+// EndTime 获取结束时间
+func (p *Page) EndTime() time.Time {
+	return p.endTime
+}
+
+// Count 获取是否包含count查询
+func (p *Page) Count() bool {
+	return p.count
+}
+
+// CountColumn 获取进行count查询的列名
+func (p *Page) CountColumn() string {
+	return p.countColumn
+}
+
+// OrderBy 获取排序字段
+func (p *Page) OrderBy() string {
+	return p.orderBy
+}
+
+func (p *Page) AsProto() *PageProto {
+	return &PageProto{
+		PageNum:     p.pageNum,
+		PageSize:    p.pageSize,
+		Offset:      p.offset,
+		Limit:       p.limit,
+		Total:       p.total,
+		Pages:       p.pages,
+		Count:       p.count,
+		CountColumn: p.countColumn,
+		OrderBy:     p.orderBy,
+		StartTime:   timestamppb.New(p.startTime),
+		EndTime:     timestamppb.New(p.endTime),
 	}
 }
 
@@ -59,12 +138,9 @@ func CountColumn(countColumn string) Option {
 }
 
 // OrderBy 设置排序字段
-func OrderBy(orderBy string, check ...bool) Option {
+func OrderBy(orderBy string) Option {
 	return func(p *Page) {
 		p.orderBy = orderBy
-		if len(check) > 0 {
-			p.checkOrderBySqlInjection = check[0]
-		}
 	}
 }
 
@@ -82,85 +158,37 @@ func EndTime(t time.Time) Option {
 
 func NewPage(pageNum uint64, pageSize uint64, opts ...Option) (*Page, error) {
 	if pageNum == 0 {
-		return nil, errors.New("pageNum is zero")
+		return nil, errors.New("pagex: pageNum is zero")
 	}
 	if pageSize == 0 {
-		return nil, errors.New("pageSize is zero")
-	}
-	p := &Page{
-		pageNum:                  pageNum,
-		pageSize:                 pageSize,
-		offset:                   0,
-		limit:                    0,
-		total:                    0,
-		pages:                    0,
-		count:                    true,
-		countColumn:              "",
-		orderBy:                  "",
-		checkOrderBySqlInjection: false,
-		startTime:                time.Time{},
-		endTime:                  time.Time{},
-	}
-	p.apply(opts...)
-	p.init()
-	if stringx.IsNotBlank(p.orderBy) && p.checkOrderBySqlInjection && sqls.CheckSqlInjection(p.orderBy, false) {
-		return nil, errors.New("order by [" + p.orderBy + "] 存在 SQL 注入风险, 如想避免 SQL 注入校验，选用 UnsafeOrderBy")
+		return nil, errors.New("pagex: pageSize is zero")
 	}
 	// 计算出 offset 和 limit
-	p.offset = (p.pageNum - 1) * p.pageSize
-	p.limit = p.pageSize
+	offset := (pageNum - 1) * pageSize
+	limit := pageSize
+	page := &Page{
+		pageNum:  pageNum,
+		pageSize: pageSize,
+		offset:   offset,
+		limit:    limit,
+		count:    true,
+	}
+	p := page.apply(opts...).init()
 	return p, nil
 }
 
-func (p *Page) PageNum() uint64 {
-	return p.pageNum
-}
-
-func (p *Page) PageSize() uint64 {
-	return p.pageSize
-}
-
-func (p *Page) Offset() uint64 {
-	return p.offset
-}
-
-func (p *Page) Limit() uint64 {
-	return p.limit
-}
-
-func (p *Page) Total() uint64 {
-	return p.total
-}
-
-func (p *Page) SetTotal(total uint64) {
-	p.total = total
-	if total%p.pageSize == 0 {
-		p.pages = total / p.pageSize
-	} else {
-		p.pages = total/p.pageSize + 1
+func FromProto(p *PageProto) *Page {
+	return &Page{
+		pageNum:     p.PageNum,
+		pageSize:    p.PageSize,
+		offset:      p.Offset,
+		limit:       p.Limit,
+		total:       p.Total,
+		pages:       p.Pages,
+		count:       p.Count,
+		countColumn: p.CountColumn,
+		orderBy:     p.OrderBy,
+		startTime:   p.StartTime.AsTime(),
+		endTime:     p.EndTime.AsTime(),
 	}
-}
-
-func (p *Page) StartTime() time.Time {
-	return p.startTime
-}
-
-func (p *Page) EndTime() time.Time {
-	return p.endTime
-}
-
-func (p *Page) Pages() uint64 {
-	return p.pages
-}
-
-func (p *Page) Count() bool {
-	return p.count
-}
-
-func (p *Page) CountColumn() string {
-	return p.countColumn
-}
-
-func (p *Page) OrderBy() string {
-	return p.orderBy
 }
