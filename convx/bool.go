@@ -3,6 +3,7 @@ package convx
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -58,5 +59,40 @@ func ToBoolE(i interface{}) (bool, error) {
 		return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
 	default:
 		return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
+	}
+}
+
+// ToBoolSlice casts an interface to a []bool type.
+func ToBoolSlice(i interface{}) []bool {
+	v, _ := ToBoolSliceE(i)
+	return v
+}
+
+// ToBoolSliceE casts an interface to a []bool type.
+func ToBoolSliceE(i interface{}) ([]bool, error) {
+	if i == nil {
+		return []bool{}, fmt.Errorf("unable to cast %#v of type %T to []bool", i, i)
+	}
+
+	switch v := i.(type) {
+	case []bool:
+		return v, nil
+	}
+
+	kind := reflect.TypeOf(i).Kind()
+	switch kind {
+	case reflect.Slice, reflect.Array:
+		s := reflect.ValueOf(i)
+		a := make([]bool, s.Len())
+		for j := 0; j < s.Len(); j++ {
+			val, err := ToBoolE(s.Index(j).Interface())
+			if err != nil {
+				return []bool{}, fmt.Errorf("unable to cast %#v of type %T to []bool", i, i)
+			}
+			a[j] = val
+		}
+		return a, nil
+	default:
+		return []bool{}, fmt.Errorf("unable to cast %#v of type %T to []bool", i, i)
 	}
 }
