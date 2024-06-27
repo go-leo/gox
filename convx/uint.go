@@ -1,8 +1,13 @@
 package convx
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
+	"golang.org/x/exp/constraints"
 	"reflect"
+	"strconv"
+	"time"
 )
 
 // ToUint converts an interface to a uint type.
@@ -162,5 +167,149 @@ func ToUint32SliceE(i interface{}) ([]uint32, error) {
 		return a, nil
 	default:
 		return []uint32{}, fmt.Errorf("unable to cast %#v of type %T to []int32", i, i)
+	}
+}
+
+// ToUnsigned converts an interface to a unsigned integer type.
+func ToUnsigned[N constraints.Unsigned](i any) N {
+	v, _ := ToUnsignedE[N](i)
+	return v
+}
+
+// ToUnsignedE converts an interface to a unsigned integer type.
+func ToUnsignedE[N constraints.Unsigned](i any) (N, error) {
+	var zero N
+	i = indirect(i)
+	switch s := i.(type) {
+	case int:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case int64:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case int32:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case int16:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case int8:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case uint:
+		return N(s), nil
+	case uint64:
+		return N(s), nil
+	case uint32:
+		return N(s), nil
+	case uint16:
+		return N(s), nil
+	case uint8:
+		return N(s), nil
+	case float64:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case float32:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case string:
+		v, err := strconv.ParseUint(trimZeroDecimal(s), 0, 0)
+		if err == nil {
+			if v < 0 {
+				return zero, ErrNegativeNotAllowed
+			}
+			return N(v), nil
+		}
+		return zero, fmt.Errorf("unable to convert %#v of type %T to int", i, i)
+	case bool:
+		if s {
+			return 1, nil
+		}
+		return zero, nil
+	case json.Number:
+		return ToUnsignedE[N](string(s))
+	case time.Weekday:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case time.Month:
+		if s < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s), nil
+	case sql.NullInt64:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		if s.Int64 < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s.Int64), nil
+	case sql.NullInt32:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		if s.Int32 < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s.Int32), nil
+	case sql.NullInt16:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		if s.Int16 < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s.Int16), nil
+	case sql.NullByte:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		return N(s.Byte), nil
+	case sql.NullFloat64:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		if s.Float64 < 0 {
+			return zero, ErrNegativeNotAllowed
+		}
+		return N(s.Float64), nil
+	case sql.NullString:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		v, err := strconv.ParseInt(trimZeroDecimal(s.String), 0, 0)
+		if err == nil {
+			if v < 0 {
+				return zero, ErrNegativeNotAllowed
+			}
+			return N(v), nil
+		}
+		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
+	case interface{ Int64() (int64, error) }:
+		v, err := s.Int64()
+		return N(v), err
+	case interface{ Float64() (float64, error) }:
+		v, err := s.Float64()
+		return N(v), err
+	case nil:
+		return zero, nil
+	default:
+		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
 	}
 }

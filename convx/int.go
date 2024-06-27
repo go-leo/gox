@@ -1,8 +1,12 @@
 package convx
 
 import (
+	"database/sql"
 	"fmt"
+	"golang.org/x/exp/constraints"
 	"reflect"
+	"strconv"
+	"time"
 )
 
 // ToInt converts an interface to an int type.
@@ -162,5 +166,137 @@ func ToInt32SliceE(i interface{}) ([]int32, error) {
 		return a, nil
 	default:
 		return []int32{}, fmt.Errorf("unable to cast %#v of type %T to []int32", i, i)
+	}
+}
+
+// ToSigned converts an interface to a signed integer type.
+func ToSigned[N constraints.Signed](i any) N {
+	v, _ := ToSignedE[N](i)
+	return v
+}
+
+// ToSignedE converts an interface to a signed integer type.
+func ToSignedE[N constraints.Signed](i any) (N, error) {
+	var zero N
+	i = indirect(i)
+	switch s := i.(type) {
+	case int:
+		return N(s), nil
+	case int64:
+		return N(s), nil
+	case int32:
+		return N(s), nil
+	case int16:
+		return N(s), nil
+	case int8:
+		return N(s), nil
+	case uint:
+		return N(s), nil
+	case uint64:
+		return N(s), nil
+	case uint32:
+		return N(s), nil
+	case uint16:
+		return N(s), nil
+	case uint8:
+		return N(s), nil
+	case float64:
+		return N(s), nil
+	case float32:
+		return N(s), nil
+	case bool:
+		if s {
+			return 1, nil
+		}
+		return zero, nil
+	case string:
+		v, err := strconv.ParseInt(trimZeroDecimal(s), 0, 0)
+		if err == nil {
+			return N(v), nil
+		}
+		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
+	case time.Weekday:
+		return N(s), nil
+	case time.Month:
+		return N(s), nil
+	case sql.NullInt64:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		return N(s.Int64), nil
+	case sql.NullInt32:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		return N(s.Int32), nil
+	case sql.NullInt16:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		return N(s.Int16), nil
+	case sql.NullByte:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		return N(s.Byte), nil
+	case sql.NullFloat64:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		return N(s.Float64), nil
+	case sql.NullString:
+		if !s.Valid {
+			return zero, ErrValueIsNULL
+		}
+		v, err := strconv.ParseInt(trimZeroDecimal(s.String), 0, 0)
+		if err == nil {
+			return N(v), nil
+		}
+		return zero, fmt.Errorf("unable to cast %#v of type %T to int", i, i)
+	case interface{ Int64() (int64, error) }:
+		v, err := s.Int64()
+		return N(v), err
+	case interface{ Float64() (float64, error) }:
+		v, err := s.Float64()
+		return N(v), err
+	case nil:
+		return zero, nil
+	default:
+		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
+	}
+}
+
+// ToSignedSlice converts an interface to a signed integer slice type.
+func ToSignedSlice[S []N, N constraints.Signed](i any) S {
+	v, _ := ToSignedSliceE[S](i)
+	return v
+}
+
+// ToSignedSliceE converts an interface to a signed integer slice type.
+func ToSignedSliceE[S []N, N constraints.Signed](i any) (S, error) {
+	var zero S
+	if i == nil {
+		return zero, fmt.Errorf("unable to cast %#v of type %T to %T", i, i, zero)
+	}
+
+	if v, ok := i.(S); ok {
+		return v, nil
+	}
+
+	kind := reflect.TypeOf(i).Kind()
+	switch kind {
+	case reflect.Slice, reflect.Array:
+		s := reflect.ValueOf(i)
+		a := make(S, s.Len())
+		for j := 0; j < s.Len(); j++ {
+			val, err := ToSignedE[N](s.Index(j).Interface())
+			if err != nil {
+				return zero, fmt.Errorf("unable to cast %#v of type %T to %T, %w", i, i, zero, err)
+			}
+			a[j] = val
+		}
+		return a, nil
+	default:
+		return zero, fmt.Errorf("unable to cast %#v of type %T to %T", i, i, zero)
 	}
 }
