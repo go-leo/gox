@@ -1,20 +1,38 @@
 package chanx
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
+// All the function collects first value from multiple given channels into a slice and returns it. 
+func All[T any](ctx context.Context, channels ...<-chan T) []T {
+	if len(channels) <= 0 {
+		return nil
+	}
 
-func All[T any](channels ...<-chan T) []T {
 	valueCh := make(chan T, len(channels))
 
 	var wg sync.WaitGroup
+
 	for _, ch := range channels {
 		wg.Add(1)
 		go func(ch <-chan T) {
 			defer wg.Done()
-			val, ok := <-ch
-			if ok {
-				valueCh <- val
-			}			
+			select {
+			case <-ctx.Done():
+				return
+			case val, ok := <-ch:
+				if !ok {
+					return
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case valueCh <- val:
+					return
+				}
+			}
 		}(ch)
 	}
 

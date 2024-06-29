@@ -2,20 +2,27 @@ package chanx
 
 import (
 	"context"
-	"sync"
+	"runtime"
+
+	"github.com/go-leo/gox/mathx/randx"
+	"github.com/go-leo/gox/slicex"
 )
 
-func Any[T any](channels ...<-chan T) T {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() 
+// Any the function's purpose is to randomly select from multiple provided channels and return
+// a value once received from the chosen channel.
+func Any[T any](ctx context.Context, channels ...<-chan T) T {
+	if len(channels) <= 0 {
+		var zero T
+		return zero
+	}
 
-	valueC := make(chan T, 1) 
-	var wg sync.WaitGroup
+	valueC := make(chan T, 1)
 
-	for _, ch := range channels {
-		wg.Add(1)
-		go func(ch <-chan T) {
-			defer wg.Done()
+	go func(channels []<-chan T) {
+		defer close(valueC)
+		for {
+			i := randx.Intn(len(channels))
+			ch := channels[i]
 			select {
 			case <-ctx.Done():
 				return
@@ -23,20 +30,18 @@ func Any[T any](channels ...<-chan T) T {
 				if ok {
 					select {
 					case valueC <- v:
-						cancel()
-					default: 
+						return
+					case <-ctx.Done():
 						return
 					}
 				}
-
+				channels = slicex.Delete(channels, i)
+				runtime.Gosched()
+			default:
+				runtime.Gosched()
 			}
-		}(ch)
-	}
-
-	go func() {
-		wg.Wait()
-		close(valueC)
-	}()
+		}
+	}(channels)
 
 	return <-valueC
 }
