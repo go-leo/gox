@@ -1,315 +1,251 @@
 package convx
 
 import (
-	"database/sql"
-	"encoding/json"
+	"database/sql/driver"
 	"fmt"
+	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
-	"reflect"
 	"strconv"
 	"time"
 )
 
 // ToUint converts an interface to a uint type.
-func ToUint(i any) uint {
-	v, _ := ToUintE(i)
+func ToUint(o any) uint {
+	v, _ := ToUintE(o)
 	return v
 }
 
 // ToUint64 converts an interface to a uint64 type.
-func ToUint64(i any) uint64 {
-	v, _ := ToUint64E(i)
+func ToUint64(o any) uint64 {
+	v, _ := ToUint64E(o)
 	return v
 }
 
 // ToUint32 converts an interface to a uint32 type.
-func ToUint32(i any) uint32 {
-	v, _ := ToUint32E(i)
+func ToUint32(o any) uint32 {
+	v, _ := ToUint32E(o)
 	return v
 }
 
 // ToUint16 converts an interface to a uint16 type.
-func ToUint16(i any) uint16 {
-	v, _ := ToUint16E(i)
+func ToUint16(o any) uint16 {
+	v, _ := ToUint16E(o)
 	return v
 }
 
 // ToUint8 converts an interface to a uint8 type.
-func ToUint8(i any) uint8 {
-	v, _ := ToUint8E(i)
+func ToUint8(o any) uint8 {
+	v, _ := ToUint8E(o)
 	return v
 }
 
-// ToUintE converts an interface to a uint type.
-func ToUintE(i any) (uint, error) {
-	return ToUnsignedE[uint](i)
-}
-
-// ToUint64E converts an interface to a uint64 type.
-func ToUint64E(i any) (uint64, error) {
-	return ToUnsignedE[uint64](i)
-}
-
-// ToUint32E converts an interface to a uint32 type.
-func ToUint32E(i any) (uint32, error) {
-	return ToUnsignedE[uint32](i)
-}
-
-// ToUint16E converts an interface to a uint16 type.
-func ToUint16E(i any) (uint16, error) {
-	return ToUnsignedE[uint16](i)
-}
-
-// ToUint8E converts an interface to a uint type.
-func ToUint8E(i any) (uint8, error) {
-	return ToUnsignedE[uint8](i)
-}
-
 // ToUintSlice casts an interface to a []uint type.
-func ToUintSlice(i interface{}) []uint {
-	v, _ := ToUintSliceE(i)
+func ToUintSlice(o any) []uint {
+	v, _ := ToUintSliceE(o)
 	return v
 }
 
 // ToUint64Slice casts an interface to a []uint64 type.
-func ToUint64Slice(i interface{}) []uint64 {
-	v, _ := ToUint64SliceE(i)
+func ToUint64Slice(o any) []uint64 {
+	v, _ := ToUint64SliceE(o)
 	return v
 }
 
 // ToUint32Slice casts an interface to a []uint32 type.
-func ToUint32Slice(i interface{}) []uint32 {
-	v, _ := ToUint32SliceE(i)
+func ToUint32Slice(o any) []uint32 {
+	v, _ := ToUint32SliceE(o)
 	return v
 }
 
+// ToUint16Slice converts an interface to a []uint16 type.
+func ToUint16Slice(o any) []uint16 {
+	v, _ := ToUint16SliceE(o)
+	return v
+}
+
+// ToUint8Slice converts an interface to a []uint8 type.
+func ToUint8Slice(o any) []uint8 {
+	v, _ := ToUint8SliceE(o)
+	return v
+}
+
+// ToUintE converts an interface to a uint type.
+func ToUintE(o any) (uint, error) {
+	return ToUnsignedE[uint](o)
+}
+
+// ToUint64E converts an interface to a uint64 type.
+func ToUint64E(o any) (uint64, error) {
+	return ToUnsignedE[uint64](o)
+}
+
+// ToUint32E converts an interface to a uint32 type.
+func ToUint32E(o any) (uint32, error) {
+	return ToUnsignedE[uint32](o)
+}
+
+// ToUint16E converts an interface to a uint16 type.
+func ToUint16E(o any) (uint16, error) {
+	return ToUnsignedE[uint16](o)
+}
+
+// ToUint8E converts an interface to a uint type.
+func ToUint8E(o any) (uint8, error) {
+	return ToUnsignedE[uint8](o)
+}
+
 // ToUintSliceE casts an interface to a []uint type.
-func ToUintSliceE(i interface{}) ([]uint, error) {
-	if i == nil {
-		return []uint{}, fmt.Errorf("unable to cast %#v of type %T to []uint", i, i)
-	}
-
-	switch v := i.(type) {
-	case []uint:
-		return v, nil
-	}
-
-	kind := reflect.TypeOf(i).Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		s := reflect.ValueOf(i)
-		a := make([]uint, s.Len())
-		for j := 0; j < s.Len(); j++ {
-			val, err := ToUintE(s.Index(j).Interface())
-			if err != nil {
-				return []uint{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-			}
-			a[j] = val
-		}
-		return a, nil
-	default:
-		return []uint{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-	}
+func ToUintSliceE(a any) ([]uint, error) {
+	return ToUnsignedSliceE[[]uint](a)
 }
 
 // ToUint64SliceE casts an interface to a []uint64 type.
-func ToUint64SliceE(i interface{}) ([]uint64, error) {
-	if i == nil {
-		return []uint64{}, fmt.Errorf("unable to cast %#v of type %T to []uint64", i, i)
-	}
-
-	switch v := i.(type) {
-	case []uint64:
-		return v, nil
-	}
-
-	kind := reflect.TypeOf(i).Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		s := reflect.ValueOf(i)
-		a := make([]uint64, s.Len())
-		for j := 0; j < s.Len(); j++ {
-			val, err := ToUint64E(s.Index(j).Interface())
-			if err != nil {
-				return []uint64{}, fmt.Errorf("unable to cast %#v of type %T to []int64", i, i)
-			}
-			a[j] = val
-		}
-		return a, nil
-	default:
-		return []uint64{}, fmt.Errorf("unable to cast %#v of type %T to []int64", i, i)
-	}
+func ToUint64SliceE(o any) ([]uint64, error) {
+	return ToUnsignedSliceE[[]uint64](o)
 }
 
 // ToUint32SliceE casts an interface to a []int32 type.
-func ToUint32SliceE(i interface{}) ([]uint32, error) {
-	if i == nil {
-		return []uint32{}, fmt.Errorf("unable to cast %#v of type %T to []int32", i, i)
-	}
+func ToUint32SliceE(o any) ([]uint32, error) {
+	return ToUnsignedSliceE[[]uint32](o)
+}
 
-	switch v := i.(type) {
-	case []uint32:
-		return v, nil
-	}
+// ToUint16SliceE converts an interface to a uint16 type.
+func ToUint16SliceE(o any) ([]uint16, error) {
+	return ToUnsignedSliceE[[]uint16](o)
+}
 
-	kind := reflect.TypeOf(i).Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		s := reflect.ValueOf(i)
-		a := make([]uint32, s.Len())
-		for j := 0; j < s.Len(); j++ {
-			val, err := ToUint32E(s.Index(j).Interface())
-			if err != nil {
-				return []uint32{}, fmt.Errorf("unable to cast %#v of type %T to []int32", i, i)
-			}
-			a[j] = val
-		}
-		return a, nil
-	default:
-		return []uint32{}, fmt.Errorf("unable to cast %#v of type %T to []int32", i, i)
-	}
+// ToUint8SliceE converts an interface to a uint type.
+func ToUint8SliceE(o any) ([]uint8, error) {
+	return ToUnsignedSliceE[[]uint8](o)
 }
 
 // ToUnsigned converts an interface to a unsigned integer type.
-func ToUnsigned[N constraints.Unsigned](i any) N {
-	v, _ := ToUnsignedE[N](i)
+func ToUnsigned[N constraints.Unsigned](o any) N {
+	v, _ := ToUnsignedE[N](o)
 	return v
 }
 
 // ToUnsignedE converts an interface to a unsigned integer type.
-func ToUnsignedE[N constraints.Unsigned](i any) (N, error) {
-	var zero N
-	i = indirect(i)
-	switch s := i.(type) {
+func ToUnsignedE[E constraints.Unsigned](o any) (E, error) {
+	return toUnsignedE[E](o)
+}
+
+// ToUnsignedSlice converts an interface to an unsigned integer slice type.
+func ToUnsignedSlice[S ~[]E, E constraints.Unsigned](o any) S {
+	v, _ := ToUnsignedSliceE[S](o)
+	return v
+}
+
+// ToUnsignedSliceE converts an interface to an unsigned integer slice type.
+func ToUnsignedSliceE[S ~[]E, E constraints.Unsigned](o any) (S, error) {
+	return toSliceE[S](o, toUnsignedE[E])
+}
+
+func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
+	var zero E
+	o = reflectx.Indirect(o)
+	switch u := o.(type) {
 	case int:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case int64:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case int32:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case int16:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case int8:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case uint:
-		return N(s), nil
+		return E(u), nil
 	case uint64:
-		return N(s), nil
+		return E(u), nil
 	case uint32:
-		return N(s), nil
+		return E(u), nil
 	case uint16:
-		return N(s), nil
+		return E(u), nil
 	case uint8:
-		return N(s), nil
+		return E(u), nil
 	case float64:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case float32:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
+	case interface{ Int64() (int64, error) }: // json.Number
+		v, err := u.Int64()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+		}
+		if v < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
+		}
+		return E(v), err
+	case interface{ Float64() (float64, error) }: // json.Number
+		v, err := u.Float64()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+		}
+		if v < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
+		}
+		return E(v), err
 	case string:
-		v, err := strconv.ParseUint(trimZeroDecimal(s), 0, 0)
-		if err == nil {
-			if v < 0 {
-				return zero, ErrNegativeNotAllowed
-			}
-			return N(v), nil
+		v, err := strconv.ParseUint(trimZeroDecimal(u), 0, 0)
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
-		return zero, fmt.Errorf("unable to convert %#v of type %T to int", i, i)
+		if v < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
+		}
+		return E(v), nil
 	case bool:
-		if s {
+		if u {
 			return 1, nil
 		}
 		return zero, nil
-	case json.Number:
-		return ToUnsignedE[N](string(s))
+	case time.Duration:
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
+		}
+		return E(u), nil
 	case time.Weekday:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
+		return E(u), nil
 	case time.Month:
-		if s < 0 {
-			return zero, ErrNegativeNotAllowed
+		if u < 0 {
+			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
-		return N(s), nil
-	case sql.NullInt64:
-		if !s.Valid {
-			return zero, ErrValueIsNULL
+		return E(u), nil
+	case driver.Valuer:
+		v, err := u.Value()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
-		if s.Int64 < 0 {
-			return zero, ErrNegativeNotAllowed
-		}
-		return N(s.Int64), nil
-	case sql.NullInt32:
-		if !s.Valid {
-			return zero, ErrValueIsNULL
-		}
-		if s.Int32 < 0 {
-			return zero, ErrNegativeNotAllowed
-		}
-		return N(s.Int32), nil
-	case sql.NullInt16:
-		if !s.Valid {
-			return zero, ErrValueIsNULL
-		}
-		if s.Int16 < 0 {
-			return zero, ErrNegativeNotAllowed
-		}
-		return N(s.Int16), nil
-	case sql.NullByte:
-		if !s.Valid {
-			return zero, ErrValueIsNULL
-		}
-		return N(s.Byte), nil
-	case sql.NullFloat64:
-		if !s.Valid {
-			return zero, ErrValueIsNULL
-		}
-		if s.Float64 < 0 {
-			return zero, ErrNegativeNotAllowed
-		}
-		return N(s.Float64), nil
-	case sql.NullString:
-		if !s.Valid {
-			return zero, ErrValueIsNULL
-		}
-		v, err := strconv.ParseInt(trimZeroDecimal(s.String), 0, 0)
-		if err == nil {
-			if v < 0 {
-				return zero, ErrNegativeNotAllowed
-			}
-			return N(v), nil
-		}
-		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
-	case interface{ Int64() (int64, error) }:
-		v, err := s.Int64()
-		return N(v), err
-	case interface{ Float64() (float64, error) }:
-		v, err := s.Float64()
-		return N(v), err
+		return ToUnsignedE[E](v)
 	case nil:
 		return zero, nil
 	default:
-		return zero, fmt.Errorf("unable to convert %#v of type %T to %T", i, i, zero)
+		return zero, fmt.Errorf(failedCast, o, o, zero)
 	}
 }

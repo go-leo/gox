@@ -17,11 +17,7 @@ func Indirect(a any) any {
 		// Avoid creating a reflect.Value if it's not a pointer.
 		return a
 	}
-	v := reflect.ValueOf(a)
-	for v.Kind() == reflect.Pointer && !v.IsNil() {
-		v = v.Elem()
-	}
-	return v.Interface()
+	return IndirectValue(reflect.ValueOf(a)).Interface()
 }
 
 func IndirectValue(v reflect.Value) reflect.Value {
@@ -39,8 +35,8 @@ func IndirectType(t reflect.Type) reflect.Type {
 }
 
 var (
-	errorType       = reflect.TypeOf((*error)(nil)).Elem()
-	fmtStringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	StringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	ErrorType    = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 // IndirectToStringerOrError returns the value, after dereferencing as many times
@@ -53,7 +49,10 @@ func IndirectToStringerOrError(a any) any {
 		return nil
 	}
 	v := reflect.ValueOf(a)
-	for !v.Type().Implements(fmtStringerType) && !v.Type().Implements(errorType) && v.Kind() == reflect.Pointer && !v.IsNil() {
+	for !v.Type().Implements(StringerType) &&
+		!v.Type().Implements(ErrorType) &&
+		v.Kind() == reflect.Ptr &&
+		!v.IsNil() {
 		v = v.Elem()
 	}
 	return v.Interface()

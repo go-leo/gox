@@ -1,8 +1,6 @@
 package convx
 
-import "errors"
-
 var (
-	ErrValueIsNULL        = errors.New("convx: unable to convert NULL value")
-	ErrNegativeNotAllowed = errors.New("convx: unable to convert negative value")
+	failedCast    = "convx: failed to cast %#v of type %T to %T"
+	failedCastErr = failedCast + ", %w"
 )
