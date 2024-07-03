@@ -8,28 +8,50 @@ import (
 )
 
 // ToString casts an interface to a string type.
-func ToString[E ~string](o any) E {
-	v, _ := ToStringE[E](o)
+func ToString(o any) string {
+	v, _ := ToStringE[string](o)
 	return v
 }
 
 // ToStringE casts an interface to a string type.
-func ToStringE[E ~string](o any) (E, error) {
-	return toStringE[E](o)
+func ToStringE(o any) (string, error) {
+	return toStringerE[string](o)
 }
 
 // ToStringSlice casts an interface to a []string type.
-func ToStringSlice[S ~[]E, E ~string](o any) S {
-	v, _ := ToStringSliceE[S](o)
+func ToStringSlice(o any) []string {
+	v, _ := ToStringSliceE[[]string](o)
 	return v
 }
 
 // ToStringSliceE casts an interface to a []string type.
-func ToStringSliceE[S ~[]E, E ~string](o any) (S, error) {
-	return toSliceE[S](o, toStringE[E])
+func ToStringSliceE(o any) ([]string, error) {
+	return toSliceE[[]string](o, toStringerE[string])
 }
 
-func toStringE[E ~string](o any) (E, error) {
+// ToStringer casts an interface to a string type.
+func ToStringer[E ~string](o any) E {
+	v, _ := ToStringerE[E](o)
+	return v
+}
+
+// ToStringerE casts an interface to a string type.
+func ToStringerE[E ~string](o any) (E, error) {
+	return toStringerE[E](o)
+}
+
+// ToStringerSlice casts an interface to a []string type.
+func ToStringerSlice[S ~[]E, E ~string](o any) S {
+	v, _ := ToStringerSliceE[S](o)
+	return v
+}
+
+// ToStringerSliceE casts an interface to a []string type.
+func ToStringerSliceE[S ~[]E, E ~string](o any) (S, error) {
+	return toSliceE[S](o, toStringerE[E])
+}
+
+func toStringerE[E ~string](o any) (E, error) {
 	var zero E
 	o = reflectx.Indirect(o)
 	switch s := o.(type) {
