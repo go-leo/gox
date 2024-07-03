@@ -39,21 +39,21 @@ var (
 	ErrorType    = reflect.TypeOf((*error)(nil)).Elem()
 )
 
-// IndirectToStringerOrError returns the value, after dereferencing as many times
-// as necessary to reach the base type (or nil) or an implementation of fmt.Stringer
-// or error,
-// From html/template/content.go
-// Copyright 2011 The Go Authors. All rights reserved.
-func IndirectToStringerOrError(a any) any {
+func IndirectToInterface(a any, ifaces ...reflect.Type) any {
 	if a == nil {
 		return nil
 	}
 	v := reflect.ValueOf(a)
-	for !v.Type().Implements(StringerType) &&
-		!v.Type().Implements(ErrorType) &&
-		v.Kind() == reflect.Ptr &&
-		!v.IsNil() {
-		v = v.Elem()
+	for {
+		for _, iface := range ifaces {
+			if v.Type().Implements(iface) {
+				return v.Interface()
+			}
+		}
+		if v.Kind() == reflect.Pointer && !v.IsNil() {
+			v = v.Elem()
+		} else {
+			return v.Interface()
+		}
 	}
-	return v.Interface()
 }

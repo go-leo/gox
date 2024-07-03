@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -77,7 +78,11 @@ func ToFloatSliceE[S ~[]E, E constraints.Float](o any) (S, error) {
 
 func toFloatE[E constraints.Float](o any) (E, error) {
 	var zero E
-	o = reflectx.Indirect(o)
+	o = reflectx.IndirectToInterface(o,
+		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
+		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
+	)
 	switch f := o.(type) {
 	case int:
 		return E(f), nil
@@ -137,7 +142,7 @@ func toFloatE[E constraints.Float](o any) (E, error) {
 		if err != nil {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
-		return ToFloatE[E](v)
+		return toFloatE[E](v)
 	case nil:
 		return zero, nil
 	default:

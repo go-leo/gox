@@ -1,8 +1,10 @@
 package convx
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
+	"reflect"
 	"time"
 )
 
@@ -30,7 +32,12 @@ func ToDurationSliceE(o any) ([]time.Duration, error) {
 
 func toDurationE(o any) (time.Duration, error) {
 	var zero time.Duration
-	o = reflectx.Indirect(o)
+	o = reflectx.IndirectToInterface(o,
+		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ AsDuration() time.Duration })(nil)).Elem(),
+		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
+	)
 	switch d := o.(type) {
 	case time.Duration:
 		return d, nil
@@ -51,6 +58,12 @@ func toDurationE(o any) (time.Duration, error) {
 		return time.Duration(v), nil
 	case interface{ AsDuration() time.Duration }:
 		return d.AsDuration(), nil
+	case driver.Valuer:
+		v, err := d.Value()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+		}
+		return toDurationE(v)
 	default:
 		return zero, fmt.Errorf(failedCast, o, o, zero)
 	}

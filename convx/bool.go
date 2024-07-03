@@ -1,8 +1,10 @@
 package convx
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -31,7 +33,11 @@ func ToBoolSliceE[S ~[]E, E ~bool](o any) (S, error) {
 
 func toBoolE[E ~bool](o any) (E, error) {
 	var zero E
-	o = reflectx.Indirect(o)
+	o = reflectx.IndirectToInterface(o,
+		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
+		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
+	)
 	switch b := o.(type) {
 	case bool:
 		return E(b), nil
@@ -51,6 +57,12 @@ func toBoolE[E ~bool](o any) (E, error) {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
 		return E(v), err
+	case driver.Valuer:
+		v, err := b.Value()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+		}
+		return toBoolE[E](v)
 	case nil:
 		return zero, nil
 	default:

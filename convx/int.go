@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -143,7 +144,11 @@ func ToSignedSliceE[S ~[]E, E constraints.Signed](o any) (S, error) {
 
 func toSignedE[E constraints.Signed](o any) (E, error) {
 	var zero E
-	o = reflectx.Indirect(o)
+	o = reflectx.IndirectToInterface(o,
+		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
+		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
+	)
 	switch s := o.(type) {
 	case int:
 		return E(s), nil
@@ -203,7 +208,7 @@ func toSignedE[E constraints.Signed](o any) (E, error) {
 		if err != nil {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
-		return ToSignedE[E](v)
+		return toSignedE[E](v)
 	case nil:
 		return zero, nil
 	default:

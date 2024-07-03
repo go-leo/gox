@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
+	"reflect"
 	"time"
 )
 
@@ -33,7 +34,13 @@ func ToTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 
 func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 	zero := time.Time{}
-	o = reflectx.Indirect(o)
+	o = reflectx.IndirectToInterface(
+		o,
+		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
+		reflect.TypeOf((*interface{ AsTime() time.Time })(nil)).Elem(),
+		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
+	)
 	switch t := o.(type) {
 	case time.Time:
 		return t, nil
@@ -47,7 +54,7 @@ func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 		}
 		return time.Unix(v, 0), nil
 	case string:
-		for _, format := range timeFormats {
+		for _, format := range TimeFormats {
 			tim, err := time.ParseInLocation(format, t, location)
 			if err != nil {
 				continue
@@ -69,7 +76,7 @@ func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 }
 
 var (
-	timeFormats = []string{
+	TimeFormats = []string{
 		time.Layout,
 		time.ANSIC,
 		time.UnixDate,

@@ -1,9 +1,11 @@
 package convx
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"html/template"
+	"reflect"
 	"strconv"
 )
 
@@ -53,7 +55,11 @@ func ToStringerSliceE[S ~[]E, E ~string](o any) (S, error) {
 
 func toStringerE[E ~string](o any) (E, error) {
 	var zero E
-	o = reflectx.Indirect(o)
+	o = reflectx.IndirectToInterface(o,
+		reflect.TypeOf((*fmt.Stringer)(nil)).Elem(),
+		reflect.TypeOf((*error)(nil)).Elem(),
+		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
+	)
 	switch s := o.(type) {
 	case string:
 		return E(s), nil
@@ -85,7 +91,7 @@ func toStringerE[E ~string](o any) (E, error) {
 		return E(strconv.FormatUint(uint64(s), 10)), nil
 	case []byte:
 		return E(string(s)), nil
-	case fmt.Stringer: // json.Number
+	case fmt.Stringer:
 		return E(s.String()), nil
 	case error:
 		return E(s.Error()), nil
@@ -99,6 +105,12 @@ func toStringerE[E ~string](o any) (E, error) {
 		return E(string(s)), nil
 	case template.HTMLAttr:
 		return E(string(s)), nil
+	case driver.Valuer:
+		v, err := s.Value()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+		}
+		return toStringerE[E](v)
 	case nil:
 		return "", nil
 	default:
