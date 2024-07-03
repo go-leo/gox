@@ -9,7 +9,7 @@ import (
 
 // ToString casts an interface to a string type.
 func ToString(o any) string {
-	v, _ := ToStringE[string](o)
+	v, _ := ToStringE(o)
 	return v
 }
 
@@ -20,7 +20,7 @@ func ToStringE(o any) (string, error) {
 
 // ToStringSlice casts an interface to a []string type.
 func ToStringSlice(o any) []string {
-	v, _ := ToStringSliceE[[]string](o)
+	v, _ := ToStringSliceE(o)
 	return v
 }
 
