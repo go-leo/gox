@@ -19,21 +19,21 @@ import "reflect"
 func FindFieldByTag(v reflect.Value, tagKey string, match func(tagVal string) bool) (reflect.Value, bool) {
 
 	// Indirect the value to get the underlying value.
-	value := IndirectValue(v)
+	structVal := IndirectValue(v)
 
 	// Check if the value is a struct.
-	if value.Kind() != reflect.Struct {
+	if structVal.Kind() != reflect.Struct {
 		return reflect.Value{}, false
 	}
 
 	// Directly access the type once instead of on each iteration.
-	t := v.Type()
+	structTyp := structVal.Type()
 
 	// Iterate over all fields in the given struct.
-	for i := 0; i < v.NumField(); i++ {
+	for i := 0; i < structTyp.NumField(); i++ {
 		// Get the current field and its corresponding struct field type.
-		field := v.Field(i)
-		structField := t.Field(i)
+		field := structVal.Field(i)
+		structField := structTyp.Field(i)
 
 		// Check if the field has the specified tag with the given value.
 		if tagVal, ok := structField.Tag.Lookup(tagKey); ok && match(tagVal) {
