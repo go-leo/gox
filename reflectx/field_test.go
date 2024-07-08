@@ -34,10 +34,10 @@ func TestFindFieldByTag(t *testing.T) {
 
 	// Run the tests.
 	for _, td := range testData {
-		result := FindFieldByTag(v, td.tagKey, func(tagVal string) bool { return tagVal == td.tagValue })
-		if !result.IsValid() && td.expected != nil {
+		result, ok := FindFieldByTag(v, td.tagKey, func(tagVal string) bool { return tagVal == td.tagValue })
+		if !ok && td.expected != nil {
 			t.Errorf("Expected %v, got invalid value for tagKey '%s' and tagValue '%s'", td.expected, td.tagKey, td.tagValue)
-		} else if result.IsValid() && result.Interface() != td.expected {
+		} else if ok && result.Interface() != td.expected {
 			t.Errorf("Expected %v, got %v for tagKey '%s' and tagValue '%s'", td.expected, result.Interface(), td.tagKey, td.tagValue)
 		}
 	}

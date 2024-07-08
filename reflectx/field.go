@@ -11,7 +11,7 @@ import "reflect"
 //	v: The reflect.Value representing the struct to search.
 //	tagKey: The key of the tag to look for.
 //	equals: A function that takes the tag value as a string and returns true if it satisfies the condition.
-func FindFieldByTag(v reflect.Value, tagKey string, equals func(tagVal string) bool) reflect.Value {
+func FindFieldByTag(v reflect.Value, tagKey string, equals func(tagVal string) bool) (reflect.Value, bool) {
 	// Directly access the type once instead of on each iteration.
 	t := v.Type()
 
@@ -24,10 +24,10 @@ func FindFieldByTag(v reflect.Value, tagKey string, equals func(tagVal string) b
 		// Check if the field has the specified tag with the given value.
 		if tagVal, ok := structField.Tag.Lookup(tagKey); ok && equals(tagVal) {
 			// Return the field value if the tag matches.
-			return field
+			return field, true
 		}
 	}
 
 	// Return zero Value if no matching field is found.
-	return reflect.Value{}
+	return reflect.Value{}, false
 }
