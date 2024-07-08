@@ -12,6 +12,15 @@ import "reflect"
 //	tagKey: The key of the tag to look for.
 //	equals: A function that takes the tag value as a string and returns true if it satisfies the condition.
 func FindFieldByTag(v reflect.Value, tagKey string, equals func(tagVal string) bool) (reflect.Value, bool) {
+
+	// Indirect the value to get the underlying value.
+	value := IndirectValue(v)
+
+	// Check if the value is a struct.
+	if value.Kind() != reflect.Struct {
+		return reflect.Value{}, false
+	}
+
 	// Directly access the type once instead of on each iteration.
 	t := v.Type()
 
