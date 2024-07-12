@@ -6,7 +6,7 @@ import (
 )
 
 type KeyError struct {
-	Obj interface{}
+	Obj any
 	Err error
 }
 
@@ -15,16 +15,16 @@ func (k KeyError) Error() string {
 }
 
 // KeyFunc is a function type to get the key from an object.
-type KeyFunc func(obj interface{}) (string, error)
+type KeyFunc func(obj any) (string, error)
 
 type heapItem struct {
-	obj   interface{} // The object which is stored in the heap.
-	index int         // The index of the object's key in the Heap.queue.
+	obj   any // The object which is stored in the heap.
+	index int // The index of the object's key in the Heap.queue.
 }
 
 type itemKeyValue struct {
 	key string
-	obj interface{}
+	obj any
 }
 
 // data is an internal struct that implements the standard heap interface
@@ -80,7 +80,7 @@ func (h *data) Swap(i, j int) {
 }
 
 // Push is supposed to be called by heap.Push only.
-func (h *data) Push(kv interface{}) {
+func (h *data) Push(kv any) {
 	keyValue := kv.(*itemKeyValue)
 	n := len(h.queue)
 	h.items[keyValue.key] = &heapItem{keyValue.obj, n}
@@ -88,7 +88,7 @@ func (h *data) Push(kv interface{}) {
 }
 
 // Pop is supposed to be called by heap.Pop only.
-func (h *data) Pop() interface{} {
+func (h *data) Pop() any {
 	key := h.queue[len(h.queue)-1]
 	h.queue = h.queue[0 : len(h.queue)-1]
 	item, ok := h.items[key]
@@ -101,7 +101,7 @@ func (h *data) Pop() interface{} {
 }
 
 // Peek is supposed to be called by heap.Peek only.
-func (h *data) Peek() interface{} {
+func (h *data) Peek() any {
 	if len(h.queue) > 0 {
 		return h.items[h.queue[0]].obj
 	}
@@ -118,7 +118,7 @@ type Heap struct {
 
 // Add inserts an item, and puts it in the queue. The item is updated if it
 // already exists.
-func (h *Heap) Add(obj interface{}) error {
+func (h *Heap) Add(obj any) error {
 	key, err := h.data.keyFunc(obj)
 	if err != nil {
 		return KeyError{Obj: obj, Err: err}
@@ -134,12 +134,12 @@ func (h *Heap) Add(obj interface{}) error {
 
 // Update is the same as Add in this implementation. When the item does not
 // exist, it is added.
-func (h *Heap) Update(obj interface{}) error {
+func (h *Heap) Update(obj any) error {
 	return h.Add(obj)
 }
 
 // Delete removes an item.
-func (h *Heap) Delete(obj interface{}) error {
+func (h *Heap) Delete(obj any) error {
 	key, err := h.data.keyFunc(obj)
 	if err != nil {
 		return KeyError{Obj: obj, Err: err}
@@ -152,12 +152,12 @@ func (h *Heap) Delete(obj interface{}) error {
 }
 
 // Peek returns the head of the heap without removing it.
-func (h *Heap) Peek() interface{} {
+func (h *Heap) Peek() any {
 	return h.data.Peek()
 }
 
 // Pop returns the head of the heap and removes it.
-func (h *Heap) Pop() (interface{}, error) {
+func (h *Heap) Pop() (any, error) {
 	obj := heap.Pop(h.data)
 	if obj != nil {
 		return obj, nil
@@ -166,7 +166,7 @@ func (h *Heap) Pop() (interface{}, error) {
 }
 
 // Get returns the requested item, or sets exists=false.
-func (h *Heap) Get(obj interface{}) (interface{}, bool, error) {
+func (h *Heap) Get(obj any) (any, bool, error) {
 	key, err := h.data.keyFunc(obj)
 	if err != nil {
 		return nil, false, KeyError{Obj: obj, Err: err}
@@ -175,7 +175,7 @@ func (h *Heap) Get(obj interface{}) (interface{}, bool, error) {
 }
 
 // GetByKey returns the requested item, or sets exists=false.
-func (h *Heap) GetByKey(key string) (interface{}, bool, error) {
+func (h *Heap) GetByKey(key string) (any, bool, error) {
 	item, exists := h.data.items[key]
 	if !exists {
 		return nil, false, nil
@@ -184,8 +184,8 @@ func (h *Heap) GetByKey(key string) (interface{}, bool, error) {
 }
 
 // List returns a list of all the items.
-func (h *Heap) List() []interface{} {
-	list := make([]interface{}, 0, len(h.data.items))
+func (h *Heap) List() []any {
+	list := make([]any, 0, len(h.data.items))
 	for _, item := range h.data.items {
 		list = append(list, item.obj)
 	}
@@ -211,4 +211,4 @@ func New(keyFn KeyFunc, lessFn lessFunc) *Heap {
 
 // lessFunc is a function that receives two items and returns true if the first
 // item should be placed before the second one when the list is sorted.
-type lessFunc = func(item1, item2 interface{}) bool
+type lessFunc = func(item1, item2 any) bool

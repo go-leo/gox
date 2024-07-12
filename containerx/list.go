@@ -1,4 +1,0 @@
-package containerx
-
-func init() {
-}
