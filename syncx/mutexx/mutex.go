@@ -14,6 +14,22 @@ const (
 	starvationThresholdNs = 1e6
 )
 
+// TryLock 尝试获取锁
+func TryLock(m *sync.Mutex) bool {
+	// 如果能成功抢到锁
+	if atomic.CompareAndSwapInt32((*int32)(unsafe.Pointer(m)), 0, mutexLocked) {
+		return true
+	}
+	// 如果处于唤醒、加锁或者饥饿状态，这次请求就不参与竞争了，返回false
+	oldState := atomic.LoadInt32((*int32)(unsafe.Pointer(m)))
+	if oldState&(mutexLocked|mutexStarving|mutexWoken) != 0 {
+		return false
+	}
+	// 尝试在竞争的状态下请求锁
+	newState := oldState | mutexLocked
+	return atomic.CompareAndSwapInt32((*int32)(unsafe.Pointer(m)), oldState, newState)
+}
+
 // WaiterCount 锁的等待者数量
 func WaiterCount(m *sync.Mutex) int {
 	// 获取state字段的值
