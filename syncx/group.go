@@ -1,5 +1,6 @@
 package syncx
 
+// WaitNotify waiter.Wait()
 func WaitNotify(waiter interface{ Wait() }) <-chan struct{} {
 	c := make(chan struct{})
 	go func() {
@@ -9,6 +10,7 @@ func WaitNotify(waiter interface{ Wait() }) <-chan struct{} {
 	return c
 }
 
+// WaitNotifyE waiter.Wait()
 func WaitNotifyE(waiter interface{ Wait() error }) <-chan error {
 	c := make(chan error, 1)
 	go func() {
