@@ -4,11 +4,11 @@ import (
 	"sync"
 )
 
-type OnceGroup struct {
+type onceGroup struct {
 	m sync.Map
 }
 
-func (o *OnceGroup) Do(key string, f func()) {
+func (o *onceGroup) Do(key string, f func()) {
 	actual, loaded := o.m.LoadOrStore(key, &sync.Once{})
 	if !loaded {
 		return

@@ -1,0 +1,513 @@
+package slicex
+
+import (
+	"fmt"
+	"github.com/go-leo/gox/constraintx"
+	"github.com/go-leo/gox/mathx"
+	"github.com/go-leo/gox/mathx/randx"
+	"golang.org/x/exp/slices"
+)
+
+func AppendFirst[S ~[]E, E any](s S, e E) S {
+	return slices.Insert(s, 0, e)
+}
+
+func AppendIfNotContains[S ~[]E, E comparable](s S, v E) S {
+	if slices.Contains(s, v) {
+		return s
+	}
+	return append(s, v)
+}
+
+func Prepend[S ~[]E, E any](s S, elems ...E) S {
+	return slices.Insert(s, 0, elems...)
+}
+
+// AppendUnique appends an element to a slice, if the element is not already in the slice
+func AppendUnique[S ~[]E, E comparable](s S, v E) S {
+	return AppendIfNotContains(s, v)
+}
+
+func Chunk[S ~[]E, E any](s S, size int) []S {
+	l := len(s)
+	ss2 := make([]S, 0, (l+size)/size)
+	for i := 0; i < l; i += size {
+		if i+size < l {
+			ss2 = append(ss2, s[i:i+size])
+		} else {
+			ss2 = append(ss2, s[i:l])
+		}
+	}
+	return ss2
+}
+
+func Concat[S ~[]E, E any](ss ...S) S {
+	var length int
+	for _, s := range ss {
+		length += len(s)
+	}
+	r := make(S, 0, length)
+	for _, s := range ss {
+		r = append(r, s...)
+	}
+	return r
+}
+
+// ContainsAny checks if any of the elem are in the given slice.
+func ContainsAny[E comparable](s []E, vs ...E) bool {
+	for _, v := range vs {
+		if slices.Contains(s, v) {
+			return true
+		}
+	}
+	return false
+}
+
+func Delete[S ~[]E, E any](s S, i int) S {
+	return slices.Delete(s, i, i+1)
+}
+
+func DeleteAll[S ~[]E, E any](array S, indices ...int) S {
+	length := len(array)
+	diff := 0 // number of distinct indexes, i.e. number of entries that will be removed
+	slices.Sort(indices)
+
+	// identify length of result array
+	if IsNotEmpty(indices) {
+		i := len(indices) - 1
+		prevIndex := length
+		for i >= 0 {
+			index := indices[i]
+			if index < 0 || index >= length {
+				panic(fmt.Errorf("index: %d, length: %d", index, length))
+			}
+			if index >= prevIndex {
+				continue
+			}
+			diff++
+			prevIndex = index
+			i--
+		}
+	}
+
+	// create result array
+	result := make(S, length-diff)
+	if diff < length {
+		end := length         // index just after last copy
+		dest := length - diff // number of entries so far not copied
+		for i := len(indices) - 1; i >= 0; i-- {
+			index := indices[i]
+			if end-index > 1 { // same as (cp > 0)
+				cp := end - index - 1
+				dest -= cp
+				copy(result[dest:dest+cp], array[index+1:index+1+cp])
+				// After this copy, we still have room for dest items.
+			}
+			end = index
+		}
+		if end > 0 {
+			copy(result[:end], array[:end])
+		}
+	}
+	return result
+}
+
+// Difference 返回差集
+func Difference[S ~[]E, E comparable](s1 S, s2 S) S {
+	if len(s1) >= len(s2) {
+		return difference(s1, s2)
+	}
+	return difference(s2, s1)
+}
+
+func difference[S ~[]E, E comparable](a S, b S) S {
+	var r S
+	for _, v := range a {
+		if !slices.Contains(b, v) {
+			r = append(r, v)
+		}
+	}
+	return r
+}
+
+// IsEmpty Checks if an slice is nil or length equals 0
+func IsEmpty[S ~[]E, E any](s S) bool {
+	return len(s) <= 0
+}
+
+func IsNotEmpty[S ~[]E, E any](s S) bool {
+	return len(s) > 0
+}
+
+func Filter[S ~[]E, E any](s S, f func(int, E) bool) S {
+	var r S
+	for i, e := range s {
+		if f(i, e) {
+			r = append(r, e)
+		}
+	}
+	return r
+}
+
+func FindFunc[E any](s []E, f func(E) bool) (E, bool) {
+	if i := slices.IndexFunc(s, f); i != -1 {
+		return s[i], true
+	}
+	var e E
+	return e, false
+}
+
+func IndexOrDefault[S ~[]E, E any](s S, index int, d E) E {
+	if len(s) > index {
+		return s[index]
+	}
+	return d
+}
+
+func LastIndex[E comparable](s []E, v E) int {
+	for i := len(s) - 1; i > -1; i-- {
+		if v == s[i] {
+			return i
+		}
+	}
+	return -1
+}
+
+func Indexes[E comparable](s []E, v E) []int {
+	var r []int
+	for i, vs := range s {
+		if v == vs {
+			r = append(r, i)
+		}
+	}
+	return r
+}
+
+func IndexesFunc[E any](s []E, f func(E) bool) []int {
+	var r []int
+	for i, v := range s {
+		if f(v) {
+			r = append(r, i)
+		}
+	}
+	return r
+}
+
+// Insert 在切片的指定位置插入元素
+func Insert[S ~[]E, E any](s S, i int, e E) S {
+	// 创建一个新的切片，长度比原切片多1
+	r := make(S, len(s)+1)
+
+	// 将原切片的前index个元素复制到新切片
+	copy(r, s[:i])
+
+	// 插入要插入的元素
+	r[i] = e
+
+	// 将原切片的index及之后的元素复制到新切片
+	copy(r[i+1:], s[i:])
+
+	return r
+}
+
+func IsSameLength[S ~[]E, E any](s1 S, s2 S) bool {
+	return len(s1) == len(s2)
+}
+
+// Map 方法创建一个新数组，这个新数组由原数组中的每个元素都调用一次提供的函数后的返回值组成。
+func Map[S1 ~[]E1, S2 ~[]E2, E1 any, E2 any](s S1, f func(int, E1) E2) S2 {
+	if s == nil {
+		return nil
+	}
+	s2 := make(S2, 0, len(s))
+	for i, e := range s {
+		s2 = append(s2, f(i, e))
+	}
+	return s2
+}
+
+// MapElem 两个切片s1，s2,，获取v所有s1同位置的s2的值
+func MapElem[S1 ~[]E1, S2 ~[]E2, E1 comparable, E2 any](v E1, s1 S1, s2 S2) E2 {
+	var r E2
+	if len(s1) != len(s2) {
+		panic("length of s1 and s2 not equal")
+	}
+	for i := range s1 {
+		if s1[i] == v {
+			return s2[i]
+		}
+	}
+	return r
+}
+
+// NotContains reports whether v is not present in s.
+func NotContains[E comparable](s []E, v E) bool {
+	return !slices.Contains(s, v)
+}
+
+// NotContainsFunc reports whether v is not present in s.
+func NotContainsFunc[E any](s []E, f func(E) bool) bool {
+	return !slices.ContainsFunc(s, f)
+}
+
+// PadStart 如果slice长度小于 length 则在左侧填充val。
+func PadStart[S ~[]E, E any](s S, size int, val E) S {
+	if size <= len(s) {
+		return slices.Clone(s)
+	}
+	r := make(S, 0, size)
+	for i := 0; i < (size - len(s)); i++ {
+		r = append(r, val)
+	}
+	r = append(r, s...)
+	return r
+}
+
+// PadEnd 如果slice长度小于 length 则在右侧填充val。
+func PadEnd[S ~[]E, E any](s S, size int, val E) S {
+	if size <= len(s) {
+		return slices.Clone(s)
+	}
+	r := make(S, 0, size)
+	r = append(r, s...)
+	for i := 0; i < (size - len(s)); i++ {
+		r = append(r, val)
+	}
+	return r
+}
+
+func Reduce[S ~[]E, E any, R any](s S, initValue R, f func(previousValue R, currentValue E, currentIndex int, s S) R) R {
+	var r = initValue
+	for i, e := range s {
+		r = f(r, e, i, s)
+	}
+	return r
+}
+
+func Remove[S ~[]E, E comparable](s S, v E) S {
+	if IsEmpty(s) {
+		return slices.Clone(s)
+	}
+	return Delete(s, slices.Index(s, v))
+}
+
+func RemoveFunc[S ~[]E, E any](s S, f func(E) bool) S {
+	if IsEmpty(s) {
+		return slices.Clone(s)
+	}
+	return Delete(s, slices.IndexFunc(s, f))
+}
+
+func RemoveAll[S ~[]E, E comparable](s S, vs ...E) S {
+	if IsEmpty(s) || IsEmpty(vs) {
+		return slices.Clone(s)
+	}
+	occurrences := make(map[E]int)
+	total := 0
+	for _, v := range vs {
+		total++
+		count, ok := occurrences[v]
+		if !ok {
+			occurrences[v] = 1
+		} else {
+			occurrences[v] = count + 1
+		}
+	}
+	toRemove := make([]int, 0, total)
+	for i := 0; i < len(s); i++ {
+		key := s[i]
+		count, ok := occurrences[key]
+		if ok {
+			count--
+			if count == 0 {
+				delete(occurrences, key)
+			}
+			toRemove = append(toRemove, i)
+		}
+	}
+	return DeleteAll(s, toRemove...)
+}
+
+func RemoveAllFunc[S ~[]E, E comparable](s S, f func(E) bool) S {
+	if IsEmpty(s) {
+		return slices.Clone(s)
+	}
+	return DeleteAll(s, IndexesFunc(s, f)...)
+}
+
+// Reverse the order of the given slice in the given range. if range is not supply, reverse all.
+func Reverse[S ~[]E, E any](s S, indexes ...int) S {
+	if s == nil {
+		return nil
+	}
+	if len(indexes) <= 0 {
+		indexes = []int{0, len(s)}
+	}
+	startIndexInclusive := indexes[0]
+	endIndexExclusive := indexes[1]
+	i := mathx.Max(startIndexInclusive, 0)
+	j := mathx.Min(len(s), endIndexExclusive) - 1
+	var tmp E
+	for j > i {
+		tmp = s[j]
+		s[j] = s[i]
+		s[i] = tmp
+		j--
+		i++
+	}
+	return s
+}
+
+func ToSet[S ~[]E, M ~map[E]struct{}, E comparable](s S) M {
+	r := make(M)
+	for _, e := range s {
+		r[e] = struct{}{}
+	}
+	return r
+}
+
+func SetAll[S ~[]E, E any](s S, f func(int) E) S {
+	for i := range s {
+		s[i] = f(i)
+	}
+	return s
+}
+
+func Shift[S ~[]E, E any](array S, offset int) {
+	if len(array) <= 0 {
+		return
+	}
+	Shifta(array, 0, len(array), offset)
+}
+
+func Shifta[S ~[]E, E any](array S, startIndexInclusive, endIndexExclusive, offset int) {
+	if len(array) <= 0 || startIndexInclusive >= len(array)-1 || endIndexExclusive <= 0 {
+		return
+	}
+	if startIndexInclusive < 0 {
+		startIndexInclusive = 0
+	}
+	if endIndexExclusive >= len(array) {
+		endIndexExclusive = len(array)
+	}
+	n := endIndexExclusive - startIndexInclusive
+	if n <= 1 {
+		return
+	}
+	offset %= n
+	if offset < 0 {
+		offset += n
+	}
+	// For algorithm explanations and proof of O(n) time complexity and O(1) space complexity
+	// see https://beradrian.wordpress.com/2015/04/07/shift-an-array-in-on-in-place/
+	for n > 1 && offset > 0 {
+		nOffset := n - offset
+
+		if offset > nOffset {
+			Swap(array, startIndexInclusive, startIndexInclusive+n-nOffset, nOffset)
+			n = offset
+			offset -= nOffset
+		} else if offset < nOffset {
+			Swap(array, startIndexInclusive, startIndexInclusive+nOffset, offset)
+			startIndexInclusive += offset
+			n = nOffset
+		} else {
+			Swap(array, startIndexInclusive, startIndexInclusive+nOffset, offset)
+			break
+		}
+	}
+
+}
+
+// Swap swaps a series of elements in the given array.
+// array the array to swap.
+// offset1 the index of the first element in the series to swap.
+// offset2 the index of the second element in the series to swap.
+// length the number of elements to swap starting with the given indices.
+func Swap[S ~[]E, E any](array S, offset1, offset2, length int) {
+	if IsEmpty(array) || offset1 >= len(array) || offset2 >= len(array) {
+		return
+	}
+	if offset1 < 0 {
+		offset1 = 0
+	}
+	if offset2 < 0 {
+		offset2 = 0
+	}
+	length = mathx.Min(mathx.Min(length, len(array)-offset1), len(array)-offset2)
+	for i := 0; i < length; i++ {
+		aux := array[offset1]
+		array[offset1] = array[offset2]
+		array[offset2] = aux
+		offset1++
+		offset2++
+	}
+}
+
+// Shuffle 打乱数组顺序
+func Shuffle[S ~[]E, E any](s S) S {
+	r := randx.Get()
+	r.Shuffle(len(s), func(i, j int) {
+		s[i], s[j] = s[j], s[i]
+	})
+	randx.Put(r)
+	return s
+}
+
+// Sum 数组求和
+func Sum[S ~[]E, E constraintx.Numeric](s S) E {
+	var r E
+	for _, i := range s {
+		r += i
+	}
+	return r
+}
+
+// ToMap 方法创建一个Map，这个Map由原数组中的每个元素都调用一次提供的函数后的返回值作为Key、每个元素作为Value组成。
+func ToMap[S ~[]E, M ~map[K]E, E any, K comparable](s S, f func(int, E) K) M {
+	m := make(M, len(s))
+	for i, v := range s {
+		m[f(i, v)] = v
+	}
+	return m
+}
+
+func Uniq[S ~[]E, E comparable](s S) S {
+	if s == nil {
+		return nil
+	}
+	length := len(s)
+	r := make(S, 0, length)
+	if length <= 8 {
+		for _, v := range s {
+			if !slices.Contains(r, v) {
+				r = append(r, v)
+			}
+		}
+		return r
+	}
+	m := make(map[E]struct{}, length)
+	for _, v := range s {
+		m[v] = struct{}{}
+	}
+	for k := range m {
+		r = append(r, k)
+	}
+	return r
+}
+
+func SafeSlice[S ~[]E, E comparable](s S, start, length int) S {
+	var r S
+	if start < 0 || length < 0 {
+		return r
+	}
+	low := start
+	if len(s) < low {
+		return r
+	}
+	high := start + length
+	if len(s) < high {
+		high = len(s)
+	}
+	return s[low:high]
+}

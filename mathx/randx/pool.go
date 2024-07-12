@@ -10,6 +10,7 @@ var randPool = &sync.Pool{New: func() any { return rand.New(rand.NewSource(time.
 
 func Get() *rand.Rand {
 	r := randPool.Get().(*rand.Rand)
+	r.Seed(time.Now().UnixNano())
 	return r
 }
 
