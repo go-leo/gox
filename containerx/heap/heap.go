@@ -11,7 +11,7 @@ type KeyError struct {
 }
 
 func (k KeyError) Error() string {
-	return fmt.Sprintf("heap: couldn't create key: %v", k.Err)
+	return fmt.Sprintf("heap: failed to call key func, obj: %v, error : %v", k.Obj, k.Err)
 }
 
 // KeyFunc is a function type to get the key from an object.
@@ -148,7 +148,7 @@ func (h *Heap) Delete(obj interface{}) error {
 		heap.Remove(h.data, item.index)
 		return nil
 	}
-	return fmt.Errorf("object not found")
+	return fmt.Errorf("heap: object not found")
 }
 
 // Peek returns the head of the heap without removing it.
@@ -162,7 +162,7 @@ func (h *Heap) Pop() (interface{}, error) {
 	if obj != nil {
 		return obj, nil
 	}
-	return nil, fmt.Errorf("object was removed from heap data")
+	return nil, fmt.Errorf("heap: object was removed from heap data")
 }
 
 // Get returns the requested item, or sets exists=false.
