@@ -1,4 +1,4 @@
-package syncx
+package mutexx
 
 import (
 	"fmt"
