@@ -1,12 +1,11 @@
 package mapx
 
 import (
-	"github.com/go-leo/gox/containerx/mapx"
 	"sync"
 	"sync/atomic"
 )
 
-var _ mapx.MapInterface = (*DeepCopyMap)(nil)
+var _ MapInterface = (*DeepCopyMap)(nil)
 
 // DeepCopyMap is an implementation of mapInterface using a Mutex and
 // atomic.Value.  It makes deep copies of the map on every write to avoid

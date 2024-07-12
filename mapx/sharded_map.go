@@ -1,13 +1,9 @@
 package mapx
 
-import (
-	"github.com/go-leo/gox/containerx/mapx"
-)
-
-var _ mapx.MapInterface = (*ShardedMap)(nil)
+var _ MapInterface = (*ShardedMap)(nil)
 
 type ShardedMap struct {
-	Segments []mapx.MapInterface
+	Segments []MapInterface
 	Hash     func(key any) int
 }
 
@@ -49,6 +45,6 @@ func (m *ShardedMap) Range(f func(key any, value any) (shouldContinue bool)) {
 	}
 }
 
-func (m *ShardedMap) bucket(k any) mapx.MapInterface {
+func (m *ShardedMap) bucket(k any) MapInterface {
 	return m.Segments[m.Hash(k)%len(m.Segments)]
 }

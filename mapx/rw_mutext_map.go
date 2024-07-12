@@ -1,11 +1,10 @@
 package mapx
 
 import (
-	"github.com/go-leo/gox/containerx/mapx"
 	"sync"
 )
 
-var _ mapx.MapInterface = (*RWMutexMap)(nil)
+var _ MapInterface = (*RWMutexMap)(nil)
 
 // RWMutexMap is an implementation of mapInterface using a sync.RWMutex.
 type RWMutexMap struct {
