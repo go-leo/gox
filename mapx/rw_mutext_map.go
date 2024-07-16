@@ -1,6 +1,7 @@
 package mapx
 
 import (
+	"golang.org/x/exp/maps"
 	"sync"
 )
 
@@ -42,18 +43,6 @@ func (m *RWMutexMap) LoadOrStore(key, value any) (actual any, loaded bool) {
 	return actual, loaded
 }
 
-func (m *RWMutexMap) Swap(key, value any) (previous any, loaded bool) {
-	m.mu.Lock()
-	if m.dirty == nil {
-		m.dirty = make(map[any]any)
-	}
-
-	previous, loaded = m.dirty[key]
-	m.dirty[key] = value
-	m.mu.Unlock()
-	return
-}
-
 func (m *RWMutexMap) LoadAndDelete(key any) (value any, loaded bool) {
 	m.mu.Lock()
 	value, loaded = m.dirty[key]
@@ -70,6 +59,18 @@ func (m *RWMutexMap) Delete(key any) {
 	m.mu.Lock()
 	delete(m.dirty, key)
 	m.mu.Unlock()
+}
+
+func (m *RWMutexMap) Swap(key, value any) (previous any, loaded bool) {
+	m.mu.Lock()
+	if m.dirty == nil {
+		m.dirty = make(map[any]any)
+	}
+
+	previous, loaded = m.dirty[key]
+	m.dirty[key] = value
+	m.mu.Unlock()
+	return
 }
 
 func (m *RWMutexMap) CompareAndSwap(key, old, new any) (swapped bool) {
@@ -104,10 +105,7 @@ func (m *RWMutexMap) CompareAndDelete(key, old any) (deleted bool) {
 
 func (m *RWMutexMap) Range(f func(key, value any) (shouldContinue bool)) {
 	m.mu.RLock()
-	keys := make([]any, 0, len(m.dirty))
-	for k := range m.dirty {
-		keys = append(keys, k)
-	}
+	keys := maps.Keys(m.dirty)
 	m.mu.RUnlock()
 
 	for _, k := range keys {

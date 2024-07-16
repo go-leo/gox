@@ -15,10 +15,10 @@ type DeepCopyMap struct {
 	clean atomic.Value
 }
 
-func (m *DeepCopyMap) Load(key any) (value any, ok bool) {
+func (m *DeepCopyMap) Load(key any) (value any, loaded bool) {
 	clean, _ := m.clean.Load().(map[any]any)
-	value, ok = clean[key]
-	return value, ok
+	value, loaded = clean[key]
+	return value, loaded
 }
 
 func (m *DeepCopyMap) Store(key, value any) {

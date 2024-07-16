@@ -1,128 +1,143 @@
 package mapx
 
 import (
-	"github.com/go-leo/gox/listx"
+	"container/list"
+	"sync"
 )
 
-type OrderedMap[K comparable, V any] struct {
-	kv map[K]*listx.Element[K, V]
-	ll listx.List[K, V]
+var _ MapInterface = (*OrderedMap)(nil)
+
+type OrderedMap struct {
+	mu    sync.RWMutex
+	items map[any]*list.Element
+	list  *list.List
 }
 
-func NewOrderedMap[K comparable, V any]() *OrderedMap[K, V] {
-	return &OrderedMap[K, V]{
-		kv: make(map[K]*listx.Element[K, V]),
+func (m *OrderedMap) Load(key any) (value any, loaded bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	elem, loaded := m.items[key]
+	if !loaded {
+		return nil, loaded
 	}
+	return elem.Value.(*Entry[any, any]).Value, loaded
 }
 
-// Get returns the value for a key. If the key does not exist, the second return
-// parameter will be false and the value will be nil.
-func (m *OrderedMap[K, V]) Get(key K) (value V, ok bool) {
-	v, ok := m.kv[key]
-	if ok {
-		value = v.Value
+func (m *OrderedMap) Store(key, value any) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, ok := m.items[key]
+	if !ok {
+		entry := &Entry[any, any]{Key: key, Value: value}
+		elem = m.list.PushBack(entry)
+		m.items[key] = elem
+		return
 	}
-
-	return
+	elem.Value.(*Entry[any, any]).Value = value
 }
 
-// Set will set (or replace) a value for a key. If the key was new, then true
-// will be returned. The returned value will be false if the value was replaced
-// (even if the value was the same).
-func (m *OrderedMap[K, V]) Set(key K, value V) bool {
-	_, alreadyExist := m.kv[key]
-	if alreadyExist {
-		m.kv[key].Value = value
+func (m *OrderedMap) LoadOrStore(key, value any) (actual any, loaded bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, loaded := m.items[key]
+	if !loaded {
+		entry := &Entry[any, any]{Key: key, Value: value}
+		elem = m.list.PushBack(entry)
+		m.items[key] = elem
+		return value, loaded
+	}
+	return elem.Value.(*Entry[any, any]).Value, loaded
+}
+
+func (m *OrderedMap) LoadAndDelete(key any) (value any, loaded bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, loaded := m.items[key]
+	if !loaded {
+		return nil, loaded
+	}
+	delete(m.items, key)
+	m.list.Remove(elem)
+	return elem.Value.(*Entry[any, any]).Value, loaded
+}
+
+func (m *OrderedMap) Delete(key any) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, ok := m.items[key]
+	if !ok {
+		return
+	}
+	delete(m.items, key)
+	m.list.Remove(elem)
+}
+
+func (m *OrderedMap) Swap(key, value any) (previous any, loaded bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, loaded := m.items[key]
+	if !loaded {
+		return previous, loaded
+	}
+	entry := elem.Value.(*Entry[any, any])
+	previous = entry.Value
+	entry.Value = value
+	return previous, loaded
+}
+
+func (m *OrderedMap) CompareAndSwap(key, old, new any) (swapped bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, loaded := m.items[key]
+	if !loaded {
 		return false
 	}
-
-	element := m.ll.PushBack(key, value)
-	m.kv[key] = element
+	entry := elem.Value.(*Entry[any, any])
+	if entry.Value != old {
+		return false
+	}
+	entry.Value = new
 	return true
 }
 
-// ReplaceKey replaces an existing key with a new key while preserving order of
-// the value. This function will return true if the operation was successful, or
-// false if 'originalKey' is not found OR 'newKey' already exists (which would be an overwrite).
-func (m *OrderedMap[K, V]) ReplaceKey(originalKey, newKey K) bool {
-	element, originalExists := m.kv[originalKey]
-	_, newKeyExists := m.kv[newKey]
-	if originalExists && !newKeyExists {
-		delete(m.kv, originalKey)
-		m.kv[newKey] = element
-		element.Key = newKey
-		return true
+func (m *OrderedMap) CompareAndDelete(key, old any) (deleted bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	elem, loaded := m.items[key]
+	if !loaded {
+		return false
 	}
-	return false
-}
-
-// GetOrDefault returns the value for a key. If the key does not exist, returns
-// the default value instead.
-func (m *OrderedMap[K, V]) GetOrDefault(key K, defaultValue V) V {
-	if value, ok := m.kv[key]; ok {
-		return value.Value
+	entry := elem.Value.(*Entry[any, any])
+	if entry.Value != old {
+		return false
 	}
-
-	return defaultValue
+	delete(m.items, key)
+	m.list.Remove(elem)
+	return true
 }
 
-// GetElement returns the element for a key. If the key does not exist, the
-// pointer will be nil.
-func (m *OrderedMap[K, V]) GetElement(key K) *listx.Element[K, V] {
-	element, ok := m.kv[key]
-	if ok {
-		return element
+func (m *OrderedMap) Range(f func(key any, value any) (shouldContinue bool)) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for elem := m.list.Front(); elem != nil; elem = elem.Next() {
+		entry := elem.Value.(*Entry[any, any])
+		if !f(entry.Key, entry.Value) {
+			break
+		}
 	}
-
-	return nil
 }
 
-// Len returns the number of elements in the map.
-func (m *OrderedMap[K, V]) Len() int {
-	return len(m.kv)
+func (m *OrderedMap) Front() *list.Element {
+	return m.list.Front()
 }
 
-// Keys returns all of the keys in the order they were inserted. If a key was
-// replaced it will retain the same position. To ensure most recently set keys
-// are always at the end you must always Delete before Set.
-func (m *OrderedMap[K, V]) Keys() (keys []K) {
-	keys = make([]K, 0, m.Len())
-	for el := m.Front(); el != nil; el = el.Next() {
-		keys = append(keys, el.Key)
+func (m *OrderedMap) Back() *list.Element {
+	return m.list.Back()
+}
+
+func NewOrderedMap() *OrderedMap {
+	return &OrderedMap{
+		items: make(map[any]*list.Element),
+		list:  list.New(),
 	}
-	return keys
-}
-
-// Delete will remove a key from the map. It will return true if the key was
-// removed (the key did exist).
-func (m *OrderedMap[K, V]) Delete(key K) (didDelete bool) {
-	element, ok := m.kv[key]
-	if ok {
-		m.ll.Remove(element)
-		delete(m.kv, key)
-	}
-
-	return ok
-}
-
-// Front will return the element that is the first (oldest Set element). If
-// there are no elements this will return nil.
-func (m *OrderedMap[K, V]) Front() *listx.Element[K, V] {
-	return m.ll.Front()
-}
-
-// Back will return the element that is the last (most recent Set element). If
-// there are no elements this will return nil.
-func (m *OrderedMap[K, V]) Back() *listx.Element[K, V] {
-	return m.ll.Back()
-}
-
-// Copy returns a new OrderedMap with the same elements.
-// Using Copy while there are concurrent writes may mangle the result.
-func (m *OrderedMap[K, V]) Copy() *OrderedMap[K, V] {
-	m2 := NewOrderedMap[K, V]()
-	for el := m.Front(); el != nil; el = el.Next() {
-		m2.Set(el.Key, el.Value)
-	}
-	return m2
 }
