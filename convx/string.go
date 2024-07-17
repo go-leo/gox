@@ -11,49 +11,47 @@ import (
 
 // ToString casts an interface to a string type.
 func ToString(o any) string {
-	v, _ := ToStringE(o)
-	return v
+	return ToText[string](o)
 }
 
 // ToStringE casts an interface to a string type.
 func ToStringE(o any) (string, error) {
-	return toStringerE[string](o)
+	return ToTextE[string](o)
 }
 
 // ToStringSlice casts an interface to a []string type.
 func ToStringSlice(o any) []string {
-	v, _ := ToStringSliceE(o)
-	return v
+	return ToTextSlice[[]string](o)
 }
 
 // ToStringSliceE casts an interface to a []string type.
 func ToStringSliceE(o any) ([]string, error) {
-	return toSliceE[[]string](o, toStringerE[string])
+	return ToTextSliceE[[]string](o)
 }
 
-// ToStringer casts an interface to a string type.
-func ToStringer[E ~string](o any) E {
-	v, _ := ToStringerE[E](o)
+// ToText casts an interface to a string type.
+func ToText[E ~string](o any) E {
+	v, _ := ToTextE[E](o)
 	return v
 }
 
-// ToStringerE casts an interface to a string type.
-func ToStringerE[E ~string](o any) (E, error) {
-	return toStringerE[E](o)
+// ToTextE casts an interface to a string type.
+func ToTextE[E ~string](o any) (E, error) {
+	return toTextE[E](o)
 }
 
-// ToStringerSlice casts an interface to a []string type.
-func ToStringerSlice[S ~[]E, E ~string](o any) S {
-	v, _ := ToStringerSliceE[S](o)
+// ToTextSlice casts an interface to a []string type.
+func ToTextSlice[S ~[]E, E ~string](o any) S {
+	v, _ := ToTextSliceE[S](o)
 	return v
 }
 
-// ToStringerSliceE casts an interface to a []string type.
-func ToStringerSliceE[S ~[]E, E ~string](o any) (S, error) {
-	return toSliceE[S](o, toStringerE[E])
+// ToTextSliceE casts an interface to a []string type.
+func ToTextSliceE[S ~[]E, E ~string](o any) (S, error) {
+	return toSliceE[S](o, toTextE[E])
 }
 
-func toStringerE[E ~string](o any) (E, error) {
+func toTextE[E ~string](o any) (E, error) {
 	var zero E
 	o = reflectx.IndirectToInterface(o,
 		reflect.TypeOf((*fmt.Stringer)(nil)).Elem(),
@@ -110,7 +108,7 @@ func toStringerE[E ~string](o any) (E, error) {
 		if err != nil {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
-		return toStringerE[E](v)
+		return toTextE[E](v)
 	case nil:
 		return "", nil
 	default:

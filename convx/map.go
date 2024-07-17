@@ -44,32 +44,32 @@ func ToStringMapStringSlice(o any) map[string][]string {
 
 // ToStringMapE casts an interface to a map[string]any type.
 func ToStringMapE(o any) (map[string]any, error) {
-	return toMapE[map[string]any](o, ToStringerE[string], func(o any) (any, error) { return o, nil })
+	return toMapE[map[string]any](o, ToTextE[string], func(o any) (any, error) { return o, nil })
 }
 
 // ToStringMapStringE casts an interface to a map[string]string type.
 func ToStringMapStringE(o any) (map[string]string, error) {
-	return toMapE[map[string]string](o, ToStringerE[string], ToStringerE[string])
+	return toMapE[map[string]string](o, ToTextE[string], ToTextE[string])
 }
 
 // ToStringMapBoolE casts an interface to a map[string]bool type.
 func ToStringMapBoolE(o any) (map[string]bool, error) {
-	return toMapE[map[string]bool](o, ToStringerE[string], ToBoolE[bool])
+	return toMapE[map[string]bool](o, ToTextE[string], ToBoolE[bool])
 }
 
 // ToStringMapIntE casts an interface to a map[string]int{} type.
 func ToStringMapIntE(o any) (map[string]int, error) {
-	return toMapE[map[string]int](o, ToStringerE[string], ToSignedE[int])
+	return toMapE[map[string]int](o, ToTextE[string], ToSignedE[int])
 }
 
 // ToStringMapInt64E casts an interface to a map[string]int64{} type.
 func ToStringMapInt64E(o any) (map[string]int64, error) {
-	return toMapE[map[string]int64](o, ToStringerE[string], ToSignedE[int64])
+	return toMapE[map[string]int64](o, ToTextE[string], ToSignedE[int64])
 }
 
 // ToStringMapStringSliceE casts an interface to a map[string][]string type.
 func ToStringMapStringSliceE(o any) (map[string][]string, error) {
-	return toMapE[map[string][]string](o, ToStringerE[string], ToStringerSliceE[[]string])
+	return toMapE[map[string][]string](o, ToTextE[string], ToTextSliceE[[]string])
 }
 
 func toMapE[M ~map[K]V, K comparable, V any](o any, key func(o any) (K, error), val func(o any) (V, error)) (M, error) {

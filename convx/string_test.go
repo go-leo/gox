@@ -133,11 +133,11 @@ func TestToStringerE(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ToStringE(tt.input)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("toStringerE() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("toTextE() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("toStringerE() = %v, want %v", got, tt.want)
+				t.Errorf("toTextE() = %v, want %v", got, tt.want)
 			}
 		})
 	}
