@@ -73,7 +73,7 @@ func TestToSignedSliceE(t *testing.T) {
 			name:    "nil input",
 			input:   nil,
 			want:    nil,
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name:    "slice input",

@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
-	"reflect"
 	"time"
 )
 
@@ -32,12 +31,7 @@ func ToDurationSliceE(o any) ([]time.Duration, error) {
 
 func toDurationE(o any) (time.Duration, error) {
 	var zero time.Duration
-	o = reflectx.IndirectToInterface(o,
-		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
-		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
-		reflect.TypeOf((*interface{ AsDuration() time.Duration })(nil)).Elem(),
-		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
-	)
+	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyAsDurationer, emptyValuer)
 	switch d := o.(type) {
 	case time.Duration:
 		return d, nil
@@ -50,13 +44,13 @@ func toDurationE(o any) (time.Duration, error) {
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float32, float64,
-		interface{ Int64() (int64, error) }, interface{ Float64() (float64, error) }: // json.Number
+		int64er, float64er:
 		v, err := ToInt64E(o)
 		if err != nil {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
 		return time.Duration(v), nil
-	case interface{ AsDuration() time.Duration }:
+	case asDurationer:
 		return d.AsDuration(), nil
 	case driver.Valuer:
 		v, err := d.Value()

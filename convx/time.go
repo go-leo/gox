@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
-	"reflect"
 	"time"
 )
 
@@ -34,20 +33,14 @@ func ToTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 
 func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 	zero := time.Time{}
-	o = reflectx.IndirectToInterface(
-		o,
-		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
-		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
-		reflect.TypeOf((*interface{ AsTime() time.Time })(nil)).Elem(),
-		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
-	)
+	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, empryAsTimeer, emptyValuer)
 	switch t := o.(type) {
 	case time.Time:
 		return t, nil
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float32, float64,
-		interface{ Int64() (int64, error) }, interface{ Float64() (float64, error) }: // json.Number
+		int64er, float64er:
 		v, err := ToInt64E(t)
 		if err != nil {
 			return zero, err
@@ -68,7 +61,7 @@ func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
 		}
 		return ToTimeInLocationE(v, location)
-	case interface{ AsTime() time.Time }:
+	case asTimeer:
 		return t.AsTime(), nil
 	default:
 		return zero, fmt.Errorf("unable to cast %#s of type %T to Time", o, o)

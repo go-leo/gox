@@ -1,7 +1,6 @@
 package reflectx
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -34,19 +33,18 @@ func IndirectType(t reflect.Type) reflect.Type {
 	return t
 }
 
-var (
-	StringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
-	ErrorType    = reflect.TypeOf((*error)(nil)).Elem()
-)
-
-func IndirectToInterface(a any, ifaces ...reflect.Type) any {
+func IndirectToInterface(a any, ifaces ...any) any {
 	if a == nil {
 		return nil
 	}
 	v := reflect.ValueOf(a)
+	ifaceTypes := make([]reflect.Type, 0, len(ifaces))
+	for _, iface := range ifaces {
+		ifaceTypes = append(ifaceTypes, reflect.TypeOf(iface).Elem())
+	}
 	for {
-		for _, iface := range ifaces {
-			if v.Type().Implements(iface) {
+		for _, ifaceType := range ifaceTypes {
+			if v.Type().Implements(ifaceType) {
 				return v.Interface()
 			}
 		}

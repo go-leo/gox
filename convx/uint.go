@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
-	"reflect"
 	"strconv"
 	"time"
 )
@@ -144,11 +143,7 @@ func ToUnsignedSliceE[S ~[]E, E constraints.Unsigned](o any) (S, error) {
 
 func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o,
-		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
-		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
-		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
-	)
+	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyValuer)
 	switch u := o.(type) {
 	case int:
 		if u < 0 {
@@ -195,7 +190,7 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
 		return E(u), nil
-	case interface{ Int64() (int64, error) }: // json.Number
+	case int64er:
 		v, err := u.Int64()
 		if err != nil {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
@@ -204,7 +199,7 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 			return zero, fmt.Errorf(failedCast, o, o, zero)
 		}
 		return E(v), err
-	case interface{ Float64() (float64, error) }: // json.Number
+	case float64er:
 		v, err := u.Float64()
 		if err != nil {
 			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)

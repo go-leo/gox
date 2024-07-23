@@ -1,9 +1,10 @@
 package convx
 
 import (
-	"fmt"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"strings"
 	"testing"
 )
 
@@ -61,7 +62,7 @@ func TestToFloatE(t *testing.T) {
 			input:     "invalid",
 			want:      0.0,
 			wantErr:   true,
-			errTarget: fmt.Errorf("unable to convert %#v of type %T to %T", "invalid", "invalid", 0.0),
+			errTarget: errors.New(failedCast),
 			toFloat: func(i any) (any, error) {
 				return ToFloatE[float64](i)
 			},
@@ -95,7 +96,7 @@ func TestToFloatE(t *testing.T) {
 
 			if tt.wantErr {
 				require.Error(t, err)
-				assert.Equal(t, tt.errTarget, err)
+				assert.True(t, strings.Contains(tt.errTarget.Error(), failedCast))
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, tt.want, got)

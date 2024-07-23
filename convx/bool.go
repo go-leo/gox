@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
-	"reflect"
 	"strconv"
 	"time"
 )
@@ -33,18 +32,14 @@ func ToBoolSliceE[S ~[]E, E ~bool](o any) (S, error) {
 
 func toBoolE[E ~bool](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o,
-		reflect.TypeOf((*interface{ Int64() (int64, error) })(nil)).Elem(),
-		reflect.TypeOf((*interface{ Float64() (float64, error) })(nil)).Elem(),
-		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
-	)
+	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyValuer)
 	switch b := o.(type) {
 	case bool:
 		return E(b), nil
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float64, float32,
-		interface{ Int64() (int64, error) }, interface{ Float64() (float64, error) }, // json.Number
+		int64er, float64er,
 		time.Duration:
 		v, err := ToIntE(o)
 		if err != nil {

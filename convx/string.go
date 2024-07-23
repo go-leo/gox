@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"html/template"
-	"reflect"
 	"strconv"
 )
 
@@ -53,11 +52,7 @@ func ToTextSliceE[S ~[]E, E ~string](o any) (S, error) {
 
 func toTextE[E ~string](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o,
-		reflect.TypeOf((*fmt.Stringer)(nil)).Elem(),
-		reflect.TypeOf((*error)(nil)).Elem(),
-		reflect.TypeOf((*driver.Valuer)(nil)).Elem(),
-	)
+	o = reflectx.IndirectToInterface(o, emptyStringer, emptyErrorer, emptyValuer)
 	switch s := o.(type) {
 	case string:
 		return E(s), nil
