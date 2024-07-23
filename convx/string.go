@@ -2,6 +2,7 @@ package convx
 
 import (
 	"database/sql/driver"
+	"encoding"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"html/template"
@@ -52,7 +53,7 @@ func ToTextSliceE[S ~[]E, E ~string](o any) (S, error) {
 
 func toTextE[E ~string](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o, emptyStringer, emptyErrorer, emptyValuer)
+	o = reflectx.IndirectToInterface(o, emptyStringer, emptyErrorer, emptyTextMarshaler, emptyValuer)
 	switch s := o.(type) {
 	case string:
 		return E(s), nil
@@ -98,6 +99,12 @@ func toTextE[E ~string](o any) (E, error) {
 		return E(string(s)), nil
 	case template.HTMLAttr:
 		return E(string(s)), nil
+	case encoding.TextMarshaler:
+		v, err := s.MarshalText()
+		if err != nil {
+			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+		}
+		return E(string(v)), nil
 	case driver.Valuer:
 		v, err := s.Value()
 		if err != nil {

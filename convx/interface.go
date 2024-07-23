@@ -2,6 +2,7 @@ package convx
 
 import (
 	"database/sql/driver"
+	"encoding"
 	"fmt"
 	"time"
 )
@@ -18,11 +19,12 @@ type (
 )
 
 var (
-	emptyInt64er      = (*int64er)(nil)
-	emptyFloat64er    = (*float64er)(nil)
-	emptyValuer       = (*driver.Valuer)(nil)
-	emptyAsDurationer = (*asDurationer)(nil)
-	empryAsTimeer     = (*asTimeer)(nil)
-	emptyErrorer      = (*error)(nil)
-	emptyStringer     = (*fmt.Stringer)(nil)
+	emptyInt64er       = (*int64er)(nil)
+	emptyFloat64er     = (*float64er)(nil)
+	emptyValuer        = (*driver.Valuer)(nil)
+	emptyAsDurationer  = (*asDurationer)(nil)
+	empryAsTimeer      = (*asTimeer)(nil)
+	emptyErrorer       = (*error)(nil)
+	emptyStringer      = (*fmt.Stringer)(nil)
+	emptyTextMarshaler = (*encoding.TextMarshaler)(nil)
 )
