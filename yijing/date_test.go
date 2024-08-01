@@ -153,6 +153,12 @@ func (wx WuXin) Que() []string {
 }
 
 func TestName(t *testing.T) {
+	for i := 0; i < 60; i++ {
+		fmt.Printf("%s%s = 柱{天干: %s, 地支: %s}\n", Tian[i%10], Di[i%12], Tian[i%10], Di[i%12])
+	}
+
+	return
+
 	a := Bazi{
 		Year: Zhu{
 			Tian: "壬",
