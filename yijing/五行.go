@@ -16,10 +16,15 @@ var (
 	土 = 五行{
 		名: "土",
 	}
+	全部五行 = []五行{金, 木, 水, 火, 土}
 )
 
 type 五行 struct {
 	名 string
+}
+
+func (wx 五行) String() string {
+	return wx.名
 }
 
 func (wx 五行) 克() 五行 {

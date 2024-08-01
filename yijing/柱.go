@@ -1,5 +1,7 @@
 package yijing
 
+import "fmt"
+
 var (
 	甲子 = 柱{
 		天干: 甲,
@@ -246,4 +248,8 @@ var (
 type 柱 struct {
 	天干 天干
 	地支 地支
+}
+
+func (z 柱) String() string {
+	return fmt.Sprintf("天干: %s, 地支: %s", z.天干.String(), z.地支.String())
 }

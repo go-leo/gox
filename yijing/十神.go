@@ -69,3 +69,7 @@ type 十神 struct {
 	别名 string
 	吉凶 吉凶
 }
+
+func (ss 十神) String() string {
+	return ss.名
+}

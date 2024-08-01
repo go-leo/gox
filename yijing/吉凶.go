@@ -12,3 +12,7 @@ var (
 type 吉凶 struct {
 	名 string
 }
+
+func (jx 吉凶) String() string {
+	return jx.名
+}

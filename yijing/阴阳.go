@@ -12,3 +12,7 @@ var (
 type 阴阳 struct {
 	名 string
 }
+
+func (yy 阴阳) String() string {
+	return yy.名
+}

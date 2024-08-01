@@ -1,5 +1,6 @@
 package yijing
 
+
 var (
 	甲 = 天干{
 		名:  "甲",
@@ -57,6 +58,10 @@ type 天干 struct {
 	名  string
 	五行 五行
 	阴阳 阴阳
+}
+
+func (tg 天干) String() string {
+	return tg.名
 }
 
 // 生我者正印偏印，我生者伤官食神;克我者正官七杀，我克者正财偏财;同我者比肩劫财。

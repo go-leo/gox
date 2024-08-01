@@ -107,3 +107,7 @@ type 地支 struct {
 	生肖 string
 	时辰 []string
 }
+
+func (dz 地支) String() string {
+	return dz.名
+}
