@@ -1,4 +1,4 @@
-package timex
+package yijing
 
 import (
 	"fmt"
@@ -49,37 +49,37 @@ func shishen(dayWuxin, dayYingYang, zhuWuxin, zhuYingYang string) string {
 	if dayWuxin == zhuWuxin {
 		//同我、助我者为比劫。同性-比肩，异性-劫财， 兄弟
 		if dayYingYang == zhuYingYang {
-			r = "比肩"
+			r = "比肩(吉)"
 		} else {
-			r = "劫财"
+			r = "劫财(凶)"
 		}
 	} else if Ke(dayWuxin) == zhuWuxin {
 		//我克、耗我者为财星。同性-偏财，异性-正财，钱
 		if dayYingYang == zhuYingYang {
-			r = "偏财"
+			r = "偏财(吉)"
 		} else {
-			r = "正财"
+			r = "正财(吉)"
 		}
 	} else if Sheng(dayWuxin) == zhuWuxin {
 		//我生、泄我者为食伤。同性-食神，异性-伤官，才华
 		if dayYingYang == zhuYingYang {
-			r = "食神"
+			r = "食神(吉)"
 		} else {
-			r = "伤官"
+			r = "伤官(凶)"
 		}
 	} else if Ke(zhuWuxin) == dayWuxin {
 		//克我，抑我者为官杀。同性-偏官，异性-正官，官
 		if dayYingYang == zhuYingYang {
-			r = "偏官(七杀)"
+			r = "偏官(七杀)(凶)"
 		} else {
-			r = "正官"
+			r = "正官(吉)"
 		}
 	} else if Sheng(zhuWuxin) == dayWuxin {
 		//生我、扶我者为印星。同性-偏印，异性-正印，证件
 		if dayYingYang == zhuYingYang {
-			r = "偏印"
+			r = "偏印(凶)"
 		} else {
-			r = "正印"
+			r = "正印(吉)"
 		}
 	}
 	return r
@@ -153,7 +153,64 @@ func (wx WuXin) Que() []string {
 }
 
 func TestName(t *testing.T) {
+	a := Bazi{
+		Year: Zhu{
+			Tian: "壬",
+			Di:   "申",
+			Cang: canggan["申"],
+		},
+		Month: Zhu{
+			Tian: "甲",
+			Di:   "辰",
+			Cang: canggan["辰"],
+		},
+		Day: Zhu{
+			Tian: "丁",
+			Di:   "丑",
+			Cang: canggan["丑"],
+		},
+		Hour: Zhu{
+			Tian: "庚",
+			Di:   "戌",
+			Cang: canggan["戌"],
+		},
+	}
+	awuXin := a.WuXin()
+	ashisheng := a.ShiSheng()
+	fmt.Println(a)
+	fmt.Println(awuXin)
+	fmt.Println(ashisheng)
 
+	b := Bazi{
+		Year: Zhu{
+			Tian: "癸",
+			Di:   "酉",
+			Cang: canggan["酉"],
+		},
+		Month: Zhu{
+			Tian: "乙",
+			Di:   "卯",
+			Cang: canggan["卯"],
+		},
+		Day: Zhu{
+			Tian: "甲",
+			Di:   "辰",
+			Cang: canggan["辰"],
+		},
+		Hour: Zhu{
+			Tian: "戊",
+			Di:   "辰",
+			Cang: canggan["辰"],
+		},
+	}
+
+	bwuXin := b.WuXin()
+	bshisheng := b.ShiSheng()
+	fmt.Println(b)
+	fmt.Println(bwuXin)
+	fmt.Println(bshisheng)
+
+	return
 	date := time.Date(2025, 1, 20, 0, 0, 0, 0, time.Local)
 	bazi := Bazi{
 		Year: Zhu{
