@@ -154,7 +154,10 @@ func (wx WuXin) Que() []string {
 
 func TestName(t *testing.T) {
 	for i := 0; i < 60; i++ {
-		fmt.Printf("%s%s = 柱{天干: %s, 地支: %s}\n", Tian[i%10], Di[i%12], Tian[i%10], Di[i%12])
+		fmt.Printf("%s%s = 柱{\n", Tian[i%10], Di[i%12])
+		fmt.Printf("天干: %s,\n", Tian[i%10])
+		fmt.Printf("地支: %s,\n", Di[i%12])
+		fmt.Printf("}\n",)
 	}
 
 	return
