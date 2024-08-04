@@ -111,3 +111,34 @@ type 地支 struct {
 func (dz 地支) String() string {
 	return dz.名
 }
+
+func 地支解析(dz string) 地支 {
+	switch dz {
+	case "子":
+		return 子
+	case "丑":
+		return 丑
+	case "寅":
+		return 寅
+	case "卯":
+		return 卯
+	case "辰":
+		return 辰
+	case "巳":
+		return 巳
+	case "午":
+		return 午
+	case "未":
+		return 未
+	case "申":
+		return 申
+	case "酉":
+		return 酉
+	case "戌":
+		return 戌
+	case "亥":
+		return 亥
+	default:
+		return 地支{}
+	}
+}

@@ -13,3 +13,9 @@ func Test十神_String(t *testing.T) {
         t.Errorf("String() = %v, want %v", result, "TestShishen")
     }
 }
+
+func Test十神_GetName(t *testing.T) {
+    bz := 八字解析("壬","申","甲","辰","丁","丑","庚","戌")
+    ss := 算八字十神(bz)
+    t.Log(ss)
+}

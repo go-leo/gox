@@ -20,3 +20,11 @@ func Test五行缺(t *testing.T) {
 
 	
 }
+
+func Test八字解析(t *testing.T) { 
+	bz := 八字解析("壬","申","甲","辰","丁","丑","庚","戌")
+	t.Log("五行",bz.五行())
+	t.Log("五行缺",bz.五行缺())
+	
+
+}

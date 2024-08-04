@@ -253,3 +253,11 @@ type 柱 struct {
 func (z 柱) String() string {
 	return fmt.Sprintf("天干: %s, 地支: %s", z.天干.String(), z.地支.String())
 }
+
+
+func 柱解析(时干, 时支 string) 柱 {
+	return 柱{
+		天干: 天干解析(时干),
+		地支: 地支解析(时支),
+	}
+}
