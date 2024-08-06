@@ -76,7 +76,6 @@ func (ss 十神) String() string {
 	return ss.名
 }
 
-
 // 生我者正印偏印，我生者伤官食神;克我者正官七杀，我克者正财偏财;同我者比肩劫财。
 // 注：口诀中的“我”代表的是八字中的日元天干。
 func 算十神(日元 天干, tg 天干) 十神 {
@@ -134,17 +133,14 @@ func (zss 柱十神) String() string {
 
 func 算柱十神(日元 天干, z 柱) 柱十神 {
 	var zs []十神
-	for _ ,tg := range z.地支.藏干 {
-		zs = append(zs, 算十神(日元, tg))	
+	for _, tg := range z.地支.藏干 {
+		zs = append(zs, 算十神(日元, tg))
 	}
 	return 柱十神{
 		干神: 算十神(日元, z.天干),
 		支神: zs,
 	}
 }
-
-
-
 
 type 八字十神 struct {
 	年柱 柱十神
@@ -153,11 +149,9 @@ type 八字十神 struct {
 	时柱 柱十神
 }
 
-
 func (bzss 八字十神) String() string {
 	return fmt.Sprintf("年柱: %s\n月柱: %s\n日柱: %s\n时柱: %s", bzss.年柱, bzss.月柱, bzss.日柱, bzss.时柱)
 }
-
 
 func 算八字十神(bz 八字) 八字十神 {
 	return 八字十神{

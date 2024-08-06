@@ -1,5 +1,7 @@
 package yijing
 
+import "slices"
+
 var (
 	子 = 地支{
 		名:  "子",
@@ -97,6 +99,8 @@ var (
 		生肖: "猪",
 		时辰: []string{"21:00:00", "23:00:00"},
 	}
+
+	全部地支 = []地支{子, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥}
 )
 
 type 地支 struct {
@@ -142,3 +146,12 @@ func 地支解析(dz string) 地支 {
 		return 地支{}
 	}
 }
+
+func (dz 地支) Next() 地支 {
+	index := slices.IndexFunc(全部地支, func(item 地支) bool {
+		return dz.名 == item.名
+	})
+	return 全部地支[(index+1)%len(全部地支)]
+}
+
+// 刑冲破害合

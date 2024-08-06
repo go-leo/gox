@@ -1,5 +1,7 @@
 package yijing
 
+import "slices"
+
 var (
 	甲 = 天干{
 		名:  "甲",
@@ -61,6 +63,8 @@ var (
 		阴阳: 阴,
 		器官: 肾,
 	}
+
+	全部天干 = []天干{甲, 乙, 丙, 丁, 戊, 己, 庚, 辛, 壬, 癸}
 )
 
 type 天干 struct {
@@ -74,31 +78,36 @@ func (tg 天干) String() string {
 	return tg.名
 }
 
+func (tg 天干) Next() 天干 {
+	index := slices.IndexFunc(全部天干, func(item 天干) bool {
+		return tg.名 == item.名
+	})
+	return 全部天干[(index+1)%len(全部天干)]
+}
 
 func 天干解析(tg string) 天干 {
 	switch tg {
-		case "甲":
-			return 甲
-		case "乙":
-			return 乙
-		case "丙":
-			return 丙
-		case "丁":
-			return 丁
-		case "戊":
-			return 戊
-		case "己":
-			return 己
-		case "庚":
-			return 庚
-		case "辛":
-			return 辛
-		case "壬":
-			return 壬
-		case "癸":
-			return 癸
-		default:
-			return 天干{}
+	case "甲":
+		return 甲
+	case "乙":
+		return 乙
+	case "丙":
+		return 丙
+	case "丁":
+		return 丁
+	case "戊":
+		return 戊
+	case "己":
+		return 己
+	case "庚":
+		return 庚
+	case "辛":
+		return 辛
+	case "壬":
+		return 壬
+	case "癸":
+		return 癸
+	default:
+		return 天干{}
 	}
 }
-
