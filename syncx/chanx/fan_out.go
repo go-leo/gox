@@ -1,9 +1,24 @@
 package chanx
 
-import "context"
-
-// FanOut multiple functions can read from the same channel until that channel is closed; this is called fan-out.
-// This provides a way to distribute work amongst a group of workers to parallelize CPU use and I/O.
-func FanOut[T any, R any](ctx context.Context, src <-chan T, f func(T) R) chan<- R {
-	return Pipeline[T, R](ctx, src, f)
+func FanOut(ch <-chan interface{}, out []chan interface{}, async bool) {
+	go func() {
+		defer func() { //退出时关闭所有的输出chan
+			for i := 0; i < len(out); i++ {
+				close(out[i])
+			}
+		}()
+		for v := range ch { // 从输入chan中读取数据
+			v := v
+			for i := 0; i < len(out); i++ {
+				i := i
+				if async { //异步
+					go func() {
+						out[i] <- v // 放入到输出chan中,异步方式
+					}()
+				} else {
+					out[i] <- v // 放入到输出chan中，同步方式
+				}
+			}
+		}
+	}()
 }
