@@ -1,4 +1,4 @@
-package tunny
+package tunnyx
 
 import "github.com/Jeffail/tunny"
 

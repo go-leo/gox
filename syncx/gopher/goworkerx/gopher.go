@@ -1,6 +1,4 @@
-// Package goworker
-// See: https://github.com/benmanns/goworker
-package goworker
+package goworkerx
 
 //
 //type Gopher struct {

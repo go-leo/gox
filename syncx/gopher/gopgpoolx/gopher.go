@@ -1,4 +1,4 @@
-package gopgpool
+package gopgpoolx
 
 import (
 	"gopkg.in/go-playground/pool.v3"

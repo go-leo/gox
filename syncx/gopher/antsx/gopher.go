@@ -1,4 +1,4 @@
-package sample
+package antsx
 
 import "github.com/panjf2000/ants/v2"
 
