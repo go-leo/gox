@@ -3,3 +3,14 @@
 // 还可以提供当前的worker数和任务数以及关闭Pool的功能。
 // See: https://github.com/gammazero/workerpool
 package workerpool
+
+import "github.com/gammazero/workerpool"
+
+type Gopher struct {
+	Pool *workerpool.WorkerPool
+}
+
+func (g Gopher) Go(f func()) error {
+	g.Pool.Submit(f)
+	return nil
+}

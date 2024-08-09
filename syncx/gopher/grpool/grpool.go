@@ -3,3 +3,14 @@
 // 交是直接往Channel放入任务。
 // See: https://github.com/ivpusic/grpool
 package grpool
+
+import "github.com/ivpusic/grpool"
+
+type Gopher struct {
+	Pool *grpool.Pool
+}
+
+func (g Gopher) Go(f func()) error {
+	g.Pool.JobQueue <- f
+	return nil
+}

@@ -1,11 +1,9 @@
 package sample
 
-// import "github.com/panjf2000/ants/v2"
+import "github.com/panjf2000/ants/v2"
 
 type Gopher struct {
-	//Pool *ants.Pool
-	//Pool ants.MultiPool
-	Pool interface{ Submit(task func()) error }
+	Pool *ants.MultiPool
 }
 
 func (g Gopher) Go(f func()) error {
