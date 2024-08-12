@@ -18,23 +18,32 @@ type CyclicBarrier struct {
 // 参数 parties 指定需要到达屏障的线程数量。
 // 参数 barrierAction 是一个函数，当所有线程都到达屏障时会被执行。
 func NewCyclicBarrier(parties int, barrierAction func()) *CyclicBarrier {
+	if parties < 1 {
+		panic("groupx: parties must be greater than 0")
+	}
 	cb := &CyclicBarrier{
 		barrierWg:     sync.WaitGroup{},
 		partiesWg:     sync.WaitGroup{},
 		parties:       parties,
 		barrierAction: barrierAction,
 	}
+	cb.init()
+	return cb
+}
+
+func (cb *CyclicBarrier) init() {
 	// 初始化 barrierWg，表示屏障动作开始前的一个等待单位
 	cb.barrierWg.Add(1)
 	// 初始化 partiesWg，并为每个参与线程增加计数
-	cb.partiesWg.Add(parties)
+	cb.partiesWg.Add(cb.parties)
 	// 启动一个 goroutine，在所有线程到达屏障后执行屏障动作
 	go func() {
 		defer cb.barrierWg.Done()
 		cb.partiesWg.Wait()
-		cb.barrierAction()
+		if cb.barrierAction != nil {
+			cb.barrierAction()
+		}
 	}()
-	return cb
 }
 
 // Wait 方法用于表示一个线程到达了屏障。
