@@ -1,4 +1,4 @@
-package mutex
+package mutexx
 
 import (
 	recipe "github.com/coreos/etcd/contrib/recipes"

@@ -1,4 +1,4 @@
-package etcd
+package election
 
 import (
 	"context"
