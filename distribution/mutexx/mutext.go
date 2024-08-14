@@ -3,8 +3,8 @@ package mutexx
 import (
 	"context"
 	"flag"
-	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/clientv3/concurrency"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/concurrency"
 	"log"
 	"math/rand"
 	"strings"
@@ -37,6 +37,7 @@ func useLock(cli *clientv3.Client) {
 		log.Fatal(err)
 	}
 	defer s1.Close()
+
 	//得到一个分布式锁
 	locker := concurrency.NewLocker(s1, *lockName)
 	// 请求锁

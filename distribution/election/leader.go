@@ -3,7 +3,7 @@ package election
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/clientv3/concurrency"
+	"go.etcd.io/etcd/client/v3/concurrency"
 	"log"
 )
 

@@ -1,7 +1,7 @@
 package mutexx
 
 import (
-	recipe "github.com/coreos/etcd/contrib/recipes"
+	recipe "go.etcd.io/etcd/client/v3/experimental/recipes"
 	"log"
 	"math/rand"
 	"time"
