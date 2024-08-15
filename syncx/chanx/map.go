@@ -40,3 +40,7 @@ func AsyncMap[T any, R any](ctx context.Context, in <-chan T, mapper func(T) R) 
 	}()
 	return out
 }
+
+func FlatMap() {
+
+}
