@@ -1,6 +1,6 @@
 package chanx
 
-import "slices"
+import "golang.org/x/exp/slices"
 
 func Distinct[T any](in <-chan T, cmp func(value, stored T) bool) <-chan T {
 	out := make(chan T, cap(in))
