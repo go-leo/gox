@@ -47,12 +47,15 @@ func FanInReflect[T any](channels ...<-chan T) <-chan T {
 
 		// 循环，从cases中选择一个可用的
 		for len(cases) > 0 {
-			i, v, ok := reflect.Select(cases)
+			chosen, recv, ok := reflect.Select(cases)
 			if !ok { // 此channel已经close
-				cases = append(cases[:i], cases[i+1:]...)
+				cases = append(cases[:chosen], cases[chosen+1:]...)
 				continue
 			}
-			out <- v.Interface()
+			v, ok := recv.Interface().(T)
+			if ok {
+				out <- v
+			}
 		}
 	}()
 	return out
