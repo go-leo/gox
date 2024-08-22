@@ -26,3 +26,8 @@ func TestGoID(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestStack(t *testing.T) {
+	stackData := Stack(0)
+	t.Log(string(stackData))
+}
