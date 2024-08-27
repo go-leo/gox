@@ -11,10 +11,10 @@ type UnsafeAccessor struct {
 	address unsafe.Pointer
 }
 
-func UnsafeAccessorOf(obj any) *UnsafeAccessor {
+func UnsafeAccessorOf(obj any) (*UnsafeAccessor, error) {
 	objType := reflect.TypeOf(obj)
 	if objType.Kind() != reflect.Pointer {
-		panic(fmt.Errorf("reflectx: %T is not pointer", obj))
+		return nil, fmt.Errorf("reflectx: %T is not pointer", obj)
 	}
 	objStructType := IndirectType(objType)
 	numField := objStructType.NumField()
@@ -24,7 +24,7 @@ func UnsafeAccessorOf(obj any) *UnsafeAccessor {
 		fields[structField.Name] = structField
 	}
 	objValue := reflect.ValueOf(obj)
-	return &UnsafeAccessor{fields: fields, address: objValue.UnsafePointer()}
+	return &UnsafeAccessor{fields: fields, address: objValue.UnsafePointer()}, nil
 }
 
 func (accessor *UnsafeAccessor) Field(field string) (any, error) {
