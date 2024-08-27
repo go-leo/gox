@@ -98,6 +98,9 @@ func TagAccessorOf(objValue reflect.Value, key string) (Accessor, error) {
 		if !ok {
 			continue
 		}
+		if _, ok := fields[value]; ok {
+			return nil, fmt.Errorf("reflectx: %s tag value %s is duplicated", key, value)
+		}
 		fields[value] = structField
 	}
 
