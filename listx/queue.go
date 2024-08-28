@@ -5,74 +5,84 @@ import (
 	"unsafe"
 )
 
-// LockFreeQueue 基于无锁队列实现
+// LockFreeQueue 基于无锁队列实现,通过链表实现
 type LockFreeQueue struct {
-	head unsafe.Pointer
-	tail unsafe.Pointer
+	// headPtr 队列头指针
+	headPtr unsafe.Pointer
+	// tailPtr 队列尾指针
+	tailPtr unsafe.Pointer
 }
 
-// 通过链表实现，这个数据结构代表链表中的节点
-type lockFreenode struct {
-	value interface{}
-	next  unsafe.Pointer
+// lockFreeElement 代表链表中的节点
+type lockFreeElement struct {
+	value   any
+	nextPtr unsafe.Pointer
 }
 
 // NewLockFreeQueue 创建无锁队列
+// Reference: https://www.sobyte.net/post/2021-07/implementing-lock-free-queues-with-go/
 func NewLockFreeQueue() *LockFreeQueue {
-	n := unsafe.Pointer(&lockFreenode{})
-	return &LockFreeQueue{head: n, tail: n}
+	elemPtr := unsafe.Pointer(&lockFreeElement{})
+	return &LockFreeQueue{headPtr: elemPtr, tailPtr: elemPtr}
 }
 
 // Enqueue 入队
-func (q *LockFreeQueue) Enqueue(v interface{}) {
-	n := &lockFreenode{value: v}
+func (q *LockFreeQueue) Enqueue(v any) {
+	n := &lockFreeElement{value: v}
 	for {
-		tail := load(&q.tail)
-		next := load(&tail.next)
-		if tail == load(&q.tail) { // 尾还是尾
-			if next == nil { // 还没有新数据入队
-				if cas(&tail.next, next, n) { //增加到队尾
-					cas(&q.tail, tail, n) //入队成功，移动尾巴指针
+		tail := load(&q.tailPtr)
+		next := load(&tail.nextPtr)
+		// 尾还是尾
+		if tail == load(&q.tailPtr) {
+			// 还没有新数据入队
+			if next == nil {
+				//增加到队尾
+				if cas(&tail.nextPtr, next, n) {
+					//入队成功，移动尾巴指针
+					_ = cas(&q.tailPtr, tail, n)
 					return
 				}
-			} else { // 已有新数据加到队列后面，需要移动尾指针
-				cas(&q.tail, tail, next)
+			} else {
+				// 已有新数据加到队列后面，需要移动尾指针
+				_ = cas(&q.tailPtr, tail, next)
 			}
 		}
 	}
 }
 
 // Dequeue 出队，没有元素则返回nil
-func (q *LockFreeQueue) Dequeue() interface{} {
+func (q *LockFreeQueue) Dequeue() any {
 	for {
-		head := load(&q.head)
-		tail := load(&q.tail)
-		next := load(&head.next)
-		if head == load(&q.head) { // head还是那个head
-			if head == tail { // head和tail一样
-				if next == nil { // 说明是空队列
+		head := load(&q.headPtr)
+		tail := load(&q.tailPtr)
+		next := load(&head.nextPtr)
+		// head还是那个head
+		if head == load(&q.headPtr) {
+			// head和tail一样
+			if head == tail {
+				// 说明是空队列
+				if next == nil {
 					return nil
 				}
 				// 只是尾指针还没有调整，尝试调整它指向下一个
-				cas(&q.tail, tail, next)
+				_ = cas(&q.tailPtr, tail, next)
 			} else {
 				// 读取出队的数据
 				v := next.value
 				// 既然要出队了，头指针移动到下一个
-				if cas(&q.head, head, next) {
-					return v // Dequeue is done.  return
+				if cas(&q.headPtr, head, next) {
+					// Dequeue is done.
+					return v
 				}
 			}
 		}
 	}
 }
 
-// load 封装load,避免直接将*node转换成unsafe.Pointer
-func load(p *unsafe.Pointer) (n *lockFreenode) {
-	return (*lockFreenode)(atomic.LoadPointer(p))
+func load(p *unsafe.Pointer) *lockFreeElement {
+	return (*lockFreeElement)(atomic.LoadPointer(p))
 }
 
-// 封装CAS,避免直接将*node转换成unsafe.Pointer
-func cas(p *unsafe.Pointer, old, new *lockFreenode) (ok bool) {
+func cas(p *unsafe.Pointer, old, new *lockFreeElement) bool {
 	return atomic.CompareAndSwapPointer(p, unsafe.Pointer(old), unsafe.Pointer(new))
 }
