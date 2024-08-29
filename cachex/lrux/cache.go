@@ -1,23 +1,20 @@
-package ttl
+package lrux
 
 import (
 	"context"
 	"github.com/go-leo/gox/cachex"
-	"github.com/patrickmn/go-cache"
-	"time"
+	lru "github.com/hashicorp/golang-lru"
 )
 
 var _ cachex.Store = (*Cache)(nil)
 
-// Cache TTL缓存
+// Cache LRU缓存
 type Cache struct {
-	Cache *cache.Cache
-	// 过期时间
-	TTL func(key string) time.Duration
+	LRUCache *lru.Cache
 }
 
 func (store *Cache) Get(ctx context.Context, key string) (any, error) {
-	val, ok := store.Cache.Get(key)
+	val, ok := store.LRUCache.Get(key)
 	if !ok {
 		return nil, cachex.ErrNil
 	}
@@ -25,15 +22,11 @@ func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 }
 
 func (store *Cache) Set(ctx context.Context, key string, val any) error {
-	ttl := cache.DefaultExpiration
-	if store.TTL != nil {
-		ttl = store.TTL(key)
-	}
-	store.Cache.Set(key, val, ttl)
+	_ = store.LRUCache.Add(key, val)
 	return nil
 }
 
 func (store *Cache) Delete(ctx context.Context, key string) error {
-	store.Cache.Delete(key)
+	_ = store.LRUCache.Remove(key)
 	return nil
 }

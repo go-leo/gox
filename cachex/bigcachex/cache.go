@@ -1,4 +1,4 @@
-package big
+package bigcachex
 
 import (
 	"context"
@@ -8,12 +8,6 @@ import (
 )
 
 var _ cachex.Store = (*Cache)(nil)
-
-var (
-	ErrUnmarshalNil = errors.New("unmarshal function is nil")
-
-	ErrMarshalNil = errors.New("marshal function is nil")
-)
 
 type Cache struct {
 	BigCache  *bigcache.BigCache
@@ -29,8 +23,9 @@ func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	// if Unmarshal is nil, return bytes data
 	if store.Unmarshal == nil {
-		return nil, ErrUnmarshalNil
+		return data, nil
 	}
 	obj, err := store.Unmarshal(key, data)
 	if err != nil {
@@ -40,8 +35,13 @@ func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 }
 
 func (store *Cache) Set(ctx context.Context, key string, val any) error {
+	// if Marshal is nil, convert val to bytes
 	if store.Marshal == nil {
-		return ErrMarshalNil
+		data, ok := val.([]byte)
+		if !ok {
+			return errors.New("bigcachex: failed to convert to bytes")
+		}
+		return store.BigCache.Set(key, data)
 	}
 	data, err := store.Marshal(key, val)
 	if err != nil {

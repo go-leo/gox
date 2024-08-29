@@ -1,4 +1,4 @@
-package redis
+package redisx
 
 import (
 	"context"
@@ -9,12 +9,6 @@ import (
 )
 
 var _ cachex.Store = (*Cache)(nil)
-
-var (
-	ErrUnmarshalNil = errors.New("unmarshal function is nil")
-
-	ErrMarshalNil = errors.New("marshal function is nil")
-)
 
 type Cache struct {
 	Client redis.UniversalClient
@@ -33,7 +27,7 @@ func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 		return nil, err
 	}
 	if store.Unmarshal == nil {
-		return nil, ErrUnmarshalNil
+		return data, nil
 	}
 	obj, err := store.Unmarshal(key, []byte(data))
 	if err != nil {
@@ -43,16 +37,16 @@ func (store *Cache) Get(ctx context.Context, key string) (any, error) {
 }
 
 func (store *Cache) Set(ctx context.Context, key string, val any) error {
+	ttl := time.Duration(0)
+	if store.TTL != nil {
+		ttl = store.TTL(key)
+	}
 	if store.Marshal == nil {
-		return ErrMarshalNil
+		return store.Client.Set(ctx, key, val, ttl).Err()
 	}
 	data, err := store.Marshal(key, val)
 	if err != nil {
 		return err
-	}
-	ttl := time.Duration(0)
-	if store.TTL != nil {
-		ttl = store.TTL(key)
 	}
 	return store.Client.Set(ctx, key, data, ttl).Err()
 }
