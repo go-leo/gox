@@ -6,17 +6,12 @@ import (
 	"unsafe"
 )
 
-type Accessor interface {
-	Get(field string) (any, error)
-	Set(field string, val any) error
-}
-
-type defaultAccessor struct {
+type Accessor struct {
 	fields  map[string]reflect.StructField
 	address unsafe.Pointer
 }
 
-func (accessor *defaultAccessor) Get(field string) (any, error) {
+func (accessor *Accessor) Get(field string) (any, error) {
 	structField, ok := accessor.fields[field]
 	if !ok {
 		return nil, fmt.Errorf("reflectx: failed to get %s field", field)
@@ -24,7 +19,7 @@ func (accessor *defaultAccessor) Get(field string) (any, error) {
 	return accessor.get(structField)
 }
 
-func (accessor *defaultAccessor) Set(field string, val any) error {
+func (accessor *Accessor) Set(field string, val any) error {
 	structField, ok := accessor.fields[field]
 	if !ok {
 		return fmt.Errorf("reflectx: failed to get %s field", field)
@@ -33,20 +28,20 @@ func (accessor *defaultAccessor) Set(field string, val any) error {
 	return nil
 }
 
-func (accessor *defaultAccessor) fieldAddress(structField reflect.StructField) unsafe.Pointer {
+func (accessor *Accessor) fieldAddress(structField reflect.StructField) unsafe.Pointer {
 	// field address = objAddress + fieldOffset
 	return unsafe.Pointer(uintptr(accessor.address) + structField.Offset)
 }
 
-func (accessor *defaultAccessor) get(structField reflect.StructField) (any, error) {
+func (accessor *Accessor) get(structField reflect.StructField) (any, error) {
 	return reflect.NewAt(structField.Type, accessor.fieldAddress(structField)).Elem().Interface(), nil
 }
 
-func (accessor *defaultAccessor) set(structField reflect.StructField, val any) {
+func (accessor *Accessor) set(structField reflect.StructField, val any) {
 	reflect.NewAt(structField.Type, accessor.fieldAddress(structField)).Elem().Set(reflect.ValueOf(val))
 }
 
-func FieldAccessorOf(objValue reflect.Value) (Accessor, error) {
+func FieldAccessorOf(objValue reflect.Value) (*Accessor, error) {
 	if !objValue.IsValid() {
 		return nil, fmt.Errorf("reflectx: invalid reflect.Value")
 	}
@@ -70,10 +65,10 @@ func FieldAccessorOf(objValue reflect.Value) (Accessor, error) {
 		fields[structField.Name] = structField
 	}
 
-	return &defaultAccessor{fields: fields, address: address}, nil
+	return &Accessor{fields: fields, address: address}, nil
 }
 
-func TagAccessorOf(objValue reflect.Value, key string) (Accessor, error) {
+func TagAccessorOf(objValue reflect.Value, key string) (*Accessor, error) {
 	if !objValue.IsValid() {
 		return nil, fmt.Errorf("reflectx: invalid reflect.Value")
 	}
@@ -104,5 +99,24 @@ func TagAccessorOf(objValue reflect.Value, key string) (Accessor, error) {
 		fields[value] = structField
 	}
 
-	return &defaultAccessor{fields: fields, address: address}, nil
+	return &Accessor{fields: fields, address: address}, nil
+}
+
+func GetByAccessor[T any](accessor *Accessor, field string) (T, error) {
+	var res T
+	structField, ok := accessor.fields[field]
+	if !ok {
+		return res, fmt.Errorf("reflectx: failed to get %s field", field)
+	}
+	res = *(*T)(accessor.fieldAddress(structField))
+	return res, nil
+}
+
+func SetByAccessor[T any](accessor *Accessor, field string, val T) error {
+	structField, ok := accessor.fields[field]
+	if !ok {
+		return fmt.Errorf("reflectx: failed to get %s field", field)
+	}
+	*(*T)(accessor.fieldAddress(structField)) = val
+	return nil
 }
