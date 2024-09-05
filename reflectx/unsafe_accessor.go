@@ -42,49 +42,58 @@ func (accessor *Accessor) set(structField reflect.StructField, val any) {
 }
 
 func FieldAccessorOf(objValue reflect.Value) (*Accessor, error) {
+	objStructValue, err := checkValue(objValue)
+	if err != nil {
+		return nil, err
+	}
+	fields := extractFields(objStructValue)
+	address := objStructValue.Addr().UnsafePointer()
+	return &Accessor{fields: fields, address: address}, nil
+}
+
+func TagAccessorOf(objValue reflect.Value, key string) (*Accessor, error) {
+	objStructValue, err := checkValue(objValue)
+	if err != nil {
+		return nil, err
+	}
+
+	fields, err := extractFieldsByTag(objStructValue, key)
+	if err != nil {
+		return nil, err
+	}
+	address := objStructValue.Addr().UnsafePointer()
+	return &Accessor{fields: fields, address: address}, nil
+}
+
+func checkValue(objValue reflect.Value) (reflect.Value, error) {
 	if !objValue.IsValid() {
-		return nil, fmt.Errorf("reflectx: invalid reflect.Value")
+		return reflect.Value{}, fmt.Errorf("reflectx: invalid reflect.Value")
 	}
 	if objValue.Kind() != reflect.Pointer {
-		return nil, fmt.Errorf("reflectx: %T is not a pointer", objValue.Interface())
+		return reflect.Value{}, fmt.Errorf("reflectx: %T is not a pointer", objValue.Interface())
 	}
 	objStructValue := IndirectValue(objValue)
 
 	// Ensure the value points to a struct or struct field.
 	if objStructValue.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("reflectx: %T does not point to a struct", objValue.Interface())
+		return reflect.Value{}, fmt.Errorf("reflectx: %T does not point to a struct", objValue.Interface())
 	}
+	return objStructValue, nil
+}
 
+func extractFields(objStructValue reflect.Value) map[string]reflect.StructField {
 	objStructType := objStructValue.Type()
-	address := objStructValue.Addr().UnsafePointer()
-
 	numField := objStructType.NumField()
 	fields := make(map[string]reflect.StructField, numField)
 	for i := 0; i < numField; i++ {
 		structField := objStructType.Field(i)
 		fields[structField.Name] = structField
 	}
-
-	return &Accessor{fields: fields, address: address}, nil
+	return fields
 }
 
-func TagAccessorOf(objValue reflect.Value, key string) (*Accessor, error) {
-	if !objValue.IsValid() {
-		return nil, fmt.Errorf("reflectx: invalid reflect.Value")
-	}
-	if objValue.Kind() != reflect.Pointer {
-		return nil, fmt.Errorf("reflectx: %T is not a pointer", objValue.Interface())
-	}
-	objStructValue := IndirectValue(objValue)
-
-	// Ensure the value points to a struct or struct field.
-	if objStructValue.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("reflectx: %T does not point to a struct", objValue.Interface())
-	}
-
+func extractFieldsByTag(objStructValue reflect.Value, key string) (map[string]reflect.StructField, error) {
 	objStructType := objStructValue.Type()
-	address := objStructValue.Addr().UnsafePointer()
-
 	numField := objStructType.NumField()
 	fields := make(map[string]reflect.StructField, numField)
 	for i := 0; i < numField; i++ {
@@ -98,8 +107,7 @@ func TagAccessorOf(objValue reflect.Value, key string) (*Accessor, error) {
 		}
 		fields[value] = structField
 	}
-
-	return &Accessor{fields: fields, address: address}, nil
+	return fields, nil
 }
 
 func GetByAccessor[T any](accessor *Accessor, field string) (T, error) {
