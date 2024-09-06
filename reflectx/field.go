@@ -49,12 +49,30 @@ func FindFieldByTag(objValue reflect.Value, tagKey string, match func(tagVal str
 	return reflect.Value{}, false
 }
 
-func SetField(objValue reflect.Value, field string, newValue any) error {
+func GetField(objValue reflect.Value, field string) (any, error) {
 	structValue := IndirectValue(objValue)
 	for structValue.Kind() != reflect.Struct {
-		return fmt.Errorf("reflectx: %s is not struct", structValue.Kind())
+		return nil, fmt.Errorf("reflectx: %T is not struct", structValue.Interface())
 	}
 	fieldVal := structValue.FieldByName(field)
+	if fieldVal.IsZero() {
+		return nil, fmt.Errorf("reflectx: field %s not found", field)
+	}
+	return fieldVal.Interface(), nil
+}
+
+func SetField(objValue reflect.Value, field string, newValue any) error {
+	if objValue.Kind() != reflect.Pointer {
+		return fmt.Errorf("reflectx: %T is not pointer", objValue.Interface())
+	}
+	structValue := IndirectValue(objValue)
+	for structValue.Kind() != reflect.Struct {
+		return fmt.Errorf("reflectx: %T is not struct", structValue.Interface())
+	}
+	fieldVal := structValue.FieldByName(field)
+	if fieldVal.IsZero() {
+		return fmt.Errorf("reflectx: field %s not found", field)
+	}
 	if !fieldVal.CanSet() {
 		return fmt.Errorf("reflectx: cannot set field %s", field)
 	}
