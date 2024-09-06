@@ -56,38 +56,6 @@ type URLSender interface {
 	URLString(urlString string) PayloadSender
 }
 
-type QuerySender interface {
-	Query(name, value string) PayloadSender
-	AddQuery(key, value string) PayloadSender
-	DelQuery(name string) PayloadSender
-	QueryString(q string) PayloadSender
-	Queries(queries url.Values) PayloadSender
-}
-
-type AuthSender interface {
-	BasicAuth(username, password string) PayloadSender
-	BearerAuth(token string) PayloadSender
-	CustomAuth(scheme, token string) PayloadSender
-}
-
-type CacheControlSender interface {
-	IfModifiedSince(t time.Time) PayloadSender
-	IfUnmodifiedSince(t time.Time) PayloadSender
-	IfNoneMatch(etag string) PayloadSender
-	IfMatch(etags ...string) PayloadSender
-	CacheControl(directives ...string) PayloadSender
-}
-
-type HeaderSender interface {
-	Header(name, value string, uncanonical ...bool) PayloadSender
-	AddHeader(name, value string, uncanonical ...bool) PayloadSender
-	DelHeader(name string) PayloadSender
-	Headers(header http.Header) PayloadSender
-	AuthSender
-	UserAgent(ua string) PayloadSender
-	CacheControlSender
-}
-
 type FormData struct {
 	FieldName string
 	Value     string
@@ -95,7 +63,40 @@ type FormData struct {
 	Filename  string
 }
 
-type BodySender interface {
+type PayloadSender interface {
+	// Query methods
+	Query(name, value string) PayloadSender
+	AddQuery(key, value string) PayloadSender
+	DelQuery(name string) PayloadSender
+	QueryString(q string) PayloadSender
+	Queries(queries url.Values) PayloadSender
+
+	// Header methods
+	Header(name, value string, uncanonical ...bool) PayloadSender
+	AddHeader(name, value string, uncanonical ...bool) PayloadSender
+	DelHeader(name string) PayloadSender
+	Headers(header http.Header) PayloadSender
+	UserAgent(ua string) PayloadSender
+
+	// Auth methods
+	BasicAuth(username, password string) PayloadSender
+	BearerAuth(token string) PayloadSender
+	CustomAuth(scheme, token string) PayloadSender
+
+	// Cache-Control methods
+	CacheControl(directives ...string) PayloadSender
+	IfModifiedSince(t time.Time) PayloadSender
+	IfUnmodifiedSince(t time.Time) PayloadSender
+	IfNoneMatch(etag string) PayloadSender
+	IfMatch(etags ...string) PayloadSender
+
+	// Cookie methods
+	Cookie(cookie *http.Cookie) PayloadSender
+	AddCookie(cookie *http.Cookie) PayloadSender
+	DelCookie(cookie *http.Cookie) PayloadSender
+	Cookies(cookies ...*http.Cookie) PayloadSender
+
+	// Body methods
 	Body(body io.Reader, contentType string) PayloadSender
 	BytesBody(body []byte, contentType string) PayloadSender
 	TextBody(body string, contentType string) PayloadSender
@@ -106,20 +107,8 @@ type BodySender interface {
 	ProtobufBody(body proto.Message) PayloadSender
 	GobBody(body any) PayloadSender
 	MultipartBody(formData ...*FormData) PayloadSender
-}
 
-type CookieSender interface {
-	Cookie(cookie *http.Cookie) PayloadSender
-	AddCookie(cookie *http.Cookie) PayloadSender
-	DelCookie(cookie *http.Cookie) PayloadSender
-	Cookies(cookies ...*http.Cookie) PayloadSender
-}
-
-type PayloadSender interface {
-	QuerySender
-	HeaderSender
-	CookieSender
-	BodySender
+	// other methods
 	Middleware(middlewares ...Middleware) PayloadSender
 	Build(ctx context.Context) (*http.Request, error)
 	Send(ctx context.Context, clis ...*http.Client) (ResponseReceiver, error)
