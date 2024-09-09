@@ -41,30 +41,6 @@ func (accessor *Accessor) set(structField reflect.StructField, val any) {
 	reflect.NewAt(structField.Type, accessor.fieldAddress(structField)).Elem().Set(reflect.ValueOf(val))
 }
 
-func FieldAccessorOf(objValue reflect.Value) (*Accessor, error) {
-	objStructValue, err := checkValue(objValue)
-	if err != nil {
-		return nil, err
-	}
-	fields := extractFields(objStructValue)
-	address := objStructValue.Addr().UnsafePointer()
-	return &Accessor{fields: fields, address: address}, nil
-}
-
-func TagAccessorOf(objValue reflect.Value, key string) (*Accessor, error) {
-	objStructValue, err := checkValue(objValue)
-	if err != nil {
-		return nil, err
-	}
-
-	fields, err := extractFieldsByTag(objStructValue, key)
-	if err != nil {
-		return nil, err
-	}
-	address := objStructValue.Addr().UnsafePointer()
-	return &Accessor{fields: fields, address: address}, nil
-}
-
 func checkValue(objValue reflect.Value) (reflect.Value, error) {
 	if !objValue.IsValid() {
 		return reflect.Value{}, fmt.Errorf("reflectx: invalid reflect.Value")
@@ -108,6 +84,30 @@ func extractFieldsByTag(objStructValue reflect.Value, key string) (map[string]re
 		fields[value] = structField
 	}
 	return fields, nil
+}
+
+func FieldAccessorOf(objValue reflect.Value) (*Accessor, error) {
+	objStructValue, err := checkValue(objValue)
+	if err != nil {
+		return nil, err
+	}
+	fields := extractFields(objStructValue)
+	address := objStructValue.Addr().UnsafePointer()
+	return &Accessor{fields: fields, address: address}, nil
+}
+
+func TagAccessorOf(objValue reflect.Value, key string) (*Accessor, error) {
+	objStructValue, err := checkValue(objValue)
+	if err != nil {
+		return nil, err
+	}
+
+	fields, err := extractFieldsByTag(objStructValue, key)
+	if err != nil {
+		return nil, err
+	}
+	address := objStructValue.Addr().UnsafePointer()
+	return &Accessor{fields: fields, address: address}, nil
 }
 
 func GetByAccessor[T any](accessor *Accessor, field string) (T, error) {

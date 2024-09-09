@@ -7,8 +7,8 @@ import (
 
 type key struct{}
 
-func NewContext(ctx context.Context, delta time.Duration) context.Context {
-	return context.WithValue(ctx, key{}, delta)
+func NewContext(ctx context.Context, duration time.Duration) context.Context {
+	return context.WithValue(ctx, key{}, duration)
 }
 
 func FromContext(ctx context.Context) (time.Duration, bool) {
@@ -16,14 +16,12 @@ func FromContext(ctx context.Context) (time.Duration, bool) {
 	return delta, ok
 }
 
-// BackoffFactory denotes a function that creates a BackoffFunc.
-type BackoffFactory func(delta time.Duration) BackoffFunc
-
-//
-//func Context(backoff) BackoffFactory {
-//	return func(delta time.Duration) BackoffFunc {
-//		return func(ctx context.Context, attempt uint) time.Duration {
-//
-//		}
-//	}
-//}
+func Context() BackoffFunc {
+	return func(ctx context.Context, attempt uint) time.Duration {
+		duration, ok := FromContext(ctx)
+		if ok {
+			return duration
+		}
+		return 0
+	}
+}
