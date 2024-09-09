@@ -1,6 +1,8 @@
-package groupx
+package syncx
 
-import "context"
+import (
+	"context"
+)
 
 // WaitNotify waiter.Wait()
 func WaitNotify(waiter interface{ Wait() }) <-chan struct{} {
