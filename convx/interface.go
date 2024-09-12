@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding"
 	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -19,12 +20,12 @@ type (
 )
 
 var (
-	emptyInt64er       = (*int64er)(nil)
-	emptyFloat64er     = (*float64er)(nil)
-	emptyValuer        = (*driver.Valuer)(nil)
-	emptyAsDurationer  = (*asDurationer)(nil)
-	empryAsTimeer      = (*asTimeer)(nil)
-	emptyErrorer       = (*error)(nil)
-	emptyStringer      = (*fmt.Stringer)(nil)
-	emptyTextMarshaler = (*encoding.TextMarshaler)(nil)
+	emptyInt64er       = reflect.TypeOf((*int64er)(nil)).Elem()
+	emptyFloat64er     = reflect.TypeOf((*float64er)(nil)).Elem()
+	emptyValuer        = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
+	emptyAsDurationer  = reflect.TypeOf((*asDurationer)(nil)).Elem()
+	empryAsTimeer      = reflect.TypeOf((*asTimeer)(nil)).Elem()
+	emptyErrorer       = reflect.TypeOf((*error)(nil)).Elem()
+	emptyStringer      = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	emptyTextMarshaler = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
 )

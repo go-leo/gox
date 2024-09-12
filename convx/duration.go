@@ -2,8 +2,8 @@ package convx
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"github.com/go-leo/gox/reflectx"
+	"reflect"
 	"time"
 )
 
@@ -31,34 +31,59 @@ func ToDurationSliceE(o any) ([]time.Duration, error) {
 
 func toDurationE(o any) (time.Duration, error) {
 	var zero time.Duration
-	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyAsDurationer, emptyValuer)
+	if o == nil {
+		return zero, nil
+	}
+	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyAsDurationer, emptyValuer)
+	o = v.Interface()
 	switch d := o.(type) {
 	case time.Duration:
 		return d, nil
 	case string:
-		v, err := time.ParseDuration(d)
+		duration, err := time.ParseDuration(d)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[time.Duration](o, err)
 		}
-		return v, nil
+		return duration, nil
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float32, float64,
 		int64er, float64er:
-		v, err := ToInt64E(o)
+		duration, err := ToInt64E(o)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[time.Duration](o, err)
 		}
-		return time.Duration(v), nil
+		return time.Duration(duration), nil
 	case asDurationer:
 		return d.AsDuration(), nil
 	case driver.Valuer:
-		v, err := d.Value()
+		duration, err := d.Value()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[time.Duration](o, err)
 		}
-		return toDurationE(v)
+		return toDurationE(duration)
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return toDurationValueE(v)
+	}
+}
+
+func toDurationValueE(v reflect.Value) (time.Duration, error) {
+	switch v.Kind() {
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+		return time.Duration(v.Int()), nil
+	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+		return time.Duration(v.Uint()), nil
+	case reflect.Float64, reflect.Float32:
+		return time.Duration(v.Float()), nil
+	case reflect.String:
+		dur, err := time.ParseDuration(v.String())
+		if err != nil {
+			o := v.Interface()
+			return failedCastErrValue[time.Duration](o, err)
+		}
+		return dur, nil
+	default:
+		o := v.Interface()
+		return failedCastValue[time.Duration](o)
 	}
 }

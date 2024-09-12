@@ -33,25 +33,17 @@ func IndirectType(t reflect.Type) reflect.Type {
 	return t
 }
 
-func IndirectToInterface(a any, ifaces ...any) any {
-	if a == nil {
-		return nil
-	}
-	v := reflect.ValueOf(a)
-	ifaceTypes := make([]reflect.Type, 0, len(ifaces))
-	for _, iface := range ifaces {
-		ifaceTypes = append(ifaceTypes, reflect.TypeOf(iface).Elem())
-	}
+func IndirectOrImplements(v reflect.Value, ifaceTypes ...reflect.Type) reflect.Value {
 	for {
 		for _, ifaceType := range ifaceTypes {
 			if v.Type().Implements(ifaceType) {
-				return v.Interface()
+				return v
 			}
 		}
 		if v.Kind() == reflect.Pointer && !v.IsNil() {
 			v = v.Elem()
-		} else {
-			return v.Interface()
+			continue
 		}
+		return v
 	}
 }

@@ -2,9 +2,9 @@ package convx
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -143,7 +143,11 @@ func ToSignedSliceE[S ~[]E, E constraints.Signed](o any) (S, error) {
 
 func toSignedE[E constraints.Signed](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyValuer)
+	if o == nil {
+		return zero, nil
+	}
+	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
+	o = v.Interface()
 	switch s := o.(type) {
 	case int:
 		return E(s), nil
@@ -169,24 +173,12 @@ func toSignedE[E constraints.Signed](o any) (E, error) {
 		return E(s), nil
 	case float32:
 		return E(s), nil
-	case int64er:
-		v, err := s.Int64()
-		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
-		}
-		return E(v), nil
-	case float64er:
-		v, err := s.Float64()
-		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
-		}
-		return E(v), nil
 	case string:
-		v, err := strconv.ParseInt(trimZeroDecimal(s), 0, 0)
+		i, err := strconv.ParseInt(trimZeroDecimal(s), 0, 0)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
-		return E(v), nil
+		return E(i), nil
 	case bool:
 		if s {
 			return 1, nil
@@ -198,15 +190,54 @@ func toSignedE[E constraints.Signed](o any) (E, error) {
 		return E(s), nil
 	case time.Month:
 		return E(s), nil
+	case int64er:
+		v, err := s.Int64()
+		if err != nil {
+			return failedCastErrValue[E](o, err)
+		}
+		return E(v), nil
+	case float64er:
+		v, err := s.Float64()
+		if err != nil {
+			return failedCastErrValue[E](o, err)
+		}
+		return E(v), nil
 	case driver.Valuer:
 		v, err := s.Value()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return toSignedE[E](v)
 	case nil:
 		return zero, nil
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return toSignedValueE[E](v)
+	}
+}
+
+func toSignedValueE[E constraints.Signed](v reflect.Value) (E, error) {
+	var zero E
+	switch v.Kind() {
+	case reflect.Bool:
+		if v.Bool() {
+			return 1, nil
+		}
+		return zero, nil
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+		return E(v.Int()), nil
+	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+		return E(v.Uint()), nil
+	case reflect.Float64, reflect.Float32:
+		return E(v.Float()), nil
+	case reflect.String:
+		i, err := strconv.ParseInt(trimZeroDecimal(v.String()), 0, 0)
+		if err != nil {
+			o := v.Interface()
+			return failedCastErrValue[E](o, err)
+		}
+		return E(i), nil
+	default:
+		o := v.Interface()
+		return failedCastValue[E](o)
 	}
 }

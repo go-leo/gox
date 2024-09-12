@@ -2,9 +2,9 @@ package convx
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -143,31 +143,35 @@ func ToUnsignedSliceE[S ~[]E, E constraints.Unsigned](o any) (S, error) {
 
 func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyValuer)
+	if o == nil {
+		return zero, nil
+	}
+	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
+	o = v.Interface()
 	switch u := o.(type) {
 	case int:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case int64:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case int32:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case int16:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case int8:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case uint:
@@ -182,39 +186,39 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 		return E(u), nil
 	case float64:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case float32:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case int64er:
 		v, err := u.Int64()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		if v < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(v), err
 	case float64er:
 		v, err := u.Float64()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		if v < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(v), err
 	case string:
 		v, err := strconv.ParseUint(trimZeroDecimal(u), 0, 0)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		if v < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(v), nil
 	case bool:
@@ -224,28 +228,65 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 		return zero, nil
 	case time.Duration:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case time.Weekday:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case time.Month:
 		if u < 0 {
-			return zero, fmt.Errorf(failedCast, o, o, zero)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case driver.Valuer:
 		v, err := u.Value()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return toUnsignedE[E](v)
 	case nil:
 		return zero, nil
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return toUnsignedValueE[E](v)
+	}
+}
+
+func toUnsignedValueE[E constraints.Unsigned](v reflect.Value) (E, error) {
+	var zero E
+	switch v.Kind() {
+	case reflect.Bool:
+		if v.Bool() {
+			return 1, nil
+		}
+		return zero, nil
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+		u := v.Int()
+		if u < 0 {
+			return failedCastValue[E](u)
+		}
+		return E(u), nil
+	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+		return E(v.Uint()), nil
+	case reflect.Float64, reflect.Float32:
+		u := v.Float()
+		if u < 0 {
+			return failedCastValue[E](u)
+		}
+		return E(u), nil
+	case reflect.String:
+		u, err := strconv.ParseUint(trimZeroDecimal(v.String()), 0, 0)
+		if err != nil {
+			return failedCastErrValue[E](u, err)
+		}
+		if u < 0 {
+			return failedCastValue[E](u)
+		}
+		return E(u), nil
+	default:
+		o := v.Interface()
+		return failedCastValue[E](o)
 	}
 }

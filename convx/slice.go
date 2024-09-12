@@ -1,7 +1,6 @@
 package convx
 
 import (
-	"fmt"
 	"golang.org/x/exp/slices"
 	"reflect"
 )
@@ -33,12 +32,12 @@ func toSliceE[S ~[]E, E any](o any, to func(o any) (E, error)) (S, error) {
 		for i := 0; i < value.Len(); i++ {
 			val, err := to(value.Index(i).Interface())
 			if err != nil {
-				return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+				return failedCastErrValue[S](o, err)
 			}
 			res[i] = val
 		}
 		return res, nil
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return failedCastValue[S](o)
 	}
 }

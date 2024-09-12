@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"html/template"
+	"reflect"
 	"strconv"
 )
 
@@ -53,7 +54,11 @@ func ToTextSliceE[S ~[]E, E ~string](o any) (S, error) {
 
 func toTextE[E ~string](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o, emptyStringer, emptyErrorer, emptyTextMarshaler, emptyValuer)
+	if o == nil {
+		return zero, nil
+	}
+	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyStringer, emptyErrorer, emptyTextMarshaler, emptyValuer)
+	o = v.Interface()
 	switch s := o.(type) {
 	case string:
 		return E(s), nil
@@ -85,10 +90,6 @@ func toTextE[E ~string](o any) (E, error) {
 		return E(strconv.FormatUint(uint64(s), 10)), nil
 	case []byte:
 		return E(string(s)), nil
-	case fmt.Stringer:
-		return E(s.String()), nil
-	case error:
-		return E(s.Error()), nil
 	case template.HTML:
 		return E(string(s)), nil
 	case template.URL:
@@ -99,21 +100,47 @@ func toTextE[E ~string](o any) (E, error) {
 		return E(string(s)), nil
 	case template.HTMLAttr:
 		return E(string(s)), nil
+	case fmt.Stringer:
+		return E(s.String()), nil
+	case error:
+		return E(s.Error()), nil
 	case encoding.TextMarshaler:
 		v, err := s.MarshalText()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return E(string(v)), nil
 	case driver.Valuer:
 		v, err := s.Value()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return toTextE[E](v)
 	case nil:
 		return "", nil
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return failedCastValue[E](o)
+	}
+}
+
+func toTextValueE[E ~string](v reflect.Value) (E, error) {
+	switch v.Kind() {
+	case reflect.Bool:
+		return E(strconv.FormatBool(v.Bool())), nil
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+		return E(strconv.FormatInt(v.Int(), 10)), nil
+	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+		return E(strconv.FormatUint(v.Uint(), 10)), nil
+	case reflect.Float64, reflect.Float32:
+		return E(strconv.FormatFloat(v.Float(), 'f', -1, 64)), nil
+	case reflect.String:
+		return E(v.String()), nil
+	case reflect.Slice:
+		if v.Type().Elem().Kind() == reflect.Uint8 {
+			return E(string(v.Bytes())), nil
+		}
+		return failedCastValue[E](v.Interface())
+	default:
+		return failedCastValue[E](v.Interface())
 	}
 }

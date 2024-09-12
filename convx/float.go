@@ -2,9 +2,9 @@ package convx
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"golang.org/x/exp/constraints"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -77,7 +77,11 @@ func ToFloatSliceE[S ~[]E, E constraints.Float](o any) (S, error) {
 
 func toFloatE[E constraints.Float](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyValuer)
+	if o == nil {
+		return zero, nil
+	}
+	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
+	o = v.Interface()
 	switch f := o.(type) {
 	case int:
 		return E(f), nil
@@ -103,22 +107,10 @@ func toFloatE[E constraints.Float](o any) (E, error) {
 		return E(f), nil
 	case float32:
 		return E(f), nil
-	case int64er:
-		v, err := f.Int64()
-		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
-		}
-		return E(v), nil
-	case float64er:
-		v, err := f.Float64()
-		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
-		}
-		return E(v), nil
 	case string:
 		v, err := strconv.ParseFloat(f, 64)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return E(v), nil
 	case bool:
@@ -132,15 +124,54 @@ func toFloatE[E constraints.Float](o any) (E, error) {
 		return E(f), nil
 	case time.Month:
 		return E(f), nil
+	case int64er:
+		v, err := f.Int64()
+		if err != nil {
+			return failedCastErrValue[E](o, err)
+		}
+		return E(v), nil
+	case float64er:
+		v, err := f.Float64()
+		if err != nil {
+			return failedCastErrValue[E](o, err)
+		}
+		return E(v), nil
 	case driver.Valuer:
 		v, err := f.Value()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return toFloatE[E](v)
 	case nil:
 		return zero, nil
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return toFloatValueE[E](v)
+	}
+}
+
+func toFloatValueE[E constraints.Float](v reflect.Value) (E, error) {
+	var zero E
+	switch v.Kind() {
+	case reflect.Bool:
+		if v.Bool() {
+			return 1, nil
+		}
+		return zero, nil
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+		return E(v.Int()), nil
+	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+		return E(v.Uint()), nil
+	case reflect.Float64, reflect.Float32:
+		return E(v.Float()), nil
+	case reflect.String:
+		f, err := strconv.ParseFloat(v.String(), 64)
+		if err != nil {
+			o := v.Interface()
+			return failedCastErrValue[E](o, err)
+		}
+		return E(f), nil
+	default:
+		o := v.Interface()
+		return failedCastValue[E](o)
 	}
 }

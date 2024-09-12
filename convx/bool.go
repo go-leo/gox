@@ -2,10 +2,9 @@ package convx
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"github.com/go-leo/gox/reflectx"
+	"reflect"
 	"strconv"
-	"time"
 )
 
 // ToBool casts an interface to a bool type.
@@ -32,35 +31,61 @@ func ToBoolSliceE[S ~[]E, E ~bool](o any) (S, error) {
 
 func toBoolE[E ~bool](o any) (E, error) {
 	var zero E
-	o = reflectx.IndirectToInterface(o, emptyInt64er, emptyFloat64er, emptyValuer)
+	if o == nil {
+		return zero, nil
+	}
+	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
+	o = v.Interface()
 	switch b := o.(type) {
 	case bool:
 		return E(b), nil
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float64, float32,
-		int64er, float64er,
-		time.Duration:
+		int64er, float64er:
 		v, err := ToIntE(o)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return v != 0, nil
 	case string:
 		v, err := strconv.ParseBool(o.(string))
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return E(v), err
 	case driver.Valuer:
 		v, err := b.Value()
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[E](o, err)
 		}
 		return toBoolE[E](v)
 	case nil:
 		return zero, nil
 	default:
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return toBoolValueE[E](v)
+	}
+}
+
+func toBoolValueE[E ~bool](v reflect.Value) (E, error) {
+	switch v.Kind() {
+	case reflect.Bool:
+		return E(v.Bool()), nil
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+		return v.Int() != 0, nil
+	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+		return v.Uint() != 0, nil
+	case reflect.Float64, reflect.Float32:
+		return v.Float() != 0, nil
+	case reflect.String:
+		b, err := strconv.ParseBool(v.String())
+		if err != nil {
+			o := v.Interface()
+			return failedCastErrValue[E](o, err)
+		}
+		return E(b), err
+	default:
+		o := v.Interface()
+		return failedCastValue[E](o)
 	}
 }

@@ -1,7 +1,6 @@
 package convx
 
 import (
-	"fmt"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"reflect"
 )
@@ -81,13 +80,13 @@ func toMapE[M ~map[K]V, K comparable, V any](o any, key func(o any) (K, error), 
 		res := make(M)
 		err := jsonx.Unmarshal([]byte(s), &res)
 		if err != nil {
-			return zero, fmt.Errorf(failedCastErr, o, o, zero, err)
+			return failedCastErrValue[M](o, err)
 		}
 		return res, nil
 	}
 	oType := reflect.TypeOf(o)
 	if oType.Kind() != reflect.Map {
-		return zero, fmt.Errorf(failedCast, o, o, zero)
+		return failedCastValue[M](o)
 	}
 
 	res := make(M)
