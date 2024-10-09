@@ -475,6 +475,17 @@ func ToMap[S ~[]E, M ~map[K]E, E any, K comparable](s S, f func(int, E) K) M {
 	return m
 }
 
+// GroupBy 函数将输入切片中的元素按照指定函数分组，并返回一个Map，其中键是分组的依据，值是对应元素的列表。
+func GroupBy[S ~[]E, M ~map[K][]E, E any, K comparable](s S, f func(int, E) K) M {
+	m := make(M, len(s))
+	for i, v := range s {
+		k := f(i, v)
+		m[k] = append(m[k], v)
+	}
+	return m
+}
+
+// Uniq 用于去除切片中的重复元素并返回新切片。对于短切片，它通过逐个检查元素去重；对于长切片，使用地图提高效率。
 func Uniq[S ~[]E, E comparable](s S) S {
 	if s == nil {
 		return nil
