@@ -7,20 +7,17 @@ import (
 
 type key struct{}
 
-func NewContext(ctx context.Context, duration time.Duration) context.Context {
-	return context.WithValue(ctx, key{}, duration)
+// Inject 将一个回退函数注入到给定的上下文中，并返回一个新的上下文。这样新上下文就携带了回退信息。
+func Inject(ctx context.Context, backoff BackoffFunc) context.Context {
+	return context.WithValue(ctx, key{}, backoff)
 }
 
-func FromContext(ctx context.Context) (time.Duration, bool) {
-	delta, ok := ctx.Value(key{}).(time.Duration)
-	return delta, ok
-}
-
+// Context 从给定的上下文中获取一个回退函数，如果存在则调用它并返回回退时间；否则返回0。主要用于动态设置重试间的延迟。
 func Context() BackoffFunc {
 	return func(ctx context.Context, attempt uint) time.Duration {
-		duration, ok := FromContext(ctx)
+		backoff, ok := ctx.Value(key{}).(BackoffFunc)
 		if ok {
-			return duration
+			return backoff(ctx, attempt)
 		}
 		return 0
 	}
