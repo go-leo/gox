@@ -1,20 +1,15 @@
 package sqls
 
-import (
-	"context"
-	"database/sql"
-)
-
-type dbKey struct{}
-
-func NewContext(ctx context.Context, db *sql.DB) context.Context {
-	return context.WithValue(ctx, dbKey{}, db)
-}
-
-func FromContext(ctx context.Context) (*sql.DB, bool) {
-	value, ok := ctx.Value(dbKey{}).(*sql.DB)
-	return value, ok
-}
+//type dbKey struct{}
+//
+//func NewContext(ctx context.Context, db *sql.DB) context.Context {
+//	return context.WithValue(ctx, dbKey{}, db)
+//}
+//
+//func FromContext(ctx context.Context) (*sql.DB, bool) {
+//	value, ok := ctx.Value(dbKey{}).(*sql.DB)
+//	return value, ok
+//}
 
 //
 //func BeginTx(ctx context.Context) (context.Context, error) {
