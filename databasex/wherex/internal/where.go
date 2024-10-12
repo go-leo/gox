@@ -2,15 +2,35 @@ package internal
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
-func AppendEqual(wheres []string, field string, value string) []string {
-	return append(wheres, fmt.Sprintf("%s = %s", field, value))
+var BoolMap = map[bool]any{
+	true:  1,
+	false: 0,
+}
+
+func AppendEqual(wheres []string, field string, value any) []string {
+	valueType := reflect.TypeOf(value)
+	switch valueType.Kind() {
+	case reflect.String:
+		return append(wheres, fmt.Sprintf("%s = '%s'", field, value))
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr, reflect.Float32, reflect.Float64:
+		return append(wheres, fmt.Sprintf("%s = %s", field, value))
+	case reflect.Bool:
+		return append(wheres, fmt.Sprintf("%s = %d", field, BoolMap[value.(bool)]))
+	case reflect.Struct:
+
+	default:
+		return append(wheres, fmt.Sprintf("%s = %d", field, value))
+	}
 }
 
 func AppendLike(wheres []string, field string, value string) []string {
-	return append(wheres, fmt.Sprintf("%s LIKE '%s'", field, "%"+value+"%"))
+	return append(wheres, fmt.Sprintf("%s LIKE '%s'", field, value))
 }
 
 func AppendIn(wheres []string, field string, values []string) []string {

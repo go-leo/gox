@@ -7,30 +7,31 @@ import (
 	"github.com/go-leo/gox/backoff"
 )
 
+// Executor 接口定义了一个 Exec 方法，用于执行一个命令，并允许传递上下文和当前尝试次数。
 type Executor interface {
 	Exec(ctx context.Context, cmd func(ctx context.Context, attempt uint) error) error
 }
 
+// Retry 接口定义了一个 Backoff 方法，用于设置重试间隔策略。
 type Retry interface {
 	Backoff(backoffFunc backoff.BackoffFunc) Executor
 }
 
+// retryStrategy 结构体实现了 Retry 和 Executor 接口，并持有最大尝试次数和重试间隔策略函数。
 type retryStrategy struct {
 	maxAttempts uint
 	backoffFunc backoff.BackoffFunc
 }
 
-
-// 实现WithBackoff接口中的Backoff方法
 func (r *retryStrategy) Backoff(backoffFunc backoff.BackoffFunc) Executor {
 	r.backoffFunc = backoffFunc
-    return r
+	return r
 }
 
 func (r *retryStrategy) Exec(ctx context.Context, cmd func(ctx context.Context, attempt uint) error) error {
 	var attempt uint
 	for attempt < r.maxAttempts {
-		// execte cmd
+		// execute cmd
 		err := cmd(ctx, attempt)
 		// return if err is nil.
 		if err == nil {
@@ -50,31 +51,16 @@ func (r *retryStrategy) Exec(ctx context.Context, cmd func(ctx context.Context, 
 	return cmd(ctx, attempt)
 }
 
+// MaxAttempts 函数创建一个具有指定最大重试次数的 retryStrategy 实例。
 func MaxAttempts(maxAttempts uint) Retry {
 	return &retryStrategy{
 		maxAttempts: maxAttempts,
-	}	
+	}
 }
 
+// Call 函数执行一个命令，并允许传递上下文、最大尝试次数和重试间隔策略函数。
 func Call(ctx context.Context, maxAttempts uint, backoffFunc backoff.BackoffFunc, method func(attemptTime int) error) error {
-	var err error
-	max := int(maxAttempts)
-	for i := 0; i <= max; i++ {
-		// call method
-		err = method(i)
-
-		// if method not return error, no need to retry
-		if err == nil {
-			break
-		}
-
-		// If the maximum number of attempts is exceeded, no need to retry
-		if i >= max {
-			break
-		}
-
-		// sleep and wait retry
-		time.Sleep(backoffFunc(ctx, uint(i+1)))
-	}
-	return err
+	return MaxAttempts(maxAttempts).Backoff(backoffFunc).Exec(ctx, func(ctx context.Context, attempt uint) error {
+		return method(int(attempt))
+	})
 }
