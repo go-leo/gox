@@ -2,8 +2,6 @@ package convx
 
 import (
 	"database/sql/driver"
-	"github.com/go-leo/gox/reflectx"
-	"reflect"
 	"time"
 )
 
@@ -67,15 +65,11 @@ func ToTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 }
 
 func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
-	zero := time.Time{}
+	var zero time.Time
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, empryAsTimeer, emptyValuer)
-	o = v.Interface()
 	switch t := o.(type) {
-	case time.Time:
-		return t, nil
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float32, float64,
@@ -94,6 +88,8 @@ func toTimeInLocationE(o any, location *time.Location) (time.Time, error) {
 			return tim, nil
 		}
 		return failedCastValue[time.Time](o)
+	case time.Time:
+		return t, nil
 	case driver.Valuer:
 		v, err := t.Value()
 		if err != nil {
