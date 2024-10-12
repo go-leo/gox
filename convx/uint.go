@@ -146,9 +146,13 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
-	o = v.Interface()
+	// fast path
 	switch u := o.(type) {
+	case bool:
+		if u {
+			return 1, nil
+		}
+		return zero, nil
 	case int:
 		if u < 0 {
 			return failedCastValue[E](o)
@@ -194,6 +198,30 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 			return failedCastValue[E](o)
 		}
 		return E(u), nil
+	case string:
+		v, err := strconv.ParseUint(trimZeroDecimal(u), 0, 0)
+		if err != nil {
+			return failedCastErrValue[E](o, err)
+		}
+		if v < 0 {
+			return failedCastValue[E](o)
+		}
+		return E(v), nil
+	case time.Duration:
+		if u < 0 {
+			return failedCastValue[E](o)
+		}
+		return E(u), nil
+	case time.Weekday:
+		if u < 0 {
+			return failedCastValue[E](o)
+		}
+		return E(u), nil
+	case time.Month:
+		if u < 0 {
+			return failedCastValue[E](o)
+		}
+		return E(u), nil
 	case int64er:
 		v, err := u.Int64()
 		if err != nil {
@@ -212,49 +240,19 @@ func toUnsignedE[E constraints.Unsigned](o any) (E, error) {
 			return failedCastValue[E](o)
 		}
 		return E(v), err
-	case string:
-		v, err := strconv.ParseUint(trimZeroDecimal(u), 0, 0)
-		if err != nil {
-			return failedCastErrValue[E](o, err)
-		}
-		if v < 0 {
-			return failedCastValue[E](o)
-		}
-		return E(v), nil
-	case bool:
-		if u {
-			return 1, nil
-		}
-		return zero, nil
-	case time.Duration:
-		if u < 0 {
-			return failedCastValue[E](o)
-		}
-		return E(u), nil
-	case time.Weekday:
-		if u < 0 {
-			return failedCastValue[E](o)
-		}
-		return E(u), nil
-	case time.Month:
-		if u < 0 {
-			return failedCastValue[E](o)
-		}
-		return E(u), nil
 	case driver.Valuer:
 		v, err := u.Value()
 		if err != nil {
 			return failedCastErrValue[E](o, err)
 		}
 		return toUnsignedE[E](v)
-	case nil:
-		return zero, nil
 	default:
-		return toUnsignedValueE[E](v)
+		return toUnsignedValueE[E](o)
 	}
 }
 
-func toUnsignedValueE[E constraints.Unsigned](v reflect.Value) (E, error) {
+func toUnsignedValueE[E constraints.Unsigned](o any) (E, error) {
+	v := reflectx.IndirectValue(reflect.ValueOf(o))
 	var zero E
 	switch v.Kind() {
 	case reflect.Bool:
@@ -265,7 +263,7 @@ func toUnsignedValueE[E constraints.Unsigned](v reflect.Value) (E, error) {
 	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
 		u := v.Int()
 		if u < 0 {
-			return failedCastValue[E](u)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
@@ -273,20 +271,19 @@ func toUnsignedValueE[E constraints.Unsigned](v reflect.Value) (E, error) {
 	case reflect.Float64, reflect.Float32:
 		u := v.Float()
 		if u < 0 {
-			return failedCastValue[E](u)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	case reflect.String:
 		u, err := strconv.ParseUint(trimZeroDecimal(v.String()), 0, 0)
 		if err != nil {
-			return failedCastErrValue[E](u, err)
+			return failedCastErrValue[E](o, err)
 		}
 		if u < 0 {
-			return failedCastValue[E](u)
+			return failedCastValue[E](o)
 		}
 		return E(u), nil
 	default:
-		o := v.Interface()
 		return failedCastValue[E](o)
 	}
 }

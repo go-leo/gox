@@ -146,9 +146,12 @@ func toSignedE[E constraints.Signed](o any) (E, error) {
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
-	o = v.Interface()
 	switch s := o.(type) {
+	case bool:
+		if s {
+			return 1, nil
+		}
+		return zero, nil
 	case int:
 		return E(s), nil
 	case int64:
@@ -179,11 +182,6 @@ func toSignedE[E constraints.Signed](o any) (E, error) {
 			return failedCastErrValue[E](o, err)
 		}
 		return E(i), nil
-	case bool:
-		if s {
-			return 1, nil
-		}
-		return zero, nil
 	case time.Duration:
 		return E(s), nil
 	case time.Weekday:
@@ -208,15 +206,15 @@ func toSignedE[E constraints.Signed](o any) (E, error) {
 			return failedCastErrValue[E](o, err)
 		}
 		return toSignedE[E](v)
-	case nil:
-		return zero, nil
 	default:
-		return toSignedValueE[E](v)
+		// slow path
+		return toSignedValueE[E](o)
 	}
 }
 
-func toSignedValueE[E constraints.Signed](v reflect.Value) (E, error) {
+func toSignedValueE[E constraints.Signed](o any) (E, error) {
 	var zero E
+	v := reflectx.IndirectValue(reflect.ValueOf(o))
 	switch v.Kind() {
 	case reflect.Bool:
 		if v.Bool() {
@@ -232,12 +230,10 @@ func toSignedValueE[E constraints.Signed](v reflect.Value) (E, error) {
 	case reflect.String:
 		i, err := strconv.ParseInt(trimZeroDecimal(v.String()), 0, 0)
 		if err != nil {
-			o := v.Interface()
 			return failedCastErrValue[E](o, err)
 		}
 		return E(i), nil
 	default:
-		o := v.Interface()
 		return failedCastValue[E](o)
 	}
 }

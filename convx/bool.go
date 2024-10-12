@@ -34,8 +34,7 @@ func toBoolE[E ~bool](o any) (E, error) {
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
-	o = v.Interface()
+	// fast path
 	switch b := o.(type) {
 	case bool:
 		return E(b), nil
@@ -43,11 +42,11 @@ func toBoolE[E ~bool](o any) (E, error) {
 		uint, uint64, uint32, uint16, uint8,
 		float64, float32,
 		int64er, float64er:
-		v, err := ToIntE(o)
+		n, err := ToFloat64E(o)
 		if err != nil {
 			return failedCastErrValue[E](o, err)
 		}
-		return v != 0, nil
+		return n != 0, nil
 	case string:
 		v, err := strconv.ParseBool(o.(string))
 		if err != nil {
@@ -60,14 +59,14 @@ func toBoolE[E ~bool](o any) (E, error) {
 			return failedCastErrValue[E](o, err)
 		}
 		return toBoolE[E](v)
-	case nil:
-		return zero, nil
 	default:
-		return toBoolValueE[E](v)
+		// slow path
+		return toBoolValueE[E](o)
 	}
 }
 
-func toBoolValueE[E ~bool](v reflect.Value) (E, error) {
+func toBoolValueE[E ~bool](o any) (E, error) {
+	v := reflectx.IndirectValue(reflect.ValueOf(o))
 	switch v.Kind() {
 	case reflect.Bool:
 		return E(v.Bool()), nil
@@ -80,12 +79,10 @@ func toBoolValueE[E ~bool](v reflect.Value) (E, error) {
 	case reflect.String:
 		b, err := strconv.ParseBool(v.String())
 		if err != nil {
-			o := v.Interface()
 			return failedCastErrValue[E](o, err)
 		}
 		return E(b), err
 	default:
-		o := v.Interface()
 		return failedCastValue[E](o)
 	}
 }

@@ -34,17 +34,8 @@ func toDurationE(o any) (time.Duration, error) {
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyAsDurationer, emptyValuer)
-	o = v.Interface()
+	// fast path
 	switch d := o.(type) {
-	case time.Duration:
-		return d, nil
-	case string:
-		duration, err := time.ParseDuration(d)
-		if err != nil {
-			return failedCastErrValue[time.Duration](o, err)
-		}
-		return duration, nil
 	case int, int64, int32, int16, int8,
 		uint, uint64, uint32, uint16, uint8,
 		float32, float64,
@@ -54,6 +45,14 @@ func toDurationE(o any) (time.Duration, error) {
 			return failedCastErrValue[time.Duration](o, err)
 		}
 		return time.Duration(duration), nil
+	case string:
+		duration, err := time.ParseDuration(d)
+		if err != nil {
+			return failedCastErrValue[time.Duration](o, err)
+		}
+		return duration, nil
+	case time.Duration:
+		return d, nil
 	case asDurationer:
 		return d.AsDuration(), nil
 	case driver.Valuer:
@@ -63,11 +62,13 @@ func toDurationE(o any) (time.Duration, error) {
 		}
 		return toDurationE(duration)
 	default:
-		return toDurationValueE(v)
+		// slow path
+		return toDurationValueE(o)
 	}
 }
 
-func toDurationValueE(v reflect.Value) (time.Duration, error) {
+func toDurationValueE(o any) (time.Duration, error) {
+	v := reflectx.IndirectValue(reflect.ValueOf(o))
 	switch v.Kind() {
 	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
 		return time.Duration(v.Int()), nil
@@ -78,12 +79,10 @@ func toDurationValueE(v reflect.Value) (time.Duration, error) {
 	case reflect.String:
 		dur, err := time.ParseDuration(v.String())
 		if err != nil {
-			o := v.Interface()
 			return failedCastErrValue[time.Duration](o, err)
 		}
 		return dur, nil
 	default:
-		o := v.Interface()
 		return failedCastValue[time.Duration](o)
 	}
 }

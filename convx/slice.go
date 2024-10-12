@@ -32,7 +32,7 @@ func toSliceE[S ~[]E, E any](o any, to func(o any) (E, error)) (S, error) {
 		for i := 0; i < value.Len(); i++ {
 			val, err := to(value.Index(i).Interface())
 			if err != nil {
-				return failedCastErrValue[S](o, err)
+				return zero, err
 			}
 			res[i] = val
 		}

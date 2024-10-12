@@ -80,9 +80,13 @@ func toFloatE[E constraints.Float](o any) (E, error) {
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyInt64er, emptyFloat64er, emptyValuer)
-	o = v.Interface()
+	// fast path
 	switch f := o.(type) {
+	case bool:
+		if f {
+			return 1, nil
+		}
+		return zero, nil
 	case int:
 		return E(f), nil
 	case int64:
@@ -113,11 +117,6 @@ func toFloatE[E constraints.Float](o any) (E, error) {
 			return failedCastErrValue[E](o, err)
 		}
 		return E(v), nil
-	case bool:
-		if f {
-			return 1, nil
-		}
-		return zero, nil
 	case time.Duration:
 		return E(f), nil
 	case time.Weekday:
@@ -142,15 +141,15 @@ func toFloatE[E constraints.Float](o any) (E, error) {
 			return failedCastErrValue[E](o, err)
 		}
 		return toFloatE[E](v)
-	case nil:
-		return zero, nil
 	default:
-		return toFloatValueE[E](v)
+		// slow path
+		return toFloatValueE[E](o)
 	}
 }
 
-func toFloatValueE[E constraints.Float](v reflect.Value) (E, error) {
+func toFloatValueE[E constraints.Float](o any) (E, error) {
 	var zero E
+	v := reflectx.IndirectValue(reflect.ValueOf(o))
 	switch v.Kind() {
 	case reflect.Bool:
 		if v.Bool() {
@@ -166,12 +165,10 @@ func toFloatValueE[E constraints.Float](v reflect.Value) (E, error) {
 	case reflect.String:
 		f, err := strconv.ParseFloat(v.String(), 64)
 		if err != nil {
-			o := v.Interface()
 			return failedCastErrValue[E](o, err)
 		}
 		return E(f), nil
 	default:
-		o := v.Interface()
 		return failedCastValue[E](o)
 	}
 }

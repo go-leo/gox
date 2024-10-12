@@ -3,6 +3,7 @@ package convx
 import (
 	"database/sql/driver"
 	"encoding"
+	"encoding/json"
 	"fmt"
 	"github.com/go-leo/gox/reflectx"
 	"html/template"
@@ -57,11 +58,8 @@ func toTextE[E ~string](o any) (E, error) {
 	if o == nil {
 		return zero, nil
 	}
-	v := reflectx.IndirectOrImplements(reflect.ValueOf(o), emptyStringer, emptyErrorer, emptyTextMarshaler, emptyValuer)
-	o = v.Interface()
+	// fast path
 	switch s := o.(type) {
-	case string:
-		return E(s), nil
 	case bool:
 		return E(strconv.FormatBool(s)), nil
 	case float64:
@@ -88,6 +86,8 @@ func toTextE[E ~string](o any) (E, error) {
 		return E(strconv.FormatUint(uint64(s), 10)), nil
 	case uint8:
 		return E(strconv.FormatUint(uint64(s), 10)), nil
+	case string:
+		return E(s), nil
 	case []byte:
 		return E(string(s)), nil
 	case template.HTML:
@@ -110,20 +110,26 @@ func toTextE[E ~string](o any) (E, error) {
 			return failedCastErrValue[E](o, err)
 		}
 		return E(string(v)), nil
+	case json.Marshaler:
+		v, err := s.MarshalJSON()
+		if err != nil {
+			return failedCastErrValue[E](o, err)
+		}
+		return E(string(v)), nil
 	case driver.Valuer:
 		v, err := s.Value()
 		if err != nil {
 			return failedCastErrValue[E](o, err)
 		}
 		return toTextE[E](v)
-	case nil:
-		return "", nil
 	default:
-		return failedCastValue[E](o)
+		// slow path
+		return toTextValueE[E](o)
 	}
 }
 
-func toTextValueE[E ~string](v reflect.Value) (E, error) {
+func toTextValueE[E ~string](o any) (E, error) {
+	v := reflectx.IndirectValue(reflect.ValueOf(o))
 	switch v.Kind() {
 	case reflect.Bool:
 		return E(strconv.FormatBool(v.Bool())), nil
@@ -139,8 +145,8 @@ func toTextValueE[E ~string](v reflect.Value) (E, error) {
 		if v.Type().Elem().Kind() == reflect.Uint8 {
 			return E(string(v.Bytes())), nil
 		}
-		return failedCastValue[E](v.Interface())
+		return failedCastValue[E](o)
 	default:
-		return failedCastValue[E](v.Interface())
+		return failedCastValue[E](o)
 	}
 }
