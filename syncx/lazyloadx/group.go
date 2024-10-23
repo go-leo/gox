@@ -6,10 +6,12 @@ import (
 	"sync"
 )
 
+var ErrNilFunction = errors.New("lazyloadx: New function is nil")
+
 type Group struct {
 	m   sync.Map
 	g   singleflight.Group
-	New func() (any, error)
+	New func(key string) (any, error)
 }
 
 func (g *Group) Load(key string) (any, error, bool) {
@@ -18,29 +20,25 @@ func (g *Group) Load(key string) (any, error, bool) {
 		return value, nil, true
 	}
 	// 2. 并发控制,g.g.Do 会确保并发控制，即如果有多个 goroutine 同时请求同一个 key，只有一个 goroutine 会执行闭包中的逻辑。
-	value, err, shared := g.g.Do(key, func() (any, error) {
-		// 3. 再次检查 key 是否已存在于 sync.Map 中
-		// 如果存在，则直接返回该值。
+	value, err, _ := g.g.Do(key, func() (any, error) {
+		// 3. 再次检查 key 是否已存在于 sync.Map 中, 如果存在，则直接返回该值。如果不存在，则调用 g.New 创建新值。
 		if value, ok := g.m.Load(key); ok {
 			return value, nil
 		}
-		// 如果不存在，则调用 g.New 创建新值。
 		if g.New == nil {
-			return nil, errors.New("lazyloadx: New function is nil")
+			return nil, ErrNilFunction
 		}
-		value, err := g.New()
+		value, err := g.New(key)
 		if err != nil {
 			return nil, err
 		}
+
+		// 4. 将新值存入 sync.Map 中
+		g.m.Store(key, value)
 		return value, nil
 	})
 	if err != nil {
 		return nil, err, false
-	}
-
-	// 4. 存储结果,如果 shared 为 false，表示当前 goroutine 是唯一执行闭包的 goroutine，此时将结果存储到 sync.Map 中。
-	if !shared {
-		g.m.Store(key, value)
 	}
 	return value, err, false
 }
