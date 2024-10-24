@@ -8,13 +8,25 @@ import (
 
 var ErrNilFunction = errors.New("lazyloadx: New function is nil")
 
+// Group 用于实现缓存和懒加载功能
 type Group struct {
-	m   sync.Map
-	g   singleflight.Group
+	// m 用于存储键值对
+	m sync.Map
+
+	// g 用于并发控制，确保多个 goroutine 同时请求同一个键时，只有一个 goroutine 执行创建逻辑。
+	g singleflight.Group
+
+	// New 一个函数指针，用于创建新的值。
 	New func(key string) (any, error)
 }
 
+// Load 用于获取键对应的值。如果 key 不存在，则调用 g.New 创建新值。
 func (g *Group) Load(key string) (any, error, bool) {
+	return g.LoadOrNew(key, g.New)
+}
+
+// LoadOrNew 用于获取键对应的值。如果 key 不存在，则调用 f 创建新值。
+func (g *Group) LoadOrNew(key string, f func(key string) (any, error)) (any, error, bool) {
 	// 1. 初次检查,如果 key 已存在于 sync.Map 中，直接返回该值。
 	if value, ok := g.m.Load(key); ok {
 		return value, nil, true
@@ -25,10 +37,10 @@ func (g *Group) Load(key string) (any, error, bool) {
 		if value, ok := g.m.Load(key); ok {
 			return value, nil
 		}
-		if g.New == nil {
+		if f == nil {
 			return nil, ErrNilFunction
 		}
-		value, err := g.New(key)
+		value, err := f(key)
 		if err != nil {
 			return nil, err
 		}
@@ -43,6 +55,7 @@ func (g *Group) Load(key string) (any, error, bool) {
 	return value, err, false
 }
 
+// Delete 删除 sync.Map 中指定的键值对。
 func (g *Group) Delete(key string) {
 	g.m.Delete(key)
 }
