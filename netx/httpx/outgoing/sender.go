@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/go-leo/gox/convx"
 	"github.com/go-leo/gox/encodingx/jsonx"
+	"github.com/go-leo/gox/encodingx/queryx"
 	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/iox"
 	"github.com/go-leo/gox/netx/httpx"
@@ -70,6 +71,7 @@ type PayloadSender interface {
 	DelQuery(name string) PayloadSender
 	QueryString(q string) PayloadSender
 	Queries(queries url.Values) PayloadSender
+	QueryObject(q any) PayloadSender
 
 	// Header methods
 	Header(name, value string, uncanonical ...bool) PayloadSender
@@ -101,6 +103,7 @@ type PayloadSender interface {
 	BytesBody(body []byte, contentType string) PayloadSender
 	TextBody(body string, contentType string) PayloadSender
 	FormBody(form url.Values) PayloadSender
+	FormObjectBody(body any) PayloadSender
 	ObjectBody(body any, marshal func(any) ([]byte, error), contentType string) PayloadSender
 	JSONBody(body any) PayloadSender
 	XMLBody(body any) PayloadSender
@@ -236,6 +239,18 @@ func (s *sender) Queries(queries url.Values) PayloadSender {
 		}
 	}
 	return s
+}
+
+func (s *sender) QueryObject(q any) PayloadSender {
+	if s.err != nil {
+		return s
+	}
+	values, err := queryx.Marshal(q)
+	if err != nil {
+		s.err = err
+		return s
+	}
+	return s.Queries(values)
 }
 
 func (s *sender) Header(name, value string, uncanonical ...bool) PayloadSender {
@@ -375,6 +390,18 @@ func (s *sender) TextBody(body string, contentType string) PayloadSender {
 
 func (s *sender) FormBody(form url.Values) PayloadSender {
 	return s.TextBody(form.Encode(), "application/x-www-form-urlencoded")
+}
+
+func (s *sender) FormObjectBody(body any) PayloadSender {
+	if s.err != nil {
+		return s
+	}
+	form, err := queryx.Marshal(body)
+	if err != nil {
+		s.err = err
+		return s
+	}
+	return s.FormBody(form)
 }
 
 func (s *sender) ObjectBody(body any, marshal func(any) ([]byte, error), contentType string) PayloadSender {
