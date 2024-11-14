@@ -8,6 +8,20 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+func Merge[S ~[]E, E any](ss ...S) S {
+	totalLen := 0
+	for _, s := range ss {
+		totalLen += len(s)
+	}
+	r := make(S, totalLen)
+	start := 0
+	for _, s := range ss {
+		copy(r[start:], s)
+		start += len(s)
+	}
+	return r
+}
+
 func AppendFirst[S ~[]E, E any](s S, e E) S {
 	return slices.Insert(s, 0, e)
 }

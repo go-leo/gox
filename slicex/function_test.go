@@ -3,8 +3,49 @@ package slicex_test
 import (
 	"github.com/go-leo/gox/slicex"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
+
+func TestMerge(t *testing.T) {
+	type args struct {
+		ss [][]int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "empty slices",
+			args: args{ss: [][]int{}},
+			want: []int{},
+		},
+		{
+			name: "single slice",
+			args: args{ss: [][]int{{1, 2, 3}}},
+			want: []int{1, 2, 3},
+		},
+		{
+			name: "multiple slices",
+			args: args{ss: [][]int{{1, 2}, {3, 4}, {5}}},
+			want: []int{1, 2, 3, 4, 5},
+		},
+		{
+			name: "mixed lengths",
+			args: args{ss: [][]int{{1}, {2, 3, 4}, {5, 6}}},
+			want: []int{1, 2, 3, 4, 5, 6},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := slicex.Merge(tt.args.ss...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Merge(%v) = %v, want %v", tt.args.ss, got, tt.want)
+			}
+		})
+	}
+}
 
 func TestDelete(t *testing.T) {
 	t.Log(slicex.Delete([]int{0, 1, 2, 3, 4, 5, 6}, 0))
