@@ -516,10 +516,10 @@ func Uniq[S ~[]E, E comparable](s S) S {
 	}
 	m := make(map[E]struct{}, length)
 	for _, v := range s {
-		m[v] = struct{}{}
-	}
-	for k := range m {
-		r = append(r, k)
+		if _, ok := m[v]; ok {
+			continue
+		}
+		r = append(r, v)
 	}
 	return r
 }

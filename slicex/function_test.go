@@ -47,6 +47,65 @@ func TestMerge(t *testing.T) {
 	}
 }
 
+func TestUniq(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    interface{}
+		expected interface{}
+		f        func(interface{}) interface{}
+	}{
+		{
+			name:     "empty slice",
+			input:    []int{},
+			expected: []int{},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "slice with unique elements",
+			input:    []int{1, 2, 3},
+			expected: []int{1, 2, 3},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "slice with duplicate elements",
+			input:    []int{1, 2, 2, 3, 3, 3},
+			expected: []int{1, 2, 3},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "string slice with duplicate elements",
+			input:    []string{"a", "b", "b", "c", "c", "c"},
+			expected: []string{"a", "b", "c"},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]string))
+			},
+		},
+		{
+			name:     "rune slice with duplicate elements",
+			input:    []rune{'a', 'b', 'b', 'c', 'c', 'c'},
+			expected: []rune{'a', 'b', 'c'},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]rune))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.f(tt.input)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("Uniq() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
 func TestDelete(t *testing.T) {
 	t.Log(slicex.Delete([]int{0, 1, 2, 3, 4, 5, 6}, 0))
 	t.Log(slicex.Delete([]int{0, 1, 2, 3, 4, 5, 6}, 1))
