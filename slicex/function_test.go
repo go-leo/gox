@@ -1,8 +1,10 @@
 package slicex_test
 
 import (
+	"github.com/go-leo/gox/mathx/randx"
 	"github.com/go-leo/gox/slicex"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 	"reflect"
 	"testing"
 )
@@ -88,10 +90,84 @@ func TestUniq(t *testing.T) {
 		},
 		{
 			name:     "rune slice with duplicate elements",
-			input:    []rune{'a', 'b', 'b', 'c', 'c', 'c'},
-			expected: []rune{'a', 'b', 'c'},
+			input:    []rune{'a', 'b', 'b', 'f', 'f', 'c', 'c', 'c', 'd', 'd', 'e', 'e'},
+			expected: []rune{'a', 'b', 'f', 'c', 'd', 'e'},
 			f: func(i interface{}) interface{} {
 				return slicex.Uniq(i.([]rune))
+			},
+		},
+
+		{
+			name:     "Test with duplicate elements",
+			input:    []int{1, 2, 2, 3, 4, 4, 5},
+			expected: []int{1, 2, 3, 4, 5},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "Test with empty slice",
+			input:    []int{},
+			expected: []int{},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "Test with single element",
+			input:    []int{42},
+			expected: []int{42},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "Test with multiple types of elements",
+			input:    []int{1, 1, 2, 0, 0, -1, -1},
+			expected: []int{1, 2, 0, -1},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+
+		{
+			name:     "Integers",
+			input:    []int{1, 2, 2, 3, 4, 4, 5},
+			expected: []int{1, 2, 3, 4, 5},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "Strings",
+			input:    []string{"a", "b", "b", "c", "d", "d", "e"},
+			expected: []string{"a", "b", "c", "d", "e"},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]string))
+			},
+		},
+		{
+			name:     "Empty slice",
+			input:    []int{},
+			expected: []int{},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "Nil slice",
+			input:    ([]int)(nil),
+			expected: ([]int)(nil),
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
+			},
+		},
+		{
+			name:     "Repeating elements",
+			input:    []int{1, 1, 1, 1},
+			expected: []int{1},
+			f: func(i interface{}) interface{} {
+				return slicex.Uniq(i.([]int))
 			},
 		},
 	}
@@ -103,6 +179,40 @@ func TestUniq(t *testing.T) {
 				t.Errorf("Uniq() = %v, want %v", result, tt.expected)
 			}
 		})
+	}
+}
+
+// BenchmarkUniqV1-8   	110002	     10039 ns/op
+//
+//	114277	     10083 ns/op
+
+// BenchmarkUniqV1-8   	  117631	     10064 ns/op
+// BenchmarkUniqV1-8   	  103548	     10020 ns/op
+// BenchmarkUniqV1-8   	  102814	     10098 ns/op
+// BenchmarkUniqV1-8   	  100611	     11081 ns/op
+func BenchmarkUniqV1(b *testing.B) {
+	var arr []int
+	for i := 0; i < 128; i++ {
+		arr = append(arr, i)
+	}
+	for i := 0; i < b.N; i++ {
+		slices.Contains(arr, randx.Intn(100000000))
+	}
+}
+
+// BenchmarkUniqV2-8   	  119151	     10068 ns/op
+// 112916	             10048 ns/op
+// BenchmarkUniqV2-8   	  104806	     10059 ns/op
+// BenchmarkUniqV2-8   	  119354	     10077 ns/op
+// BenchmarkUniqV2-8   	  110120	     10404 ns/op
+// enchmarkUniqV2-8   	  100659	     10100 ns/op
+func BenchmarkUniqV2(b *testing.B) {
+	var arr = map[int]struct{}{}
+	for i := 0; i < 180; i++ {
+		arr[i] = struct{}{}
+	}
+	for i := 0; i < b.N; i++ {
+		_, _ = arr[randx.Intn(100000000)]
 	}
 }
 

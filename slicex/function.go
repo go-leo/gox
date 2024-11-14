@@ -499,27 +499,35 @@ func GroupBy[S ~[]E, M ~map[K][]E, E any, K comparable](s S, f func(int, E) K) M
 	return m
 }
 
-// Uniq 用于去除切片中的重复元素并返回新切片。对于短切片，它通过逐个检查元素去重；对于长切片，使用地图提高效率。
+// Uniq 用于去除切片中的重复元素并返回新切片。对于短切片，它通过逐个检查元素去重；对于长切片，使用Map提高效率。
 func Uniq[S ~[]E, E comparable](s S) S {
 	if s == nil {
 		return nil
 	}
-	length := len(s)
-	r := make(S, 0, length)
-	if length <= 8 {
-		for _, v := range s {
-			if !slices.Contains(r, v) {
-				r = append(r, v)
-			}
-		}
-		return r
+	if len(s) <= 128 {
+		return uniqV1(s)
 	}
-	m := make(map[E]struct{}, length)
+	return uniqV2(s)
+}
+
+func uniqV1[S ~[]E, E comparable](s S) S {
+	r := make(S, 0, len(s))
 	for _, v := range s {
-		if _, ok := m[v]; ok {
-			continue
+		if !slices.Contains(r, v) {
+			r = append(r, v)
 		}
-		r = append(r, v)
+	}
+	return r
+}
+
+func uniqV2[S ~[]E, E comparable](s S) S {
+	r := make(S, 0, len(s))
+	m := make(map[E]struct{}, len(s))
+	for _, v := range s {
+		if _, ok := m[v]; !ok {
+			m[v] = struct{}{}
+			r = append(r, v)
+		}
 	}
 	return r
 }
