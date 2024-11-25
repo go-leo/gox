@@ -6,11 +6,6 @@ import (
 	"strings"
 )
 
-var BoolMap = map[bool]any{
-	true:  1,
-	false: 0,
-}
-
 func AppendEqual(conds []string, field string, value any) []string {
 	valueType := reflect.TypeOf(value)
 	switch valueType.Kind() {
@@ -65,32 +60,4 @@ func AppendLikes(conds []string, field string, values []string) []string {
 		return append(conds, fmt.Sprintf("(%s)", strings.Join(likes, " OR ")))
 	}
 	return conds
-}
-
-func And(conds []string) string {
-	if len(conds) > 0 {
-		return strings.Join(conds, " AND ")
-	}
-	return ""
-}
-
-func Or(conds []string) string {
-	if len(conds) > 0 {
-		return strings.Join(conds, " OR ")
-	}
-	return ""
-}
-
-func Where(conds []string, join func(conds []string) string) string {
-	if len(conds) > 0 {
-		return fmt.Sprintf("WHERE %s", join(conds))
-	}
-	return ""
-}
-
-func Having(conds []string, join func(conds []string) string) string {
-	if len(conds) > 0 {
-		return fmt.Sprintf("HAVING %s", join(conds))
-	}
-	return ""
 }

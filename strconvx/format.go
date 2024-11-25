@@ -5,10 +5,15 @@ import (
 	"strconv"
 )
 
-func FormatBool(b bool) string {
-	return strconv.FormatBool(b)
+// FormatBool takes a boolean-type generic parameter `b`, converts it to a string, and returns
+// the string.
+func FormatBool[Bool ~bool](b Bool) string {
+	return strconv.FormatBool(bool(b))
 }
 
+// FormatUint converts an unsigned integer to a string representation in a specified base.
+// It does this by first converting the integer to a uint64 and then using the strconv.FormatUint
+// function to format it as a string in the desired base.
 func FormatUint[Unsigned constraints.Unsigned](i Unsigned, base int) string {
 	return strconv.FormatUint(uint64(i), base)
 }
@@ -21,7 +26,7 @@ func FormatFloat[Float constraints.Float](f Float, fmt byte, prec, bitSize int) 
 	return strconv.FormatFloat(float64(f), fmt, prec, bitSize)
 }
 
-func FormatBoolSlice(s []bool) []string {
+func FormatBoolSlice[Bool ~bool](s []Bool) []string {
 	if s == nil {
 		return nil
 	}
