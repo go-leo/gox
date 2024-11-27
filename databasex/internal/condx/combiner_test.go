@@ -2,7 +2,7 @@ package condx
 
 import "testing"
 
-// TestAnd is a test function for the And() Operator
+// TestAnd is a test function for the And() Combiner
 func TestAnd(t *testing.T) {
 	// Create the And operator
 	andOperator := And()
@@ -21,7 +21,7 @@ func TestAnd(t *testing.T) {
 	// Run test cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := andOperator.Apply(tc.conds)
+			result := andOperator.Combine(tc.conds)
 			if result != tc.expected {
 				t.Errorf("Expected %q, got %q", tc.expected, result)
 			}
@@ -29,7 +29,7 @@ func TestAnd(t *testing.T) {
 	}
 }
 
-// TestOr function to test Or() Operator
+// TestOr function to test Or() Combiner
 func TestOr(t *testing.T) {
 	orOperator := Or()
 
@@ -57,7 +57,7 @@ func TestOr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := orOperator.Apply(tt.conds)
+			result := orOperator.Combine(tt.conds)
 			if result != tt.expected {
 				t.Errorf("Or() = %v, want %v", result, tt.expected)
 			}
