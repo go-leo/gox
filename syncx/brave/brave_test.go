@@ -77,7 +77,7 @@ func TestGoRE(t *testing.T) {
 		return 30, nil
 	})
 
-	ch := chanx.Merge(context.Background(), e1C, e2C, e3C)
+	ch := chanx.FanIn(context.Background(), e1C, e2C, e3C)
 	err, ok := <-ch
 	if ok {
 		panic(err)

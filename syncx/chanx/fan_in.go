@@ -32,7 +32,7 @@ func FanIn[T any](ctx context.Context, channels ...<-chan T) <-chan T {
 	return out
 }
 
-func FanInReflect[T any](channels ...<-chan T) <-chan T {
+func fanInReflect[T any](channels ...<-chan T) <-chan T {
 	out := make(chan T)
 	go func() {
 		defer close(out)
@@ -61,7 +61,7 @@ func FanInReflect[T any](channels ...<-chan T) <-chan T {
 	return out
 }
 
-func FanInRec[T any](channels ...<-chan T) <-chan T {
+func fanInRec[T any](channels ...<-chan T) <-chan T {
 	switch len(channels) {
 	case 0:
 		out := make(chan T)
@@ -73,7 +73,7 @@ func FanInRec[T any](channels ...<-chan T) <-chan T {
 		return mergeTwo(channels[0], channels[1])
 	default:
 		m := len(channels) / 2
-		return mergeTwo(FanInRec(channels[:m]...), FanInRec(channels[m:]...))
+		return mergeTwo(fanInRec[T](channels[:m]...), fanInRec[T](channels[m:]...))
 	}
 }
 
@@ -99,4 +99,16 @@ func mergeTwo[T any](aChan, bChan <-chan T) <-chan T {
 		}
 	}()
 	return out
+}
+
+// Merge consolidates multiple input channels into one output channel:
+// Deprecated: Do not use. use FanIn instead.
+func Merge[T any](ctx context.Context, channels ...<-chan T) <-chan T {
+	return FanIn[T](ctx, channels...)
+}
+
+// Combine multiple input channels into one output channel.
+// Deprecated: Do not use. use FanIn instead.
+func Combine[T any](channels ...<-chan T) <-chan T {
+	return FanIn[T](context.Background(), channels...)
 }
