@@ -130,6 +130,7 @@ func DeleteAll[S ~[]E, E any](array S, indices ...int) S {
 }
 
 // Difference 返回差集
+// Deprecated: Do not use.
 func Difference[S ~[]E, E comparable](s1 S, s2 S) S {
 	if len(s1) >= len(s2) {
 		return difference(s1, s2)

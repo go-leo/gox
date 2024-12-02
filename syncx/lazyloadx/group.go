@@ -31,15 +31,17 @@ func (g *Group) LoadOrNew(key string, f func(key string) (any, error)) (any, err
 	if value, ok := g.m.Load(key); ok {
 		return value, nil, true
 	}
+
 	// 2. 并发控制,g.g.Do 会确保并发控制，即如果有多个 goroutine 同时请求同一个 key，只有一个 goroutine 会执行闭包中的逻辑。
+	if f == nil {
+		return nil, ErrNilFunction, false
+	}
 	value, err, _ := g.g.Do(key, func() (any, error) {
 		// 3. 再次检查 key 是否已存在于 sync.Map 中, 如果存在，则直接返回该值。如果不存在，则调用 g.New 创建新值。
 		if value, ok := g.m.Load(key); ok {
 			return value, nil
 		}
-		if f == nil {
-			return nil, ErrNilFunction
-		}
+
 		value, err := f(key)
 		if err != nil {
 			return nil, err
