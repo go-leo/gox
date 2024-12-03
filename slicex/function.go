@@ -78,10 +78,11 @@ func ContainsAny[E comparable](s []E, vs ...E) bool {
 }
 
 func Delete[S ~[]E, E any](s S, i int) S {
-	if i < 0 {
-		return s
-	}
 	return slices.Delete(s, i, i+1)
+}
+
+func Remove[S ~[]E, E comparable](s S, v E) S {
+	return slices.DeleteFunc(s, func(e E) bool { return e == v })
 }
 
 func DeleteAll[S ~[]E, E any](array S, indices ...int) S {
@@ -127,6 +128,43 @@ func DeleteAll[S ~[]E, E any](array S, indices ...int) S {
 		}
 	}
 	return result
+}
+
+func RemoveAll[S ~[]E, E comparable](s S, vs ...E) S {
+	if IsEmpty(s) || IsEmpty(vs) {
+		return slices.Clone(s)
+	}
+	occurrences := make(map[E]int)
+	total := 0
+	for _, v := range vs {
+		total++
+		count, ok := occurrences[v]
+		if !ok {
+			occurrences[v] = 1
+		} else {
+			occurrences[v] = count + 1
+		}
+	}
+	toRemove := make([]int, 0, total)
+	for i := 0; i < len(s); i++ {
+		key := s[i]
+		count, ok := occurrences[key]
+		if ok {
+			count--
+			if count == 0 {
+				delete(occurrences, key)
+			}
+			toRemove = append(toRemove, i)
+		}
+	}
+	return DeleteAll(s, toRemove...)
+}
+
+func RemoveAllFunc[S ~[]E, E comparable](s S, f func(E) bool) S {
+	if IsEmpty(s) {
+		return slices.Clone(s)
+	}
+	return DeleteAll(s, IndexesFunc(s, f)...)
 }
 
 // Difference 返回差集
@@ -300,57 +338,6 @@ func Reduce[S ~[]E, E any, R any](s S, initValue R, f func(previousValue R, curr
 		r = f(r, e, i, s)
 	}
 	return r
-}
-
-func Remove[S ~[]E, E comparable](s S, v E) S {
-	if IsEmpty(s) {
-		return slices.Clone(s)
-	}
-	return Delete(s, slices.Index(s, v))
-}
-
-func RemoveFunc[S ~[]E, E any](s S, f func(E) bool) S {
-	if IsEmpty(s) {
-		return slices.Clone(s)
-	}
-	return Delete(s, slices.IndexFunc(s, f))
-}
-
-func RemoveAll[S ~[]E, E comparable](s S, vs ...E) S {
-	if IsEmpty(s) || IsEmpty(vs) {
-		return slices.Clone(s)
-	}
-	occurrences := make(map[E]int)
-	total := 0
-	for _, v := range vs {
-		total++
-		count, ok := occurrences[v]
-		if !ok {
-			occurrences[v] = 1
-		} else {
-			occurrences[v] = count + 1
-		}
-	}
-	toRemove := make([]int, 0, total)
-	for i := 0; i < len(s); i++ {
-		key := s[i]
-		count, ok := occurrences[key]
-		if ok {
-			count--
-			if count == 0 {
-				delete(occurrences, key)
-			}
-			toRemove = append(toRemove, i)
-		}
-	}
-	return DeleteAll(s, toRemove...)
-}
-
-func RemoveAllFunc[S ~[]E, E comparable](s S, f func(E) bool) S {
-	if IsEmpty(s) {
-		return slices.Clone(s)
-	}
-	return DeleteAll(s, IndexesFunc(s, f)...)
 }
 
 // Reverse the order of the given slice in the given range. if range is not supply, reverse all.
