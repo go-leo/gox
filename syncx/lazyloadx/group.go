@@ -25,6 +25,18 @@ func (g *Group[Obj]) Load(key string) (Obj, error, bool) {
 	return g.LoadOrNew(key, nil)
 }
 
+// Delete 删除指定的键值对。
+func (g *Group[Obj]) Delete(key string) {
+	g.m.Delete(key)
+}
+
+// Range 遍历所有键值对，并调用 f 函数。
+func (g *Group[Obj]) Range(f func(key string, value Obj) bool) {
+	g.m.Range(func(key, value any) bool {
+		return f(key.(string), value.(Obj))
+	})
+}
+
 // LoadOrNew 用于获取键对应的值。如果 key 不存在，则调用 f 或 g.New 创建新值。
 func (g *Group[Obj]) LoadOrNew(key string, f func(key string) (Obj, error)) (Obj, error, bool) {
 	var obj Obj
@@ -62,9 +74,4 @@ func (g *Group[Obj]) LoadOrNew(key string, f func(key string) (Obj, error)) (Obj
 
 	obj = value.(Obj)
 	return obj, nil, false
-}
-
-// Delete 删除指定的键值对。
-func (g *Group[Obj]) Delete(key string) {
-	g.m.Delete(key)
 }
