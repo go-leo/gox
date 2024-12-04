@@ -1,70 +1,73 @@
 package lazyloadx
 
 import (
-	"golang.org/x/sync/singleflight"
-	"sync"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-// 定义一个测试用例结构体
-type testCase struct {
-	name       string
-	group      *Group[string]
-	key        string
-	newFunc    func(key string) (string, error)
-	want       string
-	wantErr    error
-	wantLoaded bool
-}
-
 func TestGroup_LoadOrNew(t *testing.T) {
-	// 测试用例
-	tests := []testCase{
-		{
-			name:       "Load existing value",
-			group:      &Group[string]{m: sync.Map{}, g: singleflight.Group{}, New: func(key string) (string, error) { return "testValue", nil }},
-			key:        "testKey",
-			newFunc:    nil,
-			want:       "testValue",
-			wantErr:    nil,
-			wantLoaded: false,
-		},
-		{
-			name:       "Create new value",
-			group:      &Group[string]{m: sync.Map{}, g: singleflight.Group{}},
-			key:        "newKey",
-			newFunc:    func(key string) (string, error) { return "newValue", nil },
-			want:       "newValue",
-			wantErr:    nil,
-			wantLoaded: false,
-		},
-		{
-			name:       "New function is nil",
-			group:      &Group[string]{m: sync.Map{}, g: singleflight.Group{}},
-			key:        "newKey",
-			newFunc:    nil,
-			want:       "",
-			wantErr:    ErrNilFunction,
-			wantLoaded: false,
-		},
-	}
+	t.Run("Load existing value", func(t *testing.T) {
+		// Arrange
+		group := Group[int]{
+			New: func(key string) (int, error) {
+				return 42, nil
+			},
+		}
+		group.m.Store("testKey", 42)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Call the LoadOrNew method
-			got, err, loaded := tt.group.LoadOrNew(tt.key, tt.newFunc)
+		// Act
+		obj, err, wasLoaded := group.LoadOrNew("testKey", nil)
 
-			// Assertions
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.wantErr, err)
-			assert.Equal(t, tt.wantLoaded, loaded)
+		// Assert
+		if err != nil {
+			t.Errorf("Error should be nil, got: %v", err)
+		}
+		if obj != 42 {
+			t.Errorf("Expected value 42, got: %v", obj)
+		}
+		if !wasLoaded {
+			t.Error("Expected value to be loaded from cache")
+		}
+	})
 
-			// Assertions for the sync.Map
-			if _, ok := tt.group.m.Load(tt.key); ok {
-				tt.group.m.Delete(tt.key) // Clean up after the test
-			}
-		})
-	}
+	t.Run("Create new value", func(t *testing.T) {
+		// Arrange
+		group := Group[int]{
+			New: func(key string) (int, error) {
+				return 100, nil
+			},
+		}
+
+		// Act
+		obj, err, wasLoaded := group.LoadOrNew("newKey", nil)
+
+		// Assert
+		if err != nil {
+			t.Errorf("Error should be nil, got: %v", err)
+		}
+		if obj != 100 {
+			t.Errorf("Expected value 100, got: %v", obj)
+		}
+		if wasLoaded {
+			t.Error("Expected value to be created, not loaded from cache")
+		}
+	})
+
+	t.Run("Nil function error", func(t *testing.T) {
+		// Arrange
+		group := Group[int]{}
+
+		// Act
+		obj, err, wasLoaded := group.LoadOrNew("newKey", nil)
+
+		// Assert
+		if obj != 0 {
+			t.Errorf("Expected value to be 0, got: %v", obj)
+		}
+		if err == nil || err != ErrNilFunction {
+			t.Errorf("Expected error to be ErrNilFunction, got: %v", err)
+		}
+		if wasLoaded {
+			t.Error("Expected value to not be loaded")
+		}
+	})
 }
