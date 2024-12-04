@@ -2,7 +2,7 @@ package chanx
 
 import "context"
 
-// AsSlice 将一个只读通道中的所有元素收集并转换为切片返回。
+// AsSlice 将一个通道中的所有元素收集并转换为切片返回。
 func AsSlice[T any](ctx context.Context, in <-chan T) <-chan []T {
 	out := make(chan []T, 1)
 	go func() {
@@ -16,6 +16,7 @@ func AsSlice[T any](ctx context.Context, in <-chan T) <-chan []T {
 			case t, ok := <-in:
 				if ok {
 					s = append(s, t)
+					continue
 				}
 				out <- s
 				return

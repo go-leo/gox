@@ -1,3 +1,4 @@
-// Package chanx
-// https://github.com/docker/libchan
 package chanx
+
+//func Send[T any](ctx context.Context, in <-chan T, v T) {
+//}

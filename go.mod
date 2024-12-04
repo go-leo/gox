@@ -2,7 +2,7 @@ module github.com/go-leo/gox
 
 go 1.21
 
-toolchain go1.22.6
+toolchain go1.23.3
 
 require (
 	github.com/BurntSushi/toml v1.3.2
@@ -13,6 +13,7 @@ require (
 	github.com/gammazero/workerpool v1.1.3
 	github.com/go-playground/form/v4 v4.2.1
 	github.com/goccy/go-json v0.10.2
+	github.com/google/go-querystring v1.1.0
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/ivpusic/grpool v1.0.0
 	github.com/joho/godotenv v1.5.1
@@ -51,7 +52,6 @@ require (
 	github.com/go-playground/assert/v2 v2.2.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
