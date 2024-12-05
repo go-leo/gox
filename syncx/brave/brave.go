@@ -2,7 +2,6 @@ package brave
 
 import (
 	"fmt"
-	"log"
 )
 
 // Do 用于执行传入的函数 f，并在 f 执行过程中捕获任何可能发生的 panic。
@@ -17,7 +16,7 @@ func Do(f func(), rs ...func(p any)) {
 			}
 			if r == nil {
 				r = func(p any) {
-					log.Printf("panic triggered: %v\n", p)
+					fmt.Printf("brave: panic triggered: %v\n", p)
 				}
 			}
 			r(p)
@@ -36,7 +35,7 @@ func DoE(f func() error, rs ...func(p any) error) (err error) {
 			}
 			if r == nil {
 				r = func(p any) error {
-					return fmt.Errorf("panic triggered: %v", p)
+					return fmt.Errorf("brave: panic triggered: %v", p)
 				}
 			}
 			err = r(p)
@@ -55,7 +54,7 @@ func DoRE[R any](f func() (R, error), rs ...func(p any) error) (_ R, err error) 
 			}
 			if r == nil {
 				r = func(p any) error {
-					return fmt.Errorf("panic triggered: %v", p)
+					return fmt.Errorf("brave: panic triggered: %v", p)
 				}
 			}
 			err = r(p)
