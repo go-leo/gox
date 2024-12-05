@@ -2,6 +2,7 @@ package chanx
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -48,4 +49,18 @@ func TestAsSliceEmpty(t *testing.T) {
 	if !reflect.DeepEqual(<-result, expected) {
 		t.Errorf("AsSlice() = %v, want %v", result, expected)
 	}
+}
+
+func TestAsyncCall(t *testing.T) {
+	var funcs []func()
+	for i := 0; i < 100; i++ {
+		n := i
+		funcs = append(funcs, func() { fmt.Println(n) })
+	}
+
+	for _, f := range funcs {
+		go f()
+	}
+
+	<-time.After(100 * time.Second)
 }
