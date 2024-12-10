@@ -1,6 +1,7 @@
 package envx
 
 import (
+	"bytes"
 	"errors"
 	"github.com/go-leo/gox/convx"
 	"io"
@@ -12,32 +13,13 @@ import (
 )
 
 func Marshal(val any) ([]byte, error) {
-	envMap, ok := val.(map[string]string)
-	if !ok {
-		return nil, errors.New("any not convert to map[string]string")
-	}
-	data, err := godotenv.Marshal(envMap)
-	if err != nil {
-		return nil, err
-	}
-	return convx.StringToBytes(data), nil
+	var buf bytes.Buffer
+	err := NewEncoder(&buf).Encode(val)
+	return buf.Bytes(), err
 }
 
 func Unmarshal(data []byte, val any) error {
-	envMap, ok := val.(map[string]string)
-	if !ok {
-		envMapPtr, ok := val.(*map[string]string)
-		if ok {
-			envMap = *envMapPtr
-		}
-		return errors.New("any not convert to map[string]string")
-	}
-	m, err := godotenv.UnmarshalBytes(data)
-	if err != nil {
-		return err
-	}
-	maps.Copy(envMap, m)
-	return nil
+	return NewDecoder(bytes.NewReader(data)).Decode(val)
 }
 
 func NewEncoder(w io.Writer) encodingx.Encoder {
@@ -55,7 +37,11 @@ type encoder struct {
 func (e *encoder) Encode(val any) error {
 	envMap, ok := val.(map[string]string)
 	if !ok {
-		return errors.New("any not convert to map[string]string")
+		envMapPtr, ok := val.(*map[string]string)
+		if ok {
+			envMap = *envMapPtr
+		}
+		return errors.New("envx: value not convert to map[string]string")
 	}
 	data, err := godotenv.Marshal(envMap)
 	if err != nil {
@@ -69,15 +55,19 @@ type decoder struct {
 	r io.Reader
 }
 
-func (d *decoder) Decode(obj any) error {
-	m, ok := obj.(map[string]string)
+func (d *decoder) Decode(val any) error {
+	envMap, ok := val.(map[string]string)
 	if !ok {
+		envMapPtr, ok := val.(*map[string]string)
+		if ok {
+			envMap = *envMapPtr
+		}
 		return errors.New("any not convert to map[string]string")
 	}
-	envMap, err := godotenv.Parse(d.r)
+	m, err := godotenv.Parse(d.r)
 	if err != nil {
 		return err
 	}
-	maps.Copy(m, envMap)
+	maps.Copy(envMap, m)
 	return nil
 }
