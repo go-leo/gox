@@ -26,6 +26,10 @@ func Marshal(val any) ([]byte, error) {
 func Unmarshal(data []byte, val any) error {
 	envMap, ok := val.(map[string]string)
 	if !ok {
+		envMapPtr, ok := val.(*map[string]string)
+		if ok {
+			envMap = *envMapPtr
+		}
 		return errors.New("any not convert to map[string]string")
 	}
 	m, err := godotenv.UnmarshalBytes(data)
