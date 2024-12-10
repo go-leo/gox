@@ -38,10 +38,10 @@ func (e *encoder) Encode(val any) error {
 	envMap, ok := val.(map[string]string)
 	if !ok {
 		envMapPtr, ok := val.(*map[string]string)
-		if ok {
-			envMap = *envMapPtr
+		if !ok {
+			return errors.New("envx: value not convert to map[string]string")
 		}
-		return errors.New("envx: value not convert to map[string]string")
+		envMap = *envMapPtr
 	}
 	data, err := godotenv.Marshal(envMap)
 	if err != nil {
@@ -59,10 +59,10 @@ func (d *decoder) Decode(val any) error {
 	envMap, ok := val.(map[string]string)
 	if !ok {
 		envMapPtr, ok := val.(*map[string]string)
-		if ok {
-			envMap = *envMapPtr
+		if !ok {
+			return errors.New("any not convert to map[string]string")
 		}
-		return errors.New("any not convert to map[string]string")
+		envMap = *envMapPtr
 	}
 	m, err := godotenv.Parse(d.r)
 	if err != nil {
