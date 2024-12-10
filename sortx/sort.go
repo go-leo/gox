@@ -15,7 +15,7 @@ func Asc[E constraints.Ordered](x []E) []E {
 
 // Desc sorts a slice of any ordered type in descending order.
 func Desc[E constraints.Ordered](x []E) []E {
-	return slicex.Reverse(x)
+	return slicex.Reverse(Asc(x))
 }
 
 // IsAsc reports whether x is sorted in ascending order.
