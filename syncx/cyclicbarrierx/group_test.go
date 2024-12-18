@@ -1,4 +1,4 @@
-package groupx
+package cyclicbarrierx
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCyclicBarrier_Wait(t *testing.T) {
+func TestGroup(t *testing.T) {
 	// 定义需要到达屏障的线程数量
 	parties := 5
 	// 定义屏障动作
@@ -14,7 +14,7 @@ func TestCyclicBarrier_Wait(t *testing.T) {
 		println("所有线程已到达屏障")
 	}
 	// 创建 CyclicBarrier 实例
-	cb := NewCyclicBarrier(parties, barrierAction)
+	cb := NewGroup(parties, barrierAction)
 
 	wg := sync.WaitGroup{}
 	wg.Add(parties)

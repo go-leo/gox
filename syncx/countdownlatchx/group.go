@@ -1,36 +1,36 @@
-package groupx
+package countdownlatchx
 
 import (
 	"context"
 	"sync"
 )
 
-// CountDownLatch 实现了一个计数器，当计数器归零时，等待的函数将被释放。
+// Group 实现了一个计数器，当计数器归零时，等待的函数将被释放。
 // 它是线程安全的，可以在多个goroutine中使用。
-type CountDownLatch struct {
+type Group struct {
 	wg sync.WaitGroup
 }
 
-// NewCountDownLatch 创建一个新的CountDownLatch实例，初始化计数器为delta。
-func NewCountDownLatch(delta int) *CountDownLatch {
-	cdl := &CountDownLatch{wg: sync.WaitGroup{}}
+// NewGroup 创建一个新的CountDownLatch实例，初始化计数器为delta。
+func NewGroup(delta int) *Group {
+	cdl := &Group{wg: sync.WaitGroup{}}
 	cdl.wg.Add(delta)
 	return cdl
 }
 
 // CountDown 将计数器减一。当计数器归零时，等待的函数将被释放。
-func (cdl *CountDownLatch) CountDown() {
+func (cdl *Group) CountDown() {
 	cdl.wg.Done()
 }
 
 // Wait 等待计数器归零。
-func (cdl *CountDownLatch) Wait() {
+func (cdl *Group) Wait() {
 	cdl.wg.Wait()
 }
 
 // WaitContext 等待计数器归零，同时监听context的取消事件。
 // 如果context被取消，将返回context的错误。
-func (cdl *CountDownLatch) WaitContext(ctx context.Context) error {
+func (cdl *Group) WaitContext(ctx context.Context) error {
 	done := make(chan struct{})
 	go func() {
 		cdl.Wait()
