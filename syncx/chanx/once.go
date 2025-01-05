@@ -7,7 +7,7 @@ func Once[M any](m M) <-chan M {
 	return ch
 }
 
-func None[M any]() <-chan M {
+func Nothing[M any]() <-chan M {
 	ch := make(chan M)
 	close(ch)
 	return ch
