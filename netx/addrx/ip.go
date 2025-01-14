@@ -6,22 +6,28 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
-// ExtractIP extract IP from net.Addr
-func ExtractIP(addr net.Addr) net.IP {
+// ExtractAddr extract IP and port from net.Addr
+func ExtractAddr(addr net.Addr) (net.IP, int, error) {
 	switch v := addr.(type) {
 	case *net.IPAddr:
-		return v.IP
+		return v.IP, 0, nil
 	case *net.IPNet:
-		return v.IP
+		return v.IP, 0, nil
 	case *net.TCPAddr:
-		return v.IP
+		return v.IP, v.Port, nil
 	case *net.UDPAddr:
-		return v.IP
+		return v.IP, v.Port, nil
 	default:
-		return nil
+		host, port, err := net.SplitHostPort(addr.String())
+		if err != nil {
+			return net.IP{}, 0, err
+		}
+		portNum, err := strconv.Atoi(port)
+		return net.ParseIP(host), portNum, err
 	}
 }
 
@@ -38,27 +44,50 @@ func GlobalUnicastIP() (net.IP, error) {
 // IsGlobalUnicastIP check whether the IP is a global unicast IP
 func IsGlobalUnicastIP(ip net.IP) bool {
 	if ip.IsUnspecified() {
+		// 这个方法用于检查给定的 IP 地址是否是未指定的地址。
+		// 未指定的地址: 在 IP 地址中，未指定的地址表示没有特定的网络接口或地址。具体来说：
+		// IPv4: "0.0.0.0"。
+		// IPv6: "::"。
 		return false
 	}
 	if ip.IsLoopback() {
+		// 这个方法用于检查给定的 IP 地址是否是回环地址。
+		// 回环地址（Loopback Address）是网络中的一种特殊IP地址，主要用于测试和本地通信。
+		// IPv4: "127.0.0.0/8"，最常用的回环地址是 127.0.0.1。
+		// IPv6: "::1"。
 		return false
 	}
 	if ip.IsMulticast() {
+		// 这个方法用于检查给定的 IP 地址是多播地址。
+		// 多播地址用于向一组主机发送数据包，而不是单个主机。
+		// IPv4: 224.0.0.0 到 239.255.255.255。
+		// IPv6: ff00::/8
 		return false
 	}
 	if ip.IsLinkLocalMulticast() {
+		// 这个方法用于检查给定的 IP 地址是链路本地多播地址。
+		// 链路本地多播地址用于在同一网络段内的设备之间进行通信。
+		// IPv4: 224.0.0.0 到 224.0.0.255。
+		// IPv6: ff02::/16
 		return false
 	}
 	if ip.IsInterfaceLocalMulticast() {
+		// 这个方法用于检查给定的 IP 地址是接口本地多播地址。
+		// 接口本地多播地址用于在同一网络接口内的设备之间进行通信。
+		// IPv4: 224.0.0.0 到 224.0.0.255（具体到 224.0.0.252 和 224.0.0.253）。
+		// IPv6: ff01::/16
 		return false
 	}
 	if ip.IsLinkLocalUnicast() {
+		// 这个方法用于检查给定的 IP 地址是链路本地单播地址。
+		// 链路本地单播地址用于在同一网络段内的设备之间进行单点通信。
+		// IPv4: 169.254.0.0/16。
+		// IPv6: fe80::/10
 		return false
 	}
-	if !ip.IsGlobalUnicast() {
-		return false
-	}
-	return true
+	// 其他情况，认为是全局单播地址
+	// 全局单播地址用于在互联网上进行通信，而不是在本地网络或特定的网络段内。
+	return ip.IsGlobalUnicast()
 }
 
 // GlobalUnicastIPString get a global unicast IP address string
@@ -83,8 +112,8 @@ func IPs() []net.IP {
 			continue
 		}
 		for _, addr := range addrs {
-			ip := ExtractIP(addr)
-			if len(ip) == 0 {
+			ip, _, err := ExtractAddr(addr)
+			if err != nil {
 				continue
 			}
 			ips = append(ips, ip)
@@ -109,8 +138,8 @@ func InterfaceIPs(name string) ([]net.IP, error) {
 			continue
 		}
 		for _, addr := range addrs {
-			ip := ExtractIP(addr)
-			if len(ip) == 0 {
+			ip, _, err := ExtractAddr(addr)
+			if err != nil {
 				continue
 			}
 			ips = append(ips, ip)
@@ -123,19 +152,20 @@ func InterfaceIPs(name string) ([]net.IP, error) {
 }
 
 // InterfaceIPv4 get a public IPv4 address
-func InterfaceIPv4(name string) (net.IP, error) {
+func InterfaceIPv4(name string) ([]net.IP, error) {
 	ips, err := InterfaceIPs(name)
 	if err != nil {
 		return nil, err
 	}
+	var r []net.IP
 	for _, ip := range ips {
 		ip = ip.To4()
 		if len(ip) == 0 {
 			continue
 		}
-		return ip, nil
+		r = append(r, ip)
 	}
-	return nil, fmt.Errorf("not found the ipv4 of interface %s", name)
+	return r, nil
 }
 
 // IsLocalIPAddr 检测 IP 地址字符串是否是内网地址
@@ -149,15 +179,14 @@ func IsLocalIP(ip net.IP) bool {
 	if ip.IsLoopback() {
 		return true
 	}
-
+	if ip.IsPrivate() {
+		return true
+	}
 	ip4 := ip.To4()
 	if ip4 == nil {
 		return false
 	}
-
-	return ip4[0] == 10 || // 10.0.0.0/8
-		(ip4[0] == 172 && ip4[1] >= 16 && ip4[1] <= 31) || // 172.16.0.0/12
-		(ip4[0] == 169 && ip4[1] == 254) || // 169.254.0.0/16
+	return (ip4[0] == 169 && ip4[1] == 254) || // 169.254.0.0/16
 		(ip4[0] == 192 && ip4[1] == 168) // 192.168.0.0/16
 }
 
