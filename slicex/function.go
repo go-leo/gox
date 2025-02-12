@@ -77,7 +77,7 @@ func ContainsAny[E comparable](s []E, vs ...E) bool {
 	return false
 }
 
-func DeleteAt[S ~[]E, E any](s S, i int) S {
+func RemoveAt[S ~[]E, E any](s S, i int) S {
 	return slices.Delete(s, i, i+1)
 }
 
