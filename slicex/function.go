@@ -89,7 +89,7 @@ func RemoveFunc[S ~[]E, E any](s S, f func(E) bool) S {
 	return slices.DeleteFunc(s, f)
 }
 
-func DeleteAll[S ~[]E, E any](array S, indices ...int) S {
+func RemoveAtAll[S ~[]E, E any](array S, indices ...int) S {
 	length := len(array)
 	diff := 0 // number of distinct indexes, i.e. number of entries that will be removed
 	slices.Sort(indices)
@@ -161,14 +161,14 @@ func RemoveAll[S ~[]E, E comparable](s S, vs ...E) S {
 			toRemove = append(toRemove, i)
 		}
 	}
-	return DeleteAll(s, toRemove...)
+	return RemoveAtAll(s, toRemove...)
 }
 
 func RemoveAllFunc[S ~[]E, E comparable](s S, f func(E) bool) S {
 	if IsEmpty(s) {
 		return slices.Clone(s)
 	}
-	return DeleteAll(s, IndexesFunc(s, f)...)
+	return RemoveAtAll(s, IndexesFunc(s, f)...)
 }
 
 // Difference 返回差集

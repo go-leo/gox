@@ -229,15 +229,15 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteAll(t *testing.T) {
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 0, 1))
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 1, 3))
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 2, 5))
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 3, 1))
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 4, 0))
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 5, 2))
-	t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 6, 4))
-	// t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, -1))
-	// t.Log(slicex.DeleteAll([]int{0, 1, 2, 3, 4, 5, 6}, 7))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 0, 1))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 1, 3))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 2, 5))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 3, 1))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 4, 0))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 5, 2))
+	t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 6, 4))
+	// t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, -1))
+	// t.Log(slicex.RemoveAtAll([]int{0, 1, 2, 3, 4, 5, 6}, 7))
 }
 
 func TestRemove(t *testing.T) {
