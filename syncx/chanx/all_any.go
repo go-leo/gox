@@ -34,7 +34,7 @@ func _any[T any](ctx context.Context, out chan T, ins ...<-chan T) {
 		case v, ok := <-ch:
 			if !ok {
 				// ch被关闭，则从 ins 列表中删除 ch，并继续循环。
-				ins = slicex.Delete(ins, sel)
+				ins = slicex.RemoveAt(ins, sel)
 				continue
 			}
 			select {
