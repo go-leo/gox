@@ -12,3 +12,5 @@ const DateOnlyMonth = YearMonth
 const MonthOnly = YearMonth
 
 const DateTimeMinute = "2006-01-02 15:04"
+
+const DateTimeNano = "2006-01-02 15:04:05.999999999"
