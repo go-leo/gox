@@ -85,6 +85,10 @@ func Remove[S ~[]E, E comparable](s S, v E) S {
 	return slices.DeleteFunc(s, func(e E) bool { return e == v })
 }
 
+func RemoveFunc[S ~[]E, E any](s S, f func(E) bool) S {
+	return slices.DeleteFunc(s, f)
+}
+
 func DeleteAll[S ~[]E, E any](array S, indices ...int) S {
 	length := len(array)
 	diff := 0 // number of distinct indexes, i.e. number of entries that will be removed
