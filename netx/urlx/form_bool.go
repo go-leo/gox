@@ -7,41 +7,31 @@ import (
 	"net/url"
 )
 
-func GetBool(queries url.Values, key string) func() (bool, error) {
-	return func() (bool, error) {
-		if _, ok := queries[key]; !ok {
-			return false, nil
-		}
-		return strconvx.ParseBool(queries.Get(key))
+func GetBool(form url.Values, key string) (bool, error) {
+	if _, ok := form[key]; !ok {
+		return false, nil
 	}
+	return strconvx.ParseBool(form.Get(key))
 }
 
-func GetBoolPtr(queries url.Values, key string) func() (*bool, error) {
-	return func() (*bool, error) {
-		v, err := GetBool(queries, key)()
-		return &v, err
-	}
+func GetBoolPtr(form url.Values, key string) (*bool, error) {
+	v, err := GetBool(form, key)
+	return &v, err
 }
 
-func GetBoolSlice(queries url.Values, key string) func() ([]bool, error) {
-	return func() ([]bool, error) {
-		if _, ok := queries[key]; !ok {
-			return nil, nil
-		}
-		return strconvx.ParseBoolSlice(queries[key])
+func GetBoolSlice(form url.Values, key string) ([]bool, error) {
+	if _, ok := form[key]; !ok {
+		return nil, nil
 	}
+	return strconvx.ParseBoolSlice(form[key])
 }
 
-func GetBoolValue(queries url.Values, key string) func() (*wrapperspb.BoolValue, error) {
-	return func() (*wrapperspb.BoolValue, error) {
-		v, err := strconvx.ParseBool(queries.Get(key))
-		return wrapperspb.Bool(v), err
-	}
+func GetBoolValue(form url.Values, key string) (*wrapperspb.BoolValue, error) {
+	v, err := strconvx.ParseBool(form.Get(key))
+	return wrapperspb.Bool(v), err
 }
 
-func GetBoolValueSlice(queries url.Values, key string) func() ([]*wrapperspb.BoolValue, error) {
-	return func() ([]*wrapperspb.BoolValue, error) {
-		v, err := strconvx.ParseBoolSlice(queries[key])
-		return protox.WrapBoolSlice(v), err
-	}
+func GetBoolValueSlice(form url.Values, key string) ([]*wrapperspb.BoolValue, error) {
+	v, err := strconvx.ParseBoolSlice(form[key])
+	return protox.WrapBoolSlice(v), err
 }
