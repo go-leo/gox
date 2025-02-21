@@ -564,6 +564,62 @@ func (s *sender) cookie() map[string][]*http.Cookie {
 	return s.cookies
 }
 
+// Sender returns a new RequestSender.
 func Sender() RequestSender {
 	return new(sender)
+}
+
+// Method returns a new RequestSender with the specified method.
+func Method(method string) URLSender {
+	s := new(sender)
+	if s.err != nil {
+		return s
+	}
+	s.method = method
+	return s
+}
+
+// Get returns a new RequestSender with the method GET.
+func Get() URLSender {
+	return Sender().Method(http.MethodGet)
+}
+
+// Head returns a new RequestSender with the method HEAD.
+func Head() URLSender {
+	return Sender().Method(http.MethodHead)
+}
+
+// Post returns a new RequestSender with the method POST.
+func Post() URLSender {
+	return Sender().Method(http.MethodPost)
+}
+
+// Put returns a new RequestSender with the method PUT.
+func Put() URLSender {
+	return Sender().Method(http.MethodPut)
+}
+
+// Patch returns a new RequestSender with the method PATCH.
+func Patch() URLSender {
+	return Sender().Method(http.MethodPatch)
+}
+
+// Delete returns a new RequestSender with the method DELETE.
+func Delete() URLSender {
+	return Sender().Method(http.MethodDelete)
+}
+
+// Connect returns a new RequestSender with the method CONNECT.
+func Connect() URLSender {
+	return Sender().Method(http.MethodConnect)
+}
+
+// Options returns a new RequestSender with the method OPTIONS.
+func Options() URLSender {
+	return Sender().Method(http.MethodOptions)
+}
+
+// Trace returns a new RequestSender with the method TRACE.
+func Trace() URLSender {
+	return Sender().Method(http.MethodTrace)
 }
