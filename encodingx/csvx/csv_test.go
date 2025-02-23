@@ -41,6 +41,6 @@ func Test_CSVDump(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		assert.Equal(t, test.Output, DumpInCSVFormat(test.Fields, test.Rows))
+		assert.Equal(t, test.Output, ToCSV(test.Fields, test.Rows))
 	}
 }

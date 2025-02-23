@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"hash"
-	"net/http"
 	"time"
 )
 

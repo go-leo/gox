@@ -2,8 +2,8 @@ package binding
 
 import (
 	"errors"
-	"github.com/go-leo/gox/encodingx/formx"
 	"github.com/go-leo/gox/netx/httpx/binding/internal/multipart"
+	"github.com/go-playground/form/v4"
 	"net/http"
 )
 
@@ -16,8 +16,9 @@ func Form(req *http.Request, obj any, tag string) error {
 	if err := req.ParseMultipartForm(defaultMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		return err
 	}
-
-	return formx.Unmarshal(req.Form, obj, tag)
+	decoder := form.NewDecoder()
+	decoder.SetTagName(tag)
+	return decoder.Decode(obj, req.Form)
 }
 
 func PostForm(req *http.Request, obj any, tag string) error {
@@ -27,14 +28,18 @@ func PostForm(req *http.Request, obj any, tag string) error {
 	if err := req.ParseMultipartForm(defaultMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		return err
 	}
-	return formx.Unmarshal(req.PostForm, obj, tag)
+	decoder := form.NewDecoder()
+	decoder.SetTagName(tag)
+	return decoder.Decode(obj, req.PostForm)
 }
 
 func MultipartForm(req *http.Request, obj any, tag string) error {
 	if err := req.ParseMultipartForm(defaultMemory); err != nil {
 		return err
 	}
-	err := formx.Unmarshal(req.Form, obj, tag)
+	decoder := form.NewDecoder()
+	decoder.SetTagName(tag)
+	err := decoder.Decode(obj, req.Form)
 	if err != nil {
 		return err
 	}

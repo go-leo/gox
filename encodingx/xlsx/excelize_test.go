@@ -1,7 +1,6 @@
 package xlsx
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -12,12 +11,15 @@ type Person struct {
 }
 
 func TestToXLSX(t *testing.T) {
-	p1 := Person{
-		Name: "张三",
-		Age:  18,
-		Sex:  "男",
+	fields := []string{"姓名", "年龄", "性别"}
+	rows := [][]any{
+		{"张三", 18, "男"},
+		{"李四", 19, "女"},
+		{"王五", 20, "男"},
 	}
-	data, err := ToXLSX(p1)
-	assert.NoError(t, err)
+	data, err := ToXLSX(fields, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Log(data)
 }

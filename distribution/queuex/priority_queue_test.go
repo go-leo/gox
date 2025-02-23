@@ -10,16 +10,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"testing"
 )
 
-func main() {
+func TestPriorityQueue(t *testing.T) {
 	var (
-		addr      = flag.String("addr", "http://127.0.0.1:2379", "etcd addresses")
-		queueName = flag.String("name", "my-test-queue", "queue name")
+		addr      = "http://127.0.0.1:2379"
+		queueName = "my-test-queue"
 	)
 	flag.Parse()
 	// 解析etcd地址
-	endpoints := strings.Split(*addr, ",")
+	endpoints := strings.Split(addr, ",")
 	// 创建etcd的client
 	cli, err := clientv3.New(clientv3.Config{Endpoints: endpoints})
 	if err != nil {
@@ -27,7 +28,7 @@ func main() {
 	}
 	defer cli.Close()
 	// 创建/获取队列
-	q := recipe.NewPriorityQueue(cli, *queueName)
+	q := recipe.NewPriorityQueue(cli, queueName)
 	// 从命令行读取命令
 	consolescanner := bufio.NewScanner(os.Stdin)
 	for consolescanner.Scan() {
