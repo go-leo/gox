@@ -3,6 +3,7 @@ package addrx
 import (
 	"errors"
 	"fmt"
+	"github.com/go-leo/gox/errorx"
 	"math"
 	"net"
 	"net/http"
@@ -10,8 +11,106 @@ import (
 	"strings"
 )
 
-// ExtractAddr extract IP and port from net.Addr
-func ExtractAddr(addr net.Addr) (net.IP, int, error) {
+// Addrs returns a list of unicast interface addresses for all interface.
+func Addrs() ([]net.Addr, error) {
+	// 获取所有网络接口
+	ifaces, err := net.Interfaces()
+	// 如果没有网络接口，返回错误
+	if err != nil {
+		return nil, err
+	}
+	var res []net.Addr
+	var errs []error
+	// 遍历所有网络接口
+	for _, iface := range ifaces {
+		// 获取网络接口的所有地址
+		addrs, err := iface.Addrs()
+		if err != nil {
+			// 如果获取网络接口的所有地址出错，则记录错误并继续循环
+			errs = append(errs, err)
+			continue
+		}
+		// 将网络接口的所有地址添加到结果中
+		res = append(res, addrs...)
+	}
+	// 如果没有网络接口的地址，返回错误
+	if len(res) <= 0 {
+		return nil, errors.Join(errs...)
+	}
+	// 返回网络接口的所有地址
+	return res, nil
+}
+
+// IPs returns a list of IPs for all interface.
+func IPs() ([]net.IP, error) {
+	// 获取所有地址
+	addrs, err := Addrs()
+	// 如果没有地址，返回错误
+	if len(addrs) == 0 {
+		return nil, err
+	}
+
+	var res []net.IP
+	errs := errorx.UnwrapMultiErr(err)
+
+	// 遍历所有地址
+	for _, addr := range addrs {
+		// 解析地址
+		ip, _, err := SplitHostPort(addr)
+		if err != nil {
+			// 如果解析地址出错，则记录错误并继续循环
+			errs = append(errs, err)
+			continue
+		}
+		// 将IP添加到结果中
+		res = append(res, ip)
+	}
+	if len(res) <= 0 {
+		return nil, errors.Join(errs...)
+	}
+	return res, nil
+}
+
+// GlobalUnicastIPs returns a list of global unicast IPs for all interface.
+func GlobalUnicastIPs() ([]net.IP, error) {
+	ips, err := IPs()
+	if len(ips) == 0 {
+		return nil, err
+	}
+	errs := errorx.UnwrapMultiErr(err)
+	var res []net.IP
+	for _, ip := range ips {
+		if IsGlobalUnicastIP(ip) {
+			res = append(res, ip)
+		}
+	}
+	if len(res) > 0 {
+		return res, nil
+	}
+	errs = append(errs, errors.New("not found global unicast IP"))
+	return nil, errors.Join(errs...)
+}
+
+func GlobalUnicastAddr(address net.Addr) (net.IP, int, error) {
+	ip, port, err := SplitHostPort(address)
+	if err != nil {
+		return nil, 0, err
+	}
+	if IsGlobalUnicastIP(ip) {
+		return ip, port, nil
+	}
+	if !ip.IsUnspecified() {
+		return nil, 0, errors.New("failed to get global unicast ip")
+	}
+	ips, err := GlobalUnicastIPs()
+	if err != nil {
+		return nil, 0, err
+	}
+	return ips[0], port, err
+}
+
+// SplitHostPort splits a network address of the form net.Addr,
+func SplitHostPort(addr net.Addr) (net.IP, int, error) {
 	switch v := addr.(type) {
 	case *net.IPAddr:
 		return v.IP, 0, nil
@@ -29,16 +128,6 @@ func ExtractAddr(addr net.Addr) (net.IP, int, error) {
 		portNum, err := strconv.Atoi(port)
 		return net.ParseIP(host), portNum, err
 	}
-}
-
-// GlobalUnicastIP get a global unicast IP address
-func GlobalUnicastIP() (net.IP, error) {
-	for _, ip := range IPs() {
-		if IsGlobalUnicastIP(ip) {
-			return ip, nil
-		}
-	}
-	return nil, fmt.Errorf("no found global unicast IP")
 }
 
 // IsGlobalUnicastIP check whether the IP is a global unicast IP
@@ -92,34 +181,11 @@ func IsGlobalUnicastIP(ip net.IP) bool {
 
 // GlobalUnicastIPString get a global unicast IP address string
 func GlobalUnicastIPString() (string, error) {
-	ip, err := GlobalUnicastIP()
+	ips, err := GlobalUnicastIPs()
 	if err != nil {
 		return "", err
 	}
-	return ip.String(), nil
-}
-
-// IPs get all IP addresses
-func IPs() []net.IP {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return nil
-	}
-	var ips []net.IP
-	for _, iface := range ifaces {
-		addrs, err := iface.Addrs()
-		if err != nil {
-			continue
-		}
-		for _, addr := range addrs {
-			ip, _, err := ExtractAddr(addr)
-			if err != nil {
-				continue
-			}
-			ips = append(ips, ip)
-		}
-	}
-	return ips
+	return ips[0].String(), nil
 }
 
 // InterfaceIPs get public IP addresses by interface name
@@ -138,7 +204,7 @@ func InterfaceIPs(name string) ([]net.IP, error) {
 			continue
 		}
 		for _, addr := range addrs {
-			ip, _, err := ExtractAddr(addr)
+			ip, _, err := SplitHostPort(addr)
 			if err != nil {
 				continue
 			}

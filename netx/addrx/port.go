@@ -11,6 +11,6 @@ func PickFreePort() (int, error) {
 		return 0, err
 	}
 	defer l.Close()
-	_, port, err := ExtractAddr(l.Addr())
+	_, port, err := SplitHostPort(l.Addr())
 	return port, err
 }

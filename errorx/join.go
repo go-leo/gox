@@ -3,10 +3,10 @@ package errorx
 import "errors"
 
 func Join(err error, errs ...error) error {
-	return errors.Join(append(Unwrap(err), errs...)...)
+	return errors.Join(append(UnwrapMultiErr(err), errs...)...)
 }
 
-func Unwrap(err error) []error {
+func UnwrapMultiErr(err error) []error {
 	if err == nil {
 		return nil
 	}
