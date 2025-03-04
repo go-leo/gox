@@ -8,7 +8,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Jeffail/tunny v0.1.4
 	github.com/allegro/bigcache v1.2.1
-	github.com/bytedance/sonic v1.10.2
+	github.com/bytedance/sonic v1.12.10
 	github.com/dpaks/goworkers v1.8.0
 	github.com/gammazero/workerpool v1.1.3
 	github.com/go-playground/form/v4 v4.2.1
@@ -41,9 +41,9 @@ require (
 )
 
 require (
+	github.com/bytedance/sonic/loader v0.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
-	github.com/chenzhuoyu/iasm v0.9.1 // indirect
+	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
