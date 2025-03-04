@@ -36,9 +36,12 @@ func KeySet[M ~map[K]V, R map[K]struct{}, K comparable, V any](m M) R {
 	return r
 }
 
-func FromMapRange[M ~map[K]V, K comparable, V any](mi MapInterface) M {
+// FromRanger 从一个实现了 Range 方法的接口中创建一个 map
+func FromRanger[M ~map[K]V, K comparable, V any](ranger interface {
+	Range(func(key, value any) (shouldContinue bool))
+}) M {
 	m := make(M)
-	mi.Range(func(k any, v any) bool {
+	ranger.Range(func(k any, v any) bool {
 		m[k.(K)] = v.(V)
 		return true
 	})
