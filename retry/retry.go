@@ -11,7 +11,7 @@ import (
 type Strategy interface {
 
 	// Backoff 方法设置重试间隔策略函数。
-	Backoff(backoffFunc backoff.BackoffFunc) Strategy
+	Backoff(backoffFunc backoff.Func) Strategy
 
 	// RetryOn 方法判断是否重试。
 	RetryOn(retryOnFunc func(err error) bool) Strategy
@@ -23,11 +23,11 @@ type Strategy interface {
 // defaultStrategy 结构体实现了 Retry 和 Executor 接口，并持有最大尝试次数和重试间隔策略函数。
 type defaultStrategy struct {
 	maxAttempts uint
-	backoffFunc backoff.BackoffFunc
+	backoffFunc backoff.Func
 	retryOnFunc func(err error) bool
 }
 
-func (r *defaultStrategy) Backoff(backoffFunc backoff.BackoffFunc) Strategy {
+func (r *defaultStrategy) Backoff(backoffFunc backoff.Func) Strategy {
 	r.backoffFunc = backoffFunc
 	return r
 }
@@ -76,7 +76,7 @@ func MaxAttempts(maxAttempts uint) Strategy {
 
 // Call 函数执行一个命令，并允许传递上下文、最大尝试次数和重试间隔策略函数。
 // Deprecated: Do not use. use MaxAttempts
-func Call(ctx context.Context, maxAttempts uint, backoffFunc backoff.BackoffFunc, method func(attemptTime int) error) error {
+func Call(ctx context.Context, maxAttempts uint, backoffFunc backoff.Func, method func(attemptTime int) error) error {
 	return MaxAttempts(maxAttempts).Backoff(backoffFunc).Exec(ctx, func(ctx context.Context, attempt uint) error {
 		return method(int(attempt))
 	})

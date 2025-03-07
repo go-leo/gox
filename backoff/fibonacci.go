@@ -6,7 +6,7 @@ import (
 )
 
 // Fibonacci it waits for "delta * fibonacci(attempt)" time between calls.
-func Fibonacci(delta time.Duration) BackoffFunc {
+func Fibonacci(delta time.Duration) Func {
 	return func(ctx context.Context, attempt uint) time.Duration {
 		return fibonacci(delta, attempt)
 	}

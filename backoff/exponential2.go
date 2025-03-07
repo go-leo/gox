@@ -7,7 +7,7 @@ import (
 )
 
 // Exponential2 it waits for "delta * 2^attempts" time between calls.
-func Exponential2(delta time.Duration) BackoffFunc {
+func Exponential2(delta time.Duration) Func {
 	return func(ctx context.Context, attempt uint) time.Duration {
 		return exponential2(delta, attempt)
 	}

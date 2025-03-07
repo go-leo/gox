@@ -10,7 +10,7 @@ import (
 //
 // This adds or subtracts time from the interval within a given jitter fraction.
 // For example for 10s and jitter 0.1, it will return a time within [9s, 11s])
-func JitterUp(backoff BackoffFunc, jitter float64) BackoffFunc {
+func JitterUp(backoff Func, jitter float64) Func {
 	return func(ctx context.Context, attempt uint) time.Duration {
 		interval := backoff(ctx, attempt)
 		return jitterUp(interval, jitter)

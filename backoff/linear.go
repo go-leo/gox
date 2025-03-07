@@ -6,7 +6,7 @@ import (
 )
 
 // Linear it waits for "delta * attempt" time between calls.
-func Linear(delta time.Duration) BackoffFunc {
+func Linear(delta time.Duration) Func {
 	return func(ctx context.Context, attempt uint) time.Duration {
 		return linear(delta, attempt)
 	}
