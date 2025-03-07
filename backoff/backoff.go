@@ -10,4 +10,4 @@ import (
 type Func func(ctx context.Context, attempt uint) time.Duration
 
 // Factory returns a Func.
-type Factory func(ctx context.Context) Func
+type Factory func(delta time.Duration) Func

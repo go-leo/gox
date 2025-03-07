@@ -2,9 +2,21 @@ package backoff
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	randv2 "math/rand/v2"
 	"time"
 )
+
+var jitterRand *randv2.Rand
+
+func init() {
+	seed := [32]byte{}
+	_, err := rand.Read(seed[:])
+	if err != nil {
+		panic(err)
+	}
+	jitterRand = randv2.New(randv2.NewChaCha8(seed))
+}
 
 // JitterUp adds random jitter to the interval.
 //
@@ -18,6 +30,6 @@ func JitterUp(backoff Func, jitter float64) Func {
 }
 
 func jitterUp(interval time.Duration, jitter float64) time.Duration {
-	multiplier := jitter * (rand.Float64()*2 - 1)
+	multiplier := jitter * (jitterRand.Float64()*2 - 1)
 	return time.Duration(float64(interval) * (1 + multiplier))
 }
