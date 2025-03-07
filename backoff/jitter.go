@@ -33,3 +33,9 @@ func jitterUp(interval time.Duration, jitter float64) time.Duration {
 	multiplier := jitter * (jitterRand.Float64()*2 - 1)
 	return time.Duration(float64(interval) * (1 + multiplier))
 }
+
+func JitterUpFactory(factory Factory, jitter float64) Factory {
+	return func(delta time.Duration) Func {
+		return JitterUp(factory(delta), jitter)
+	}
+}

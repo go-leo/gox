@@ -16,3 +16,9 @@ func Constant(delta time.Duration) Func {
 func Zero() Func {
 	return Constant(0)
 }
+
+func ConstantFactory() Factory {
+	return func(delta time.Duration) Func {
+		return Constant(delta)
+	}
+}

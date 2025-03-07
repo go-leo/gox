@@ -17,3 +17,9 @@ func Exponential(delta time.Duration) Func {
 func exponential(delta time.Duration, attempt uint) time.Duration {
 	return delta * time.Duration(math.Exp(float64(attempt)))
 }
+
+func ExponentialFactory() Factory {
+	return func(delta time.Duration) Func {
+		return Exponential(delta)
+	}
+}

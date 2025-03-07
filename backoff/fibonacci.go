@@ -23,3 +23,9 @@ func fibonacci(delta time.Duration, attempt uint) time.Duration {
 	}
 	return delta * time.Duration(pre)
 }
+
+func FibonacciFactory() Factory {
+	return func(delta time.Duration) Func {
+		return Fibonacci(delta)
+	}
+}

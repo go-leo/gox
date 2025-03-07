@@ -15,3 +15,9 @@ func Linear(delta time.Duration) Func {
 func linear(delta time.Duration, attempt uint) time.Duration {
 	return delta * time.Duration(attempt)
 }
+
+func LinearFactory() Factory {
+	return func(delta time.Duration) Func {
+		return Linear(delta)
+	}
+}
