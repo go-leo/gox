@@ -24,3 +24,11 @@ func Random(alpha, beta time.Duration) Func {
 		return alpha + time.Duration(randomRand.Int64N(beta.Nanoseconds()-alpha.Nanoseconds()))
 	}
 }
+
+func RandomFactory(alpha, beta time.Duration) Factory {
+	return func(delta time.Duration) Func {
+		return func(ctx context.Context, attempt uint) time.Duration {
+			return Random(alpha, beta)(ctx, attempt)
+		}
+	}
+}
