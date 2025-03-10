@@ -2,7 +2,7 @@ package backoff
 
 import (
 	"context"
-	"crypto/rand"
+	"github.com/go-leo/gox/mathx/randx"
 	randv2 "math/rand/v2"
 	"time"
 )
@@ -10,12 +10,11 @@ import (
 var randomRand *randv2.Rand
 
 func init() {
-	seed := [32]byte{}
-	_, err := rand.Read(seed[:])
+	var err error
+	randomRand, err = randx.NewChaCha8()
 	if err != nil {
 		panic(err)
 	}
-	randomRand = randv2.New(randv2.NewChaCha8(seed))
 }
 
 // Random generates a function that waits for a random time in the range [alpha, beta) between calls.
