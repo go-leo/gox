@@ -2,25 +2,18 @@ package backoff
 
 import (
 	"context"
-	"github.com/go-leo/gox/mathx/randx"
-	randv2 "math/rand/v2"
+	"github.com/go-leo/gox/mathx/randx/v2"
 	"time"
 )
 
-var randomRand *randv2.Rand
-
-func init() {
-	var err error
-	randomRand, err = randx.NewChaCha8()
+// Random generates a function that waits for a random time in the range [alpha, beta) between calls.
+func Random(alpha, beta time.Duration) Func {
+	r, err := randx.NewChaCha8()
 	if err != nil {
 		panic(err)
 	}
-}
-
-// Random generates a function that waits for a random time in the range [alpha, beta) between calls.
-func Random(alpha, beta time.Duration) Func {
 	return func(ctx context.Context, attempt uint) time.Duration {
-		return alpha + time.Duration(randomRand.Int64N(beta.Nanoseconds()-alpha.Nanoseconds()))
+		return alpha + time.Duration(r.Int64N(beta.Nanoseconds()-alpha.Nanoseconds()))
 	}
 }
 
