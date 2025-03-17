@@ -24,6 +24,8 @@ gox 是一个Go语言工具库，提供了一些常用的功能，例如：
   * 错误工具
 * [fmtx](fmtx)
   * 格式化工具
+* [genx](genx)
+  * 代码生成工具
 * [heapx](heapx)
   * 堆工具
 * [imagex](imagex)
