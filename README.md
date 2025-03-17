@@ -1,1 +1,72 @@
 # gox
+gox 是一个Go语言工具库，提供了一些常用的功能，例如：
+* [backoff](backoff)
+  * 退避函数
+* [bytex](bytex)
+  * 二进制数据处理工具
+* [cachex](cachex)
+  * 缓存工具
+* [constraintx](constraintx)
+  * 泛型约束工具
+* [contextx](contextx)
+  * 上下文工具
+* [convx](convx)
+  * 类型转换工具
+* [cryptox](cryptox)
+ * 加密工具
+* [databasex](databasex)
+  * 数据库工具
+* [distributed](distributed)
+  * 分布式工具
+* [encodingx](encodingx)
+  * 编码工具
+* [errorx](errorx)
+  * 错误工具
+* [fmtx](fmtx)
+  * 格式化工具
+* [heapx](heapx)
+  * 堆工具
+* [imagex](imagex)
+  * 图片工具
+* [iox](iox)
+  * IO工具
+* [listx](listx)
+  * 列表工具
+* [mapx](mapx)
+  * 映射工具
+* [mathx](mathx)
+  * 数学工具
+* [netx](netx)
+  * 网络工具
+* [operator](operator)
+  * 操作符工具
+* [osx](osx)
+  * 操作系统工具
+* [pathx](pathx)
+  * 路径工具
+* [poolx](poolx)
+  * 对象(内存)池工具
+* [protox](protox)
+  * protobuf工具
+* [reflectx](reflectx)
+  * 反射工具
+* [retry](retry)
+  * 重试工具
+* [runtimex](runtimex)
+  * 运行时工具
+* [slicex](slicex)
+  * 切片工具
+* [sortx](sortx)
+  * 排序工具
+* [strconvx](strconvx)
+  * 字符串转换工具
+* [stringx](stringx)
+  * 字符串工具
+* [syncx](syncx)
+  * 同步工具
+* [textx](textx)
+  * 文本工具
+* [timex](timex)
+  * 时间工具
+* [unicodex](unicodex)
+  * Unicode工具

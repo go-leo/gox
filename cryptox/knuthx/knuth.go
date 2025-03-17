@@ -1,4 +1,4 @@
-package hashx
+package knuthx
 
 import (
 	"unsafe"

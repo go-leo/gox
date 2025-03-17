@@ -1,4 +1,4 @@
-package distribution
+package distributed
 
 // VanDerCorputSequence 生成范德科鲁普序列。
 // 该序列是一种低差异序列，适用于在均匀分布中生成数值。

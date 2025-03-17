@@ -1,4 +1,4 @@
-package distribution
+package distributed
 
 import (
 	"testing"
