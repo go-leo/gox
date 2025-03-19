@@ -5,13 +5,13 @@ go 1.23.0
 toolchain go1.23.7
 
 require (
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/Jeffail/tunny v0.1.4
 	github.com/allegro/bigcache v1.2.1
 	github.com/bytedance/sonic v1.13.1
 	github.com/dpaks/goworkers v1.8.0
 	github.com/gammazero/workerpool v1.1.3
-	github.com/go-playground/form/v4 v4.2.1
+	github.com/go-playground/form/v4 v4.2.2
 	github.com/goccy/go-json v0.10.5
 	github.com/google/go-querystring v1.1.0
 	github.com/hashicorp/golang-lru v1.0.2
@@ -68,7 +68,6 @@ require (
 	github.com/xuri/nfp v0.0.0-20250226145837-86d5fc24b2ba // indirect
 	go.etcd.io/etcd/api/v3 v3.5.19 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.19 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
