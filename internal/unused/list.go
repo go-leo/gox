@@ -1,4 +1,4 @@
-package list
+package unused
 
 // Node 结构体表示链表中的一个节点。
 type Node struct {
