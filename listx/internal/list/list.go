@@ -418,35 +418,96 @@ func IsPail(head *Node) bool {
 	return true
 }
 
-func oddEvenList1(head *Node) *Node {
+// OddEvenList 将一个单链表重新排序，使得其节点按照奇偶序号交替排列。
+// 该函数接受一个单链表的头节点指针作为参数，并返回重新排序后的链表头节点指针。
+// 参数:
+//
+//	head - 指向单链表头节点的指针。
+//
+// 返回值:
+//
+//	指向重新排序后链表头节点的指针。
+func OddEvenList(head *Node) *Node {
+	// 如果链表为空或只有一个节点，则无需重新排序，直接返回头节点。
 	if head == nil || head.Next == nil {
 		return head
 	}
+
+	// 初始化奇数和偶数节点序列的头节点。
 	odd, even := head, head.Next
 	oddHead, evenHead := odd, even
-	if even != nil && even.Next != nil {
+
+	// 遍历链表，将节点按奇偶序号分离到不同的链表中。
+	for even != nil && even.Next != nil {
+		// 连接奇数序号的节点。
 		odd.Next = even.Next
 		odd = odd.Next
-
+		// 连接偶数序号的节点。
 		even.Next = odd.Next
 		even = even.Next
 	}
+
+	// 将奇数序号链表的末尾连接到偶数序号链表的头部，完成重新排序。
 	odd.Next = evenHead
 	return oddHead
 }
 
-func oddEvenList(head *Node) *Node {
-	if head == nil || head.Next == nil {
-		return head
+// DeleteDuplicates 删除排序链表中的所有重复元素，使每个元素只出现一次。
+// 参数 head 是链表的头节点。
+// 返回值是删除重复元素后的链表的头节点。
+func DeleteDuplicates(head *Node) *Node {
+	// cur 用于遍历链表，初始指向头节点。
+	cur := head
+	// 遍历链表直到 cur 为 nil，即链表末尾。
+	for cur != nil {
+		// next 指向当前节点 cur 的下一个节点。
+		next := cur.Next
+		// 如果 next 不为 nil 且其值等于当前节点 cur 的值，说明有重复。
+		for next != nil && next.Val == cur.Val {
+			// 继续遍历直到找到第一个不重复的节点。
+			next = next.Next
+		}
+		// 将当前节点的 next 指针指向第一个不重复的节点，删除中间的重复节点。
+		cur.Next = next
+		// 将 cur 移动到下一个节点，继续遍历。
+		cur = next
 	}
-	odd, even := head, head.Next
-	oddHead, evenHead := odd, even
-	for even != nil && even.Next != nil {
-		odd.Next = even.Next
-		odd = odd.Next
-		even.Next = odd.Next
-		even = even.Next
+	// 返回处理后的链表头节点。
+	return head
+}
+
+// DeleteAllDuplicates 删除链表中所有重复的节点，只保留唯一的节点。
+// 参数:
+//
+//	head *Node: 链表的头节点。
+//
+// 返回值:
+//
+//	*Node: 删除重复节点后的链表的头节点。
+func DeleteAllDuplicates(head *Node) *Node {
+	// 创建一个虚拟节点，方便处理头节点可能是重复节点的情况。
+	dummy := &Node{Next: head}
+	// prev用于记录最后一个不重复节点的位置。
+	prev := dummy
+	// cur用于遍历链表。
+	cur := head
+
+	// 遍历链表，直到cur为nil，表示链表遍历完毕。
+	for cur != nil {
+		// 如果cur的下一个节点不为空且值与cur相同，继续向后遍历直到找到第一个不重复的节点。
+		for cur.Next != nil && cur.Next.Val == cur.Val {
+			cur = cur.Next
+		}
+		// 如果prev的下一个节点是cur，说明cur没有重复，将prev移动到cur位置。
+		if prev.Next == cur {
+			prev = cur
+		} else {
+			// 否则，说明cur有重复，将prev的下一个节点指向cur的下一个节点，跳过所有重复的节点。
+			prev.Next = cur.Next
+		}
+		// 将cur移动到下一个节点，继续遍历。
+		cur = cur.Next
 	}
-	odd.Next = evenHead
-	return oddHead
+	// 返回处理后的链表的头节点。
+	return dummy.Next
 }
