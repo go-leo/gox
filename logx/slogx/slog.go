@@ -24,28 +24,18 @@ func FromContext(ctx context.Context) ([]slog.Attr, bool) {
 	return attr, ok
 }
 
-var _ slog.Handler = (*ContextAttrHandler)(nil)
-
-type ContextAttrHandler struct {
-	Handler slog.Handler
+func WithContextHandler(handler slog.Handler) slog.Handler {
+	return &contextHandler{Handler: handler}
 }
 
-func (c ContextAttrHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	return c.Handler.Enabled(ctx, level)
+type contextHandler struct {
+	slog.Handler
 }
 
-func (c ContextAttrHandler) Handle(ctx context.Context, record slog.Record) error {
+func (c contextHandler) Handle(ctx context.Context, record slog.Record) error {
 	attrs, ok := FromContext(ctx)
 	if ok {
 		record.AddAttrs(attrs...)
 	}
 	return c.Handler.Handle(ctx, record)
-}
-
-func (c ContextAttrHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return c.Handler.WithAttrs(attrs)
-}
-
-func (c ContextAttrHandler) WithGroup(name string) slog.Handler {
-	return c.Handler.WithGroup(name)
 }
