@@ -66,16 +66,6 @@ func Concat[S ~[]E, E any](ss ...S) S {
 	return r
 }
 
-// ContainsAny checks if any of the elem are in the given slice.
-func ContainsAny[E comparable](s []E, vs ...E) bool {
-	for _, v := range vs {
-		if slices.Contains(s, v) {
-			return true
-		}
-	}
-	return false
-}
-
 func Remove[S ~[]E, E comparable](s S, vs ...E) S {
 	return slices.DeleteFunc(s, func(e E) bool { return slices.Contains(vs, e) })
 }
@@ -222,6 +212,26 @@ func MapElem[S1 ~[]E1, S2 ~[]E2, E1 comparable, E2 any](v E1, s1 S1, s2 S2) E2 {
 		}
 	}
 	return r
+}
+
+// ContainsAny checks if any of the elem are in the given slice.
+func ContainsAny[E comparable](s []E, vs ...E) bool {
+	for _, v := range vs {
+		if slices.Contains(s, v) {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsAll checks if all of the elem are in the given slice.
+func ContainsAll[E comparable](s []E, vs ...E) bool {
+	for _, v := range vs {
+		if NotContains(s, v) {
+			return false
+		}
+	}
+	return true
 }
 
 // NotContains reports whether v is not present in s.
