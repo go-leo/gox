@@ -109,3 +109,12 @@ func TestContextAttrHandler_Handle(t *testing.T) {
 		t.Errorf("Expected no error, got %v", err)
 	}
 }
+
+func TestSlog(t *testing.T) {
+	h := slogx.WithContextHandler(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
+	logger := slog.New(h)
+	ctx := context.Background()
+	attr1 := slog.String("key1", "value1")
+	ctx = slogx.AppendContext(ctx, attr1)
+	logger.InfoContext(ctx, "this is message")
+}
