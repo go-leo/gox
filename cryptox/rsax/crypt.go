@@ -6,8 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/hex"
-
-	"github.com/go-leo/gox/cryptox/base64x"
+	"github.com/go-leo/gox/encodingx/base64x"
 )
 
 func EncryptToHex(plainText []byte, hexPubKey string) (string, error) {

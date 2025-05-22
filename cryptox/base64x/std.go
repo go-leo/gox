@@ -1,11 +1,15 @@
 package base64x
 
-import "encoding/base64"
+import (
+	"github.com/go-leo/gox/encodingx/base64x"
+)
 
+// Deprecated: use github.com/go-leo/gox/encodingx/base64x
 func StdEncode(src []byte) string {
-	return base64.StdEncoding.EncodeToString(src)
+	return base64x.StdEncode(src)
 }
 
+// Deprecated: use github.com/go-leo/gox/encodingx/base64x
 func StdDecode(s string) ([]byte, error) {
-	return base64.StdEncoding.DecodeString(s)
+	return base64x.StdDecode(s)
 }
