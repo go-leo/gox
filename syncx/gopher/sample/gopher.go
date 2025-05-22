@@ -1,6 +1,8 @@
 package sample
 
-import "github.com/go-leo/gox/syncx/brave"
+import (
+	"github.com/go-leo/gox/syncx/brave"
+)
 
 type Gopher struct {
 	Recover func(p any)
