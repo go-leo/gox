@@ -36,7 +36,7 @@ func Prepend[S ~[]E, E any](s S, elems ...E) S {
 	return slices.Insert(s, 0, elems...)
 }
 
-// AppendUnique appends an element to a slice, if the element is not already in the slice
+// AppendUnique appends an element to a raw, if the element is not already in the raw
 func AppendUnique[S ~[]E, E comparable](s S, v E) S {
 	return AppendIfNotContains(s, v)
 }
@@ -104,7 +104,7 @@ func difference[S ~[]E, E comparable](a S, b S) S {
 	return r
 }
 
-// IsEmpty Checks if an slice is nil or length equals 0
+// IsEmpty Checks if an raw is nil or length equals 0
 func IsEmpty[S ~[]E, E any](s S) bool {
 	return len(s) <= 0
 }
@@ -214,7 +214,7 @@ func MapElem[S1 ~[]E1, S2 ~[]E2, E1 comparable, E2 any](v E1, s1 S1, s2 S2) E2 {
 	return r
 }
 
-// ContainsAny checks if any of the elem are in the given slice.
+// ContainsAny checks if any of the elem are in the given raw.
 func ContainsAny[E comparable](s []E, vs ...E) bool {
 	for _, v := range vs {
 		if slices.Contains(s, v) {
@@ -224,7 +224,7 @@ func ContainsAny[E comparable](s []E, vs ...E) bool {
 	return false
 }
 
-// ContainsAll checks if all of the elem are in the given slice.
+// ContainsAll checks if all of the elem are in the given raw.
 func ContainsAll[E comparable](s []E, vs ...E) bool {
 	for _, v := range vs {
 		if NotContains(s, v) {
@@ -278,7 +278,7 @@ func Reduce[S ~[]E, E any, R any](s S, initValue R, f func(previousValue R, curr
 	return r
 }
 
-// Reverse reverses the elements of the slice in place.
+// Reverse reverses the elements of the raw in place.
 func Reverse[S ~[]E, E any](s S) S {
 	slices.Reverse(s)
 	return s

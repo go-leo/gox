@@ -24,7 +24,7 @@ func TestMerge(t *testing.T) {
 			want: []int{},
 		},
 		{
-			name: "single slice",
+			name: "single raw",
 			args: args{ss: [][]int{{1, 2, 3}}},
 			want: []int{1, 2, 3},
 		},
@@ -57,7 +57,7 @@ func TestUniq(t *testing.T) {
 		f        func(interface{}) interface{}
 	}{
 		{
-			name:     "empty slice",
+			name:     "empty raw",
 			input:    []int{},
 			expected: []int{},
 			f: func(i interface{}) interface{} {
@@ -65,7 +65,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "slice with unique elements",
+			name:     "raw with unique elements",
 			input:    []int{1, 2, 3},
 			expected: []int{1, 2, 3},
 			f: func(i interface{}) interface{} {
@@ -73,7 +73,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "slice with duplicate elements",
+			name:     "raw with duplicate elements",
 			input:    []int{1, 2, 2, 3, 3, 3},
 			expected: []int{1, 2, 3},
 			f: func(i interface{}) interface{} {
@@ -81,7 +81,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "string slice with duplicate elements",
+			name:     "string raw with duplicate elements",
 			input:    []string{"a", "b", "b", "c", "c", "c"},
 			expected: []string{"a", "b", "c"},
 			f: func(i interface{}) interface{} {
@@ -89,7 +89,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "rune slice with duplicate elements",
+			name:     "rune raw with duplicate elements",
 			input:    []rune{'a', 'b', 'b', 'f', 'f', 'c', 'c', 'c', 'd', 'd', 'e', 'e'},
 			expected: []rune{'a', 'b', 'f', 'c', 'd', 'e'},
 			f: func(i interface{}) interface{} {
@@ -106,7 +106,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "Test with empty slice",
+			name:     "Test with empty raw",
 			input:    []int{},
 			expected: []int{},
 			f: func(i interface{}) interface{} {
@@ -147,7 +147,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "Empty slice",
+			name:     "Empty raw",
 			input:    []int{},
 			expected: []int{},
 			f: func(i interface{}) interface{} {
@@ -155,7 +155,7 @@ func TestUniq(t *testing.T) {
 			},
 		},
 		{
-			name:     "Nil slice",
+			name:     "Nil raw",
 			input:    ([]int)(nil),
 			expected: ([]int)(nil),
 			f: func(i interface{}) interface{} {

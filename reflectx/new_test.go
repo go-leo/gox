@@ -73,7 +73,7 @@ func Test_new(t *testing.T) {
 			want:      reflect.ValueOf(make(chan int)),
 		},
 		{
-			name:      "Func",
+			name:      "f",
 			input:     reflect.TypeOf(func() {}),
 			wantPanic: false,
 			want:      reflect.ValueOf(func() {}),

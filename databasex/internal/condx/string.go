@@ -41,7 +41,7 @@ func (s BoolStringfy) ToString(value any) string {
 //Complex128
 //Array
 //Chan
-//Func
+//f
 //Interface
 //Map
 //Pointer

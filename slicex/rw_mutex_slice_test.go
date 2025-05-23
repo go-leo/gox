@@ -8,7 +8,7 @@ import (
 
 func TestSlice(t *testing.T) {
 	// 创建一个初始切片
-	s := slicex.NewSyncSlice[[]int]()
+	s := &slicex.RWMutexSlice[[]int, int]{}
 
 	// 添加元素并检查长度
 	s = s.Append(1, 2, 3)
@@ -83,7 +83,7 @@ func TestWrapSlice(t *testing.T) {
 }
 
 func ExampleSlice() {
-	s := slicex.NewSyncSlice[[]int, int]()
+	s := &slicex.RWMutexSlice[[]int, int]{}
 	fmt.Println("len:", s.Len())
 	fmt.Println("cap:", s.Cap())
 	s = s.Append(1, 2, 3, 4, 5)
