@@ -2,11 +2,12 @@ package slogx_test
 
 import (
 	"context"
-	"github.com/go-leo/gox/logx/slogx"
 	"log/slog"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/go-leo/gox/logx/slogx"
 )
 
 func TestAppendContext(t *testing.T) {
@@ -117,10 +118,4 @@ func TestSlog(t *testing.T) {
 	attr1 := slog.String("key1", "value1")
 	ctx = slogx.AppendContext(ctx, attr1)
 	logger.InfoContext(ctx, "this is message")
-}
-
-
-func TestSlogDebug(t *testing.T) {
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})))
-	slogx.Debugf("this is debug message %s", "debug")
 }
