@@ -118,3 +118,9 @@ func TestSlog(t *testing.T) {
 	ctx = slogx.AppendContext(ctx, attr1)
 	logger.InfoContext(ctx, "this is message")
 }
+
+
+func TestSlogDebug(t *testing.T) {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})))
+	slogx.Debugf("this is debug message %s", "debug")
+}
