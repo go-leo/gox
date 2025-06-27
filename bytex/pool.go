@@ -20,6 +20,8 @@ var defaultBufferPool = sync.Pool{
 	},
 }
 
+
+
 // GetBuffer retrieves a bytes.Buffer from the pool.
 func GetBuffer() *bytes.Buffer {
 	return defaultBufferPool.Get().(*bytes.Buffer)
