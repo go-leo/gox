@@ -1,8 +1,6 @@
 module github.com/go-leo/gox
 
-go 1.23.0
-
-toolchain go1.23.7
+go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.5.0
@@ -31,7 +29,7 @@ require (
 	github.com/xuri/excelize/v2 v2.9.0
 	go.etcd.io/etcd/client/v3 v3.5.19
 	golang.org/x/crypto v0.36.0
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
+	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e
 	golang.org/x/image v0.25.0
 	golang.org/x/sync v0.12.0
 	golang.org/x/text v0.23.0
