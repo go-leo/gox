@@ -1,7 +1,7 @@
 package slicex
 
 import (
-	"slices"
+	"golang.org/x/exp/slices"
 	"sync"
 )
 
