@@ -3,6 +3,7 @@ package reflectx
 import (
 	"fmt"
 	"reflect"
+	"unsafe"
 )
 
 // FindFieldByTag searches through the fields of a given struct value for a field
@@ -20,7 +21,6 @@ import (
 //
 //	A tuple containing the reflect.Value of the matched field and a boolean indicating if a match was found.
 func FindFieldByTag(objValue reflect.Value, tagKey string, match func(tagVal string) bool) (reflect.Value, bool) {
-
 	// Indirect the value to get the underlying value.
 	structValue := IndirectValue(objValue)
 
@@ -59,6 +59,24 @@ func GetField(objValue reflect.Value, field string) (any, error) {
 		return nil, fmt.Errorf("reflectx: field %s not found", field)
 	}
 	return fieldVal.Interface(), nil
+}
+
+// GetUnexportedField 通过反射获取结构体中的非导出字段值，支持嵌套字段访问
+// objValue: 包含目标字段的对象的反射值
+// fields: 要访问的字段名称序列，支持多级嵌套访问
+// 返回值: 目标字段的反射值，如果字段不存在则返回无效的reflect.Value
+func GetUnexportedField(objValue reflect.Value, fields ...string) reflect.Value {
+	// 遍历字段路径，逐级深入获取目标字段
+	for _, field := range fields {
+		v := IndirectValue(objValue)
+		field := v.FieldByName(field)
+		if !field.IsValid() {
+			return reflect.Value{}
+		}
+		objValue = field
+	}
+	// 通过不安全指针创建可访问的字段值副本
+	return reflect.NewAt(objValue.Type(), unsafe.Pointer(objValue.UnsafeAddr())).Elem()
 }
 
 func SetField(objValue reflect.Value, field string, newValue any) error {
