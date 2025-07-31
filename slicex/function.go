@@ -271,7 +271,7 @@ func PadEnd[S ~[]E, E any](s S, size int, val E) S {
 }
 
 func Reduce[S ~[]E, E any, R any](s S, initValue R, f func(previousValue R, currentValue E, currentIndex int, s S) R) R {
-	var r = initValue
+	r := initValue
 	for i, e := range s {
 		r = f(r, e, i, s)
 	}
@@ -342,7 +342,6 @@ func Shifta[S ~[]E, E any](array S, startIndexInclusive, endIndexExclusive, offs
 			break
 		}
 	}
-
 }
 
 // Swap swaps a series of elements in the given array.
@@ -378,6 +377,24 @@ func Shuffle[S ~[]E, E any](s S) S {
 	})
 	randx.Put(r)
 	return s
+}
+
+// 随机打乱直到没有相邻元素相同
+func ShuffleNoAdjacent[S ~[]E, E comparable](s S) S {
+	for HasAdjacentDuplicates(s) {
+		s = Shuffle(s)
+	}
+	return s
+}
+
+// 检查是否有相邻元素相同
+func HasAdjacentDuplicates[S ~[]E, E comparable](s S) bool {
+	for i := 0; i < len(s)-1; i++ {
+		if s[i] == s[i+1] {
+			return true
+		}
+	}
+	return false
 }
 
 // Sum 数组求和
