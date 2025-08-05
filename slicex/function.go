@@ -1,6 +1,8 @@
 package slicex
 
 import (
+	"sort"
+
 	"github.com/go-leo/gox/constraintx"
 	"github.com/go-leo/gox/mathx"
 	"github.com/go-leo/gox/mathx/randx"
@@ -381,10 +383,65 @@ func Shuffle[S ~[]E, E any](s S) S {
 
 // 随机打乱直到没有相邻元素相同
 func ShuffleNoAdjacent[S ~[]E, E comparable](s S) S {
-	for HasAdjacentDuplicates(s) {
-		s = Shuffle(s)
+	if len(s) <= 1 {
+		return s
 	}
-	return s
+
+	// 统计每个元素的出现次数
+	count := make(map[E]int)
+	for _, v := range s {
+		count[v]++
+	}
+
+	// 检查是否可能实现无相邻重复
+	maxCount := 0
+	for _, c := range count {
+		if c > maxCount {
+			maxCount = c
+		}
+	}
+
+	// 如果某个元素出现次数超过总长度的一半+1，则无法实现无相邻重复
+	if maxCount > (len(s)+1)/2 {
+		return s // 返回原数组或错误处理
+	}
+
+	// 使用更智能的排列算法
+	return rearrangeNoAdjacent(s, count)
+}
+
+func rearrangeNoAdjacent[S ~[]E, E comparable](s S, count map[E]int) S {
+	result := make(S, len(s))
+
+	// 按出现次数排序元素
+	type elemCount struct {
+		elem  E
+		count int
+	}
+
+	elems := make([]elemCount, 0, len(count))
+	for e, c := range count {
+		elems = append(elems, elemCount{e, c})
+	}
+
+	// 按计数降序排序
+	sort.Slice(elems, func(i, j int) bool {
+		return elems[i].count > elems[j].count
+	})
+
+	// 先填充偶数位置，再填充奇数位置
+	index := 0
+	for _, ec := range elems {
+		for i := 0; i < ec.count; i++ {
+			result[index] = ec.elem
+			index += 2
+			if index >= len(result) {
+				index = 1 // 切换到奇数位置
+			}
+		}
+	}
+
+	return result
 }
 
 // 检查是否有相邻元素相同
