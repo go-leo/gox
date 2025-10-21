@@ -2,15 +2,16 @@ package chanx
 
 import (
 	"context"
-	"slices"
 	"testing"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 // TestAll 测试 All 函数是否能正确收集所有通道的值。
 func TestAll(t *testing.T) {
-	//ctx, cancel := context.WithCancel(context.Background())
-	//defer cancel()
+	// ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
 
 	// 创建一些模拟通道并发送一些值
 	ch1 := make(chan int)
