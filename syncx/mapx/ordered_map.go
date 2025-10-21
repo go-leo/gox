@@ -7,6 +7,11 @@ import (
 
 var _ MapInterface = (*OrderedMap)(nil)
 
+type entry[K comparable, V any] struct {
+	Key   K
+	Value V
+}
+
 type OrderedMap struct {
 	mu    sync.RWMutex
 	items map[any]*list.Element
@@ -20,7 +25,7 @@ func (m *OrderedMap) Load(key any) (value any, loaded bool) {
 	if !loaded {
 		return nil, loaded
 	}
-	return elem.Value.(*Entry[any, any]).Value, loaded
+	return elem.Value.(*entry[any, any]).Value, loaded
 }
 
 func (m *OrderedMap) Store(key, value any) {
@@ -28,12 +33,12 @@ func (m *OrderedMap) Store(key, value any) {
 	defer m.mu.Unlock()
 	elem, ok := m.items[key]
 	if !ok {
-		entry := &Entry[any, any]{Key: key, Value: value}
+		entry := &entry[any, any]{Key: key, Value: value}
 		elem = m.list.PushBack(entry)
 		m.items[key] = elem
 		return
 	}
-	elem.Value.(*Entry[any, any]).Value = value
+	elem.Value.(*entry[any, any]).Value = value
 }
 
 func (m *OrderedMap) LoadOrStore(key, value any) (actual any, loaded bool) {
@@ -41,12 +46,12 @@ func (m *OrderedMap) LoadOrStore(key, value any) (actual any, loaded bool) {
 	defer m.mu.Unlock()
 	elem, loaded := m.items[key]
 	if !loaded {
-		entry := &Entry[any, any]{Key: key, Value: value}
+		entry := &entry[any, any]{Key: key, Value: value}
 		elem = m.list.PushBack(entry)
 		m.items[key] = elem
 		return value, loaded
 	}
-	return elem.Value.(*Entry[any, any]).Value, loaded
+	return elem.Value.(*entry[any, any]).Value, loaded
 }
 
 func (m *OrderedMap) LoadAndDelete(key any) (value any, loaded bool) {
@@ -58,7 +63,7 @@ func (m *OrderedMap) LoadAndDelete(key any) (value any, loaded bool) {
 	}
 	delete(m.items, key)
 	m.list.Remove(elem)
-	return elem.Value.(*Entry[any, any]).Value, loaded
+	return elem.Value.(*entry[any, any]).Value, loaded
 }
 
 func (m *OrderedMap) Delete(key any) {
@@ -79,7 +84,7 @@ func (m *OrderedMap) Swap(key, value any) (previous any, loaded bool) {
 	if !loaded {
 		return previous, loaded
 	}
-	entry := elem.Value.(*Entry[any, any])
+	entry := elem.Value.(*entry[any, any])
 	previous = entry.Value
 	entry.Value = value
 	return previous, loaded
@@ -92,7 +97,7 @@ func (m *OrderedMap) CompareAndSwap(key, old, new any) (swapped bool) {
 	if !loaded {
 		return false
 	}
-	entry := elem.Value.(*Entry[any, any])
+	entry := elem.Value.(*entry[any, any])
 	if entry.Value != old {
 		return false
 	}
@@ -107,7 +112,7 @@ func (m *OrderedMap) CompareAndDelete(key, old any) (deleted bool) {
 	if !loaded {
 		return false
 	}
-	entry := elem.Value.(*Entry[any, any])
+	entry := elem.Value.(*entry[any, any])
 	if entry.Value != old {
 		return false
 	}
@@ -120,7 +125,7 @@ func (m *OrderedMap) Range(f func(key any, value any) (shouldContinue bool)) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	for elem := m.list.Front(); elem != nil; elem = elem.Next() {
-		entry := elem.Value.(*Entry[any, any])
+		entry := elem.Value.(*entry[any, any])
 		if !f(entry.Key, entry.Value) {
 			break
 		}
