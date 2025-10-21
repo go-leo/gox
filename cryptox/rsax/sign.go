@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
-	"github.com/go-leo/gox/encodingx/base64x"
 
 	"github.com/go-leo/gox/cryptox/shax"
 )
@@ -44,7 +44,7 @@ func VerifySignWithSha256Hex(data []byte, hexSign, hexPubKey string) error {
 }
 
 func SignWithSha256Base64(data []byte, priKey string) (string, error) {
-	der, err := base64x.StdDecode(priKey)
+	der, err := base64.StdEncoding.DecodeString(priKey)
 	if err != nil {
 		return "", err
 	}
@@ -56,15 +56,15 @@ func SignWithSha256Base64(data []byte, priKey string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return base64x.StdEncode(sig), nil
+	return base64.StdEncoding.EncodeToString(sig), nil
 }
 
 func VerifySignWithSha256Base64(data []byte, base64Sign, base64PubKey string) error {
-	sig, err := base64x.StdDecode(base64Sign)
+	sig, err := base64.StdEncoding.DecodeString(base64Sign)
 	if err != nil {
 		return err
 	}
-	der, err := base64x.StdDecode(base64PubKey)
+	der, err := base64.StdEncoding.DecodeString(base64PubKey)
 	if err != nil {
 		return err
 	}

@@ -2,9 +2,9 @@ package rsax
 
 import (
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
-	"github.com/go-leo/gox/encodingx/base64x"
 )
 
 func DecodeKeyHex(data []byte) (string, string, error) {
@@ -24,7 +24,7 @@ func DecodeKeyBase64(data []byte) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	privateKeyStr := base64x.StdEncode(x509.MarshalPKCS1PrivateKey(privateKey))
-	publicKeyStr := base64x.StdEncode(x509.MarshalPKCS1PublicKey(&privateKey.PublicKey))
+	privateKeyStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(privateKey))
+	publicKeyStr := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(&privateKey.PublicKey))
 	return privateKeyStr, publicKeyStr, nil
 }

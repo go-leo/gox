@@ -3,6 +3,7 @@ package xlsx
 import (
 	"bytes"
 	"errors"
+
 	"github.com/xuri/excelize/v2"
 )
 
@@ -32,7 +33,6 @@ func ToXLSX(fields []string, rows [][]any) ([]byte, error) {
 			}
 			if err := file.SetCellValue(DefaultSheetName, cell, value); err != nil {
 				return nil, errors.Join(err, file.Close())
-
 			}
 		}
 	}

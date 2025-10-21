@@ -1,6 +1,6 @@
 module github.com/go-leo/gox
 
-go 1.23.0
+go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.5.0
