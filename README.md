@@ -4,8 +4,6 @@ gox 是一个Go语言工具库，提供了一些常用的功能，例如：
   * 退避函数
 * [bytex](bytex)
   * 二进制数据处理工具
-* [cachex](cachex)
-  * 缓存工具
 * [constraintx](constraintx)
   * 泛型约束工具
 * [contextx](contextx)
@@ -46,8 +44,6 @@ gox 是一个Go语言工具库，提供了一些常用的功能，例如：
   * 操作系统工具
 * [pathx](pathx)
   * 路径工具
-* [poolx](poolx)
-  * 对象(内存)池工具
 * [protox](protox)
   * protobuf工具
 * [reflectx](reflectx)
@@ -64,8 +60,6 @@ gox 是一个Go语言工具库，提供了一些常用的功能，例如：
   * 字符串转换工具
 * [stringx](stringx)
   * 字符串工具
-* [syncx](syncx)
-  * 同步工具
 * [textx](textx)
   * 文本工具
 * [timex](timex)
