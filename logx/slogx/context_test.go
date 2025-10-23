@@ -112,7 +112,7 @@ func TestContextAttrHandler_Handle(t *testing.T) {
 }
 
 func TestSlog(t *testing.T) {
-	h := slogx.WithContextHandler(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
+	h := slogx.WithContextHandler(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
 	logger := slog.New(h)
 	ctx := context.Background()
 	attr1 := slog.String("key1", "value1")
