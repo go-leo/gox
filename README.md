@@ -62,5 +62,3 @@ gox 是一个Go语言工具库，提供了一些常用的功能，例如：
   * 文本工具
 * [timex](timex)
   * 时间工具
-* [unicodex](unicodex)
-  * Unicode工具
