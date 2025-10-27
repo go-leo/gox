@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/bytedance/sonic v1.13.1
-	github.com/go-leo/gonv v0.0.0-20251027023348-0737871246bc
+	github.com/go-leo/gonv v0.0.0-20251027031751-96793586f6f1
 	github.com/go-playground/form/v4 v4.2.3
 	github.com/goccy/go-json v0.10.5
 	github.com/google/go-querystring v1.1.0

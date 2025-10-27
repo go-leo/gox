@@ -15,6 +15,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-leo/gonv v0.0.0-20251027023348-0737871246bc h1:KHuHmQgnQoedjnTpueqeCkaiBYG4UB11hhl3639w1gk=
 github.com/go-leo/gonv v0.0.0-20251027023348-0737871246bc/go.mod h1:fSD55oZ/VQ2S81lSJD/ZMFkjZZzGKrt6JzRfMidGAWM=
+github.com/go-leo/gonv v0.0.0-20251027031751-96793586f6f1 h1:X+OsoGACWuuwpVafFoNnZK8wnnw2Cdc7Gvo6PHB4t/Q=
+github.com/go-leo/gonv v0.0.0-20251027031751-96793586f6f1/go.mod h1:fSD55oZ/VQ2S81lSJD/ZMFkjZZzGKrt6JzRfMidGAWM=
 github.com/go-playground/assert/v2 v2.0.1/go.mod h1:VDjEfimB/XKnb+ZQfWdccd7VUvScMdVu0Titje2rxJ4=
 github.com/go-playground/assert/v2 v2.2.0 h1:JvknZsQTYeFEAhQwI4qEt9cyV5ONwRHC+lYKSsYSR8s=
 github.com/go-playground/assert/v2 v2.2.0/go.mod h1:VDjEfimB/XKnb+ZQfWdccd7VUvScMdVu0Titje2rxJ4=
