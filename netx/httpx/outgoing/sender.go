@@ -5,8 +5,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/gob"
+	"encoding/json"
+	"encoding/xml"
 	"errors"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -16,13 +17,9 @@ import (
 	"time"
 
 	"github.com/go-leo/gonv"
-	"github.com/go-leo/gox/encodingx/jsonx"
-	"github.com/go-leo/gox/encodingx/queryx"
-	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/iox"
 	"github.com/go-leo/gox/netx/httpx"
-	"github.com/go-leo/gox/slicex"
-	"github.com/go-leo/gox/stringx"
+	"github.com/google/go-querystring/query"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -32,15 +29,30 @@ var (
 )
 
 type MarshalError struct {
-	Object any
-	Err    error
+	body any
+	Err  error
 }
 
 func (e MarshalError) Error() string {
-	return fmt.Sprintf("failed to marshal body")
+	return "failed to marshal body"
 }
 
-type RequestSender interface {
+func (e MarshalError) Unwrap() error {
+	return e.Err
+}
+
+func (e MarshalError) Body() any {
+	return e.body
+}
+
+type FormData struct {
+	FieldName string
+	Value     string
+	File      io.Reader
+	Filename  string
+}
+
+type MethodSender interface {
 	Method(method string) URLSender
 	Get() URLSender
 	Head() URLSender
@@ -58,48 +70,45 @@ type URLSender interface {
 	URLString(urlString string) PayloadSender
 }
 
-type FormData struct {
-	FieldName string
-	Value     string
-	File      io.Reader
-	Filename  string
-}
-
-type PayloadSender interface {
-	// Query methods
+type querySender interface {
 	Query(name, value string) PayloadSender
 	AddQuery(key, value string) PayloadSender
 	DelQuery(name string) PayloadSender
 	QueryString(q string) PayloadSender
 	Queries(queries url.Values) PayloadSender
 	QueryObject(q any) PayloadSender
+}
 
-	// Header methods
+type headerSender interface {
 	Header(name, value string, uncanonical ...bool) PayloadSender
 	AddHeader(name, value string, uncanonical ...bool) PayloadSender
 	DelHeader(name string) PayloadSender
 	Headers(header http.Header) PayloadSender
 	UserAgent(ua string) PayloadSender
+}
 
-	// Auth methods
+type authSender interface {
 	BasicAuth(username, password string) PayloadSender
 	BearerAuth(token string) PayloadSender
 	CustomAuth(scheme, token string) PayloadSender
+}
 
-	// Cache-Control methods
+type cacheControlSender interface {
 	CacheControl(directives ...string) PayloadSender
 	IfModifiedSince(t time.Time) PayloadSender
 	IfUnmodifiedSince(t time.Time) PayloadSender
 	IfNoneMatch(etag string) PayloadSender
 	IfMatch(etags ...string) PayloadSender
+}
 
-	// Cookie methods
+type cookieSender interface {
 	Cookie(cookie *http.Cookie) PayloadSender
 	AddCookie(cookie *http.Cookie) PayloadSender
 	DelCookie(cookie *http.Cookie) PayloadSender
 	Cookies(cookies ...*http.Cookie) PayloadSender
+}
 
-	// Body methods
+type bodySender interface {
 	Body(body io.Reader, contentType string) PayloadSender
 	BytesBody(body []byte, contentType string) PayloadSender
 	TextBody(body string, contentType string) PayloadSender
@@ -111,11 +120,31 @@ type PayloadSender interface {
 	ProtobufBody(body proto.Message) PayloadSender
 	GobBody(body any) PayloadSender
 	MultipartBody(formData ...*FormData) PayloadSender
+}
+
+type PayloadSender interface {
+	// Query methods
+	querySender
+
+	// Header methods
+	headerSender
+
+	// Auth methods
+	authSender
+
+	// Cache-Control methods
+	cacheControlSender
+
+	// Cookie methods
+	cookieSender
+
+	// Body methods
+	bodySender
 
 	// other methods
 	Middleware(middlewares ...Middleware) PayloadSender
 	Build(ctx context.Context) (*http.Request, error)
-	Send(ctx context.Context, clis ...*http.Client) (ResponseReceiver, error)
+	Send(ctx context.Context, cli ...*http.Client) (Receiver, error)
 }
 
 type sender struct {
@@ -246,7 +275,7 @@ func (s *sender) QueryObject(q any) PayloadSender {
 	if s.err != nil {
 		return s
 	}
-	values, err := queryx.Marshal(q)
+	values, err := query.Values(q)
 	if err != nil {
 		s.err = err
 		return s
@@ -258,7 +287,7 @@ func (s *sender) Header(name, value string, uncanonical ...bool) PayloadSender {
 	if s.err != nil {
 		return s
 	}
-	if slicex.IsNotEmpty(uncanonical) && uncanonical[0] {
+	if len(uncanonical) > 0 && uncanonical[0] {
 		s.header()[name] = []string{value}
 		return s
 	}
@@ -270,7 +299,7 @@ func (s *sender) AddHeader(name, value string, uncanonical ...bool) PayloadSende
 	if s.err != nil {
 		return s
 	}
-	if slicex.IsNotEmpty(uncanonical) && uncanonical[0] {
+	if len(uncanonical) > 0 && uncanonical[0] {
 		s.header()[name] = append(s.header()[name], value)
 		return s
 	}
@@ -376,7 +405,7 @@ func (s *sender) Body(body io.Reader, contentType string) PayloadSender {
 	s.Header("Content-Type", contentType)
 	l, ok := iox.Len(body)
 	if ok {
-		s.Header("Content-Length", gonv.ToString(l))
+		s.Header("Content-Length", gonv.String[string](l))
 	}
 	return s
 }
@@ -397,9 +426,9 @@ func (s *sender) FormObjectBody(body any) PayloadSender {
 	if s.err != nil {
 		return s
 	}
-	form, err := queryx.Marshal(body)
+	form, err := query.Values(body)
 	if err != nil {
-		s.err = err
+		s.err = MarshalError{body: body, Err: err}
 		return s
 	}
 	return s.FormBody(form)
@@ -411,7 +440,7 @@ func (s *sender) ObjectBody(body any, marshal func(any) ([]byte, error), content
 	}
 	data, err := marshal(body)
 	if err != nil {
-		s.err = MarshalError{Object: body, Err: err}
+		s.err = MarshalError{body: body, Err: err}
 		return s
 	}
 	return s.BytesBody(data, contentType)
@@ -420,7 +449,7 @@ func (s *sender) ObjectBody(body any, marshal func(any) ([]byte, error), content
 func (s *sender) JSONBody(body any) PayloadSender {
 	marshal := func(v any) ([]byte, error) {
 		buffer := &bytes.Buffer{}
-		encoder := jsonx.NewEncoder(buffer)
+		encoder := json.NewEncoder(buffer)
 		encoder.SetEscapeHTML(false)
 		err := encoder.Encode(v)
 		return buffer.Bytes(), err
@@ -429,7 +458,7 @@ func (s *sender) JSONBody(body any) PayloadSender {
 }
 
 func (s *sender) XMLBody(body any) PayloadSender {
-	return s.ObjectBody(body, xmlx.Marshal, "application/xml")
+	return s.ObjectBody(body, xml.Marshal, "application/xml")
 }
 
 func (s *sender) ProtobufBody(body proto.Message) PayloadSender {
@@ -489,7 +518,7 @@ func (s *sender) Build(ctx context.Context) (*http.Request, error) {
 	if s.err != nil {
 		return nil, s.err
 	}
-	if stringx.IsBlank(s.method) {
+	if len(s.method) == 0 {
 		return nil, ErrMethodEmpty
 	}
 	if s.uri == nil {
@@ -517,31 +546,25 @@ func (s *sender) Build(ctx context.Context) (*http.Request, error) {
 	return req, nil
 }
 
-func (s *sender) Send(ctx context.Context, clients ...*http.Client) (ResponseReceiver, error) {
-	var err error
-	var req *http.Request
-	var resp *http.Response
-	var cli *http.Client
-
-	if req, err = s.Build(ctx); err != nil {
+func (s *sender) Send(ctx context.Context, clients ...*http.Client) (Receiver, error) {
+	if s.err != nil {
+		return nil, s.err
+	}
+	req, err := s.Build(ctx)
+	if err != nil {
 		return nil, err
 	}
+	var cli *http.Client
 	if len(clients) > 0 && clients[0] != nil {
 		cli = clients[0]
 	} else {
 		cli = httpx.PooledClient()
 	}
-	middleware := chainMiddlewares(s.middlewares...)
-	if middleware == nil {
-		if resp, err = invoke(ctx, req, cli); err != nil {
-			return nil, err
-		}
-		return Receiver(resp), nil
-	}
-	if resp, err = middleware(ctx, req, cli, invoke); err != nil {
+	resp, err := Invoke(ctx, chainMiddlewares(s.middlewares...), cli, req)
+	if err != nil {
 		return nil, err
 	}
-	return Receiver(resp), nil
+	return &receiver{resp: resp}, nil
 }
 
 func (s *sender) query() url.Values {
@@ -566,61 +589,56 @@ func (s *sender) cookie() map[string][]*http.Cookie {
 }
 
 // Sender returns a new RequestSender.
-func Sender() RequestSender {
+func Sender() MethodSender {
 	return new(sender)
 }
 
 // Method returns a new RequestSender with the specified method.
 func Method(method string) URLSender {
-	s := new(sender)
-	if s.err != nil {
-		return s
-	}
-	s.method = method
-	return s
+	return Sender().Method(method)
 }
 
 // Get returns a new RequestSender with the method GET.
 func Get() URLSender {
-	return Sender().Method(http.MethodGet)
+	return Sender().Get()
 }
 
 // Head returns a new RequestSender with the method HEAD.
 func Head() URLSender {
-	return Sender().Method(http.MethodHead)
+	return Sender().Head()
 }
 
 // Post returns a new RequestSender with the method POST.
 func Post() URLSender {
-	return Sender().Method(http.MethodPost)
+	return Sender().Post()
 }
 
 // Put returns a new RequestSender with the method PUT.
 func Put() URLSender {
-	return Sender().Method(http.MethodPut)
+	return Sender().Put()
 }
 
 // Patch returns a new RequestSender with the method PATCH.
 func Patch() URLSender {
-	return Sender().Method(http.MethodPatch)
+	return Sender().Patch()
 }
 
 // Delete returns a new RequestSender with the method DELETE.
 func Delete() URLSender {
-	return Sender().Method(http.MethodDelete)
+	return Sender().Delete()
 }
 
 // Connect returns a new RequestSender with the method CONNECT.
 func Connect() URLSender {
-	return Sender().Method(http.MethodConnect)
+	return Sender().Connect()
 }
 
 // Options returns a new RequestSender with the method OPTIONS.
 func Options() URLSender {
-	return Sender().Method(http.MethodOptions)
+	return Sender().Options()
 }
 
 // Trace returns a new RequestSender with the method TRACE.
 func Trace() URLSender {
-	return Sender().Method(http.MethodTrace)
+	return Sender().Trace()
 }

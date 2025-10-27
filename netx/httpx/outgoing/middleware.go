@@ -32,6 +32,13 @@ func getInvoker(interceptors []Middleware, curr int, finalInvoker Invoker) Invok
 	}
 }
 
+func Invoke(ctx context.Context, middleware Middleware, cli *http.Client, request *http.Request) (*http.Response, error) {
+	if middleware == nil {
+		return invoke(ctx, request, cli)
+	}
+	return middleware(ctx, request, cli, invoke)
+}
+
 func invoke(_ context.Context, req *http.Request, cli *http.Client) (*http.Response, error) {
 	return cli.Do(req)
 }

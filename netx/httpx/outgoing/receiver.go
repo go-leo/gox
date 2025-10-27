@@ -3,27 +3,34 @@ package outgoing
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
+	"encoding/json"
+	"encoding/xml"
 	"io"
 	"net/http"
 
 	"github.com/go-leo/gonv"
-	"github.com/go-leo/gox/encodingx/jsonx"
-	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/errorx"
 	"google.golang.org/protobuf/proto"
 )
 
 type UnmarshalError struct {
-	Body []byte
-	Err  error
+	body []byte
+	err  error
 }
 
 func (e UnmarshalError) Error() string {
-	return fmt.Sprintf("failed to unmarshal body")
+	return "failed to unmarshal body"
 }
 
-type ResponseReceiver interface {
+func (e UnmarshalError) Unwrap() error {
+	return e.err
+}
+
+func (e UnmarshalError) Body() []byte {
+	return e.body
+}
+
+type Receiver interface {
 	Response() *http.Response
 	Status() string
 	StatusCode() int
@@ -116,17 +123,17 @@ func (r *receiver) ObjectBody(body any, unmarshal func([]byte, any) error) error
 		return err
 	}
 	if err := unmarshal(bodyBytes, body); err != nil {
-		return UnmarshalError{Body: bodyBytes, Err: err}
+		return UnmarshalError{body: bodyBytes, err: err}
 	}
 	return nil
 }
 
 func (r *receiver) JSONBody(body any) error {
-	return r.ObjectBody(body, jsonx.Unmarshal)
+	return r.ObjectBody(body, json.Unmarshal)
 }
 
 func (r *receiver) XMLBody(body any) error {
-	return r.ObjectBody(body, xmlx.Unmarshal)
+	return r.ObjectBody(body, xml.Unmarshal)
 }
 
 func (r *receiver) ProtobufBody(body proto.Message) error {
@@ -142,8 +149,4 @@ func (r *receiver) GobBody(body any) error {
 func (r *receiver) WriterBody(file io.Writer) error {
 	_, err := io.Copy(file, r.resp.Body)
 	return err
-}
-
-func Receiver(resp *http.Response) ResponseReceiver {
-	return &receiver{resp: resp}
 }
