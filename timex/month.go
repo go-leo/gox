@@ -4,20 +4,16 @@ import (
 	"time"
 )
 
-func Month(t time.Time) time.Time {
+func month(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
-}
-
-func CurrentMonth() time.Time {
-	return Month(time.Now())
 }
 
 // ThisMonth 返回指定时间的月份的第一天
 func ThisMonth(ts ...time.Time) time.Time {
 	if len(ts) <= 0 {
-		return CurrentMonth()
+		return month(time.Now())
 	}
-	return Month(ts[0])
+	return month(ts[0])
 }
 
 // LastMonth 返回指定时间的上一个月的第一天
