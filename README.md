@@ -8,8 +8,6 @@ gox 是一个Go语言工具库，提供了一些常用的功能，例如：
   * 泛型约束工具
 * [contextx](contextx)
   * 上下文工具
-* [convx](convx)
-  * 类型转换工具
 * [cryptox](cryptox)
  * 加密工具
 * [databasex](databasex)

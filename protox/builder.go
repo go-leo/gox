@@ -1,7 +1,7 @@
 package protox
 
 import (
-	"github.com/go-leo/gox/convx"
+	"github.com/go-leo/gonv"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -45,5 +45,5 @@ func (sb *Builder) grow(n int) {
 }
 
 func (sb *Builder) last(n int) string {
-	return convx.BytesToString(sb.buf[len(sb.buf)-n:])
+	return gonv.BytesToString(sb.buf[len(sb.buf)-n:])
 }

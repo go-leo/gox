@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/go-leo/gox/convx"
+	"io"
+	"net/http"
+
+	"github.com/go-leo/gonv"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/xmlx"
 	"github.com/go-leo/gox/errorx"
 	"google.golang.org/protobuf/proto"
-	"io"
-	"net/http"
 )
 
 type UnmarshalError struct {
@@ -106,7 +107,7 @@ func (r *receiver) TextBody() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return convx.BytesToString(bodyBytes), nil
+	return gonv.BytesToString(bodyBytes), nil
 }
 
 func (r *receiver) ObjectBody(body any, unmarshal func([]byte, any) error) error {

@@ -3,9 +3,10 @@ package render
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-leo/gox/convx"
 	"html/template"
 	"net/http"
+
+	"github.com/go-leo/gonv"
 
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/stringx"
@@ -106,9 +107,9 @@ func secureJSON(w http.ResponseWriter, data any, o *jsonOptions) error {
 		return err
 	}
 	// if the jsonBytes is array values
-	if bytes.HasPrefix(jsonBytes, convx.StringToBytes("[")) &&
-		bytes.HasSuffix(jsonBytes, convx.StringToBytes("]")) {
-		if _, err = w.Write(convx.StringToBytes(o.SecureOptions.Prefix)); err != nil {
+	if bytes.HasPrefix(jsonBytes, gonv.StringToBytes("[")) &&
+		bytes.HasSuffix(jsonBytes, gonv.StringToBytes("]")) {
+		if _, err = w.Write(gonv.StringToBytes(o.SecureOptions.Prefix)); err != nil {
 			return err
 		}
 	}
@@ -124,7 +125,7 @@ func asciiJSON(w http.ResponseWriter, data any) (err error) {
 	}
 
 	var buffer bytes.Buffer
-	for _, r := range convx.BytesToString(ret) {
+	for _, r := range gonv.BytesToString(ret) {
 		cvt := string(r)
 		if r >= 128 {
 			cvt = fmt.Sprintf("\\u%04x", int64(r))
@@ -149,11 +150,11 @@ func jsonpJSON(w http.ResponseWriter, Data any, o *jsonOptions) error {
 	}
 
 	callback := template.JSEscapeString(o.JsonpOptions.Callback)
-	if _, err = w.Write(convx.StringToBytes(callback)); err != nil {
+	if _, err = w.Write(gonv.StringToBytes(callback)); err != nil {
 		return err
 	}
 
-	if _, err = w.Write(convx.StringToBytes("(")); err != nil {
+	if _, err = w.Write(gonv.StringToBytes("(")); err != nil {
 		return err
 	}
 
@@ -161,7 +162,7 @@ func jsonpJSON(w http.ResponseWriter, Data any, o *jsonOptions) error {
 		return err
 	}
 
-	if _, err = w.Write(convx.StringToBytes(");")); err != nil {
+	if _, err = w.Write(gonv.StringToBytes(");")); err != nil {
 		return err
 	}
 

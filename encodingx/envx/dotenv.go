@@ -3,8 +3,9 @@ package envx
 import (
 	"bytes"
 	"errors"
-	"github.com/go-leo/gox/convx"
 	"io"
+
+	"github.com/go-leo/gonv"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/exp/maps"
@@ -47,7 +48,7 @@ func (e *encoder) Encode(val any) error {
 	if err != nil {
 		return err
 	}
-	_, err = e.w.Write(convx.StringToBytes(data))
+	_, err = e.w.Write(gonv.StringToBytes(data))
 	return err
 }
 

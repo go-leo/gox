@@ -2,8 +2,9 @@ package render
 
 import (
 	"fmt"
-	"github.com/go-leo/gox/convx"
 	"net/http"
+
+	"github.com/go-leo/gonv"
 )
 
 // Text writes data with custom ContentType.
@@ -13,6 +14,6 @@ func Text(w http.ResponseWriter, format string, Data ...any) error {
 		_, err := fmt.Fprintf(w, format, Data...)
 		return err
 	}
-	_, err := w.Write(convx.StringToBytes(format))
+	_, err := w.Write(gonv.StringToBytes(format))
 	return err
 }

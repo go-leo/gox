@@ -7,7 +7,15 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"github.com/go-leo/gox/convx"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/url"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/go-leo/gonv"
 	"github.com/go-leo/gox/encodingx/jsonx"
 	"github.com/go-leo/gox/encodingx/queryx"
 	"github.com/go-leo/gox/encodingx/xmlx"
@@ -16,13 +24,6 @@ import (
 	"github.com/go-leo/gox/slicex"
 	"github.com/go-leo/gox/stringx"
 	"google.golang.org/protobuf/proto"
-	"io"
-	"mime/multipart"
-	"net/http"
-	"net/url"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 var (
@@ -301,7 +302,7 @@ func (s *sender) BasicAuth(username, password string) PayloadSender {
 	if s.err != nil {
 		return s
 	}
-	token := base64.StdEncoding.EncodeToString(convx.StringToBytes(username + ":" + password))
+	token := base64.StdEncoding.EncodeToString(gonv.StringToBytes(username + ":" + password))
 	return s.CustomAuth("Basic", token)
 }
 
@@ -375,7 +376,7 @@ func (s *sender) Body(body io.Reader, contentType string) PayloadSender {
 	s.Header("Content-Type", contentType)
 	l, ok := iox.Len(body)
 	if ok {
-		s.Header("Content-Length", convx.ToString(l))
+		s.Header("Content-Length", gonv.ToString(l))
 	}
 	return s
 }
