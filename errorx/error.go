@@ -15,11 +15,7 @@ func Concern[T any](_ T, err error) error {
 	return err
 }
 
-func Quiet[T any](v T, err error) T {
-	return Ignore(v, err)
-}
-
-func Silence(_ error) {}
+func Quiet(_ error) {}
 
 func Stringfy(err error) string {
 	if err == nil {
