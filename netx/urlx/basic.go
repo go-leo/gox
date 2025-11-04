@@ -1,4 +1,4 @@
-package authx
+package urlx
 
 import (
 	"encoding/base64"
