@@ -35,9 +35,9 @@ func FromContext(ctx context.Context) ([]slog.Attr, bool) {
 	return attr, ok
 }
 
-// WithContextHandler wraps a slog.Handler with context support.
+// WithContext wraps a slog.Handler with context support.
 // It returns a new handler that can extract and log attributes from the context.
-func WithContextHandler(handler slog.Handler) slog.Handler {
+func WithContext(handler slog.Handler) slog.Handler {
 	return &contextHandler{Handler: handler}
 }
 
@@ -50,10 +50,10 @@ type contextHandler struct {
 // Handle processes a log record and adds context attributes if present.
 // It extracts attributes from the context using FromContext and adds them to
 // the log record before delegating to the embedded handler.
-func (c contextHandler) Handle(ctx context.Context, record slog.Record) error {
+func (h *contextHandler) Handle(ctx context.Context, record slog.Record) error {
 	attrs, ok := FromContext(ctx)
 	if ok {
 		record.AddAttrs(attrs...)
 	}
-	return c.Handler.Handle(ctx, record)
+	return h.Handler.Handle(ctx, record)
 }
