@@ -38,6 +38,16 @@ func IsDesc[E constraints.Ordered](x []E) bool {
 	return true
 }
 
+func SortFunc[S ~[]E, E any](x S, cmp func(a, b E) int) S {
+	slices.SortFunc(x, cmp)
+	return x
+}
+
+func SortStableFunc[S ~[]E, E any](x S, cmp func(a, b E) int) S {
+	slices.SortStableFunc(x, cmp)
+	return x
+}
+
 func BubbleSort[E constraints.Ordered](x []E) []E {
 	for i := 0; i < len(x)-1; i++ {
 		for j := 1; j < len(x)-i; j++ {
