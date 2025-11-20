@@ -37,6 +37,9 @@ func Time[Time time.Time](key string, value Time) slog.Attr {
 }
 
 func Json(key string, value any) slog.Attr {
+	if value == nil {
+		return String(key, "<nil>")
+	}
 	data, err := json.Marshal(value)
 	if err != nil {
 		panic(err)
@@ -45,6 +48,9 @@ func Json(key string, value any) slog.Attr {
 }
 
 func Error(key string, value error) slog.Attr {
+	if value == nil {
+		return String(key, "<nil>")
+	}
 	return String(key, value.Error())
 }
 
