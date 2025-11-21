@@ -10,11 +10,11 @@ require (
 	github.com/petermattis/goid v0.0.0-20250303134427-723919f7f203
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.33.0
-	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e
+	golang.org/x/exp v0.0.0-20250811191247-51f88131bc50
 	golang.org/x/image v0.25.0
-	golang.org/x/text v0.23.0
-	golang.org/x/tools v0.24.1
-	google.golang.org/protobuf v1.34.2
+	golang.org/x/text v0.28.0
+	golang.org/x/tools v0.36.0
+	google.golang.org/protobuf v1.36.10
 )
 
 require (
