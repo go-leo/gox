@@ -1,4 +1,4 @@
-package condx
+package sqls
 
 import (
 	"fmt"

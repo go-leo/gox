@@ -1,4 +1,4 @@
-package condx
+package sqls
 
 import (
 	"testing"
@@ -246,13 +246,13 @@ func TestMustComparisonOperators(t *testing.T) {
 
 func TestRangeOperators(t *testing.T) {
 	tests := []struct {
-		name      string
-		function  func([]string, string, string, string) []string
-		field     string
-		minValue  string
-		maxValue  string
-		expected  string
-		mustTest  bool
+		name     string
+		function func([]string, string, string, string) []string
+		field    string
+		minValue string
+		maxValue string
+		expected string
+		mustTest bool
 	}{
 		{
 			name:     "Between",
@@ -642,28 +642,28 @@ func TestSubqueryComparisonOperators(t *testing.T) {
 
 func TestChainingConditions(t *testing.T) {
 	conditions := []string{}
-	
+
 	// Chain several conditions together
 	conditions = Eq(conditions, "name", "'john'")
 	conditions = Gt(conditions, "age", "18")
 	conditions = Like(conditions, "email", "%@example.com")
-	
+
 	if len(conditions) != 3 {
 		t.Fatalf("expected 3 conditions, got %d", len(conditions))
 	}
-	
+
 	expected := []string{
 		"(name = 'john')",
 		"(age > 18)",
 		"(email LIKE '%@example.com')",
 	}
-	
+
 	for i, exp := range expected {
 		if conditions[i] != exp {
 			t.Errorf("condition %d: expected %q, got %q", i, exp, conditions[i])
 		}
 	}
-	
+
 	// Test combining them with And()
 	result := And().Combine(conditions)
 	expectedResult := "(name = 'john') AND (age > 18) AND (email LIKE '%@example.com')"
