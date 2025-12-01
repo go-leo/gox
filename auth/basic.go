@@ -1,12 +1,11 @@
-package urlx
+package auth
 
 import (
 	"encoding/base64"
 	"strings"
 )
 
-// ParseBasicAuth parses a Basic Authentication header and returns the username, password, and a boolean indicating success.
-func Decode(auth string) (username, password string, ok bool) {
+func DecodeBasic(auth string) (username, password string, ok bool) {
 	const prefix = "Basic "
 	if len(auth) < len(prefix) || !strings.EqualFold(auth[:len(prefix)], prefix) {
 		return
@@ -24,7 +23,7 @@ func Decode(auth string) (username, password string, ok bool) {
 }
 
 // BasicAuth returns a Basic Authentication header string for the given username and password.
-func Encode(username, passwd string) string {
+func EncodeBasic(username, passwd string) string {
 	auth := username + ":" + passwd
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }
