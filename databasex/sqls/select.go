@@ -6,7 +6,7 @@ import (
 )
 
 func Select(fields []string) string {
-	return fmt.Sprintf("GROUP BY %s", strings.Join(fields, ","))
+	return fmt.Sprintf("SELECT %s", strings.Join(fields, ","))
 }
 
 func MustSelect(fields []string) string {
