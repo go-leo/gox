@@ -1,5 +1,7 @@
 package sqls
 
+import "fmt"
+
 func From(table string) string {
-	return "FROM " + table
+	return fmt.Sprintf("FROM %s", table)
 }
