@@ -31,7 +31,7 @@ func And() Combiner {
 		if len(conditions) <= 0 {
 			return ""
 		}
-		return strings.Join(conditions, " AND ")
+		return fmt.Sprintf("(%s)", strings.Join(conditions, " AND "))
 	})
 }
 
@@ -42,7 +42,7 @@ func Or() Combiner {
 		if len(conditions) <= 0 {
 			return ""
 		}
-		return strings.Join(conditions, " OR ")
+		return fmt.Sprintf("(%s)", strings.Join(conditions, " OR "))
 	})
 }
 
@@ -222,7 +222,7 @@ func Like(conditions []string, field string, value string) []string {
 	if len(field) <= 0 || len(value) <= 0 {
 		return conditions
 	}
-	return append(conditions, fmt.Sprintf("(%s LIKE '%s')", field, value))
+	return append(conditions, fmt.Sprintf("(%s LIKE %s)", field, value))
 }
 
 // MustLike adds a LIKE condition, but panics if field name or value is empty.
@@ -238,7 +238,7 @@ func NotLike(conditions []string, field string, value string) []string {
 	if len(field) <= 0 || len(value) <= 0 {
 		return conditions
 	}
-	return append(conditions, fmt.Sprintf("(%s NOT LIKE '%s')", field, value))
+	return append(conditions, fmt.Sprintf("(%s NOT LIKE %s)", field, value))
 }
 
 // MustNotLike adds a NOT LIKE condition, but panics if field name or value is empty.
