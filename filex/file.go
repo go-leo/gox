@@ -1,7 +1,7 @@
 package filex
 
 import (
-	"errors"
+	"archive/zip"
 	"io"
 	"io/fs"
 	"net/http"
@@ -69,84 +69,104 @@ func Download(url, filepath string) error {
 }
 
 // CopyFile 复制文件
-func CopyFile(src, dst string, isFirstDel ...bool) (err error) {
-	if src == "" {
-		return errors.New("source file cannot be empty")
-	}
-
-	if dst == "" {
-		return errors.New("destination file cannot be empty")
-	}
-
-	// 如果相同就不处理
+func CopyFile(src, dst string) error {
 	if src == dst {
 		return nil
 	}
-
-	// 删除原来的
-	if len(isFirstDel) > 0 && isFirstDel[0] {
-		if err = os.Remove(dst); err != nil {
-			return
-		}
-	}
-
-	in, err := os.Open(src)
+	srcInfo, err := os.Stat(src)
 	if err != nil {
-		return
+		return err
 	}
-	defer func() {
-		if e := in.Close(); e != nil {
-			err = e
+	dstDir := filepath.Dir(dst)
+	if _, err := os.Stat(dstDir); err == nil {
+		// 存在
+	} else if os.IsNotExist(err) {
+		// 不存在，创建
+		if err := os.MkdirAll(dstDir, os.ModePerm); err != nil {
+			return err
 		}
-	}()
-
-	out, err := Create(dst)
+	} else {
+		// 其他错误
+		return err
+	}
+	srcFile, err := os.Open(src)
 	if err != nil {
-		return
+		return err
 	}
-	defer func() {
-		if e := out.Close(); e != nil {
-			err = e
-		}
-	}()
-
-	// 复制
-	if _, err = io.Copy(out, in); err != nil {
-		return
+	defer srcFile.Close()
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
 	}
-
-	// 写盘
-	if err = out.Sync(); err != nil {
-		return
+	defer dstFile.Close()
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return err
 	}
-
-	// 调整权限
-	if err = os.Chmod(dst, os.FileMode(0o777)); err != nil {
-		return
+	if err = dstFile.Sync(); err != nil {
+		return err
 	}
-	return
+	if err := dstFile.Chmod(srcInfo.Mode()); err != nil {
+		return err
+	}
+	return nil
 }
 
 // CopyDir  拷贝整个目录
-func CopyDir(srcDir, dstDir string) error {
-	return filepath.WalkDir(srcDir, func(path string, dir fs.DirEntry, err error) error {
+func CopyDir(src, dst string) error {
+	return filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		// 目标路径
-		relPath, err := filepath.Rel(srcDir, path)
+		relPath, err := filepath.Rel(src, path)
 		if err != nil {
 			return err
 		}
-		dstPath := filepath.Join(dstDir, relPath)
-		if dir.IsDir() {
-			// 创建目标目录
-			return os.MkdirAll(dstPath, dir.Type())
+		if d.IsDir() {
+			return os.MkdirAll(filepath.Join(dst, relPath), d.Type())
 		} else {
-			// 复制文件
-			return CopyFile(path, dstPath)
+			return CopyFile(path, filepath.Join(dst, relPath))
 		}
 	})
+}
+
+func Unzip(src, dst string) (err error) {
+	zipReader, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer zipReader.Close()
+
+	for _, zipFile := range zipReader.File {
+		if err := extractAndWriteFile(zipFile, dst); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func extractAndWriteFile(zipFile *zip.File, dst string) error {
+	if zipFile.FileInfo().IsDir() {
+		return os.MkdirAll(filepath.Join(dst, zipFile.Name), zipFile.FileInfo().Mode())
+	}
+
+	inFile, err := zipFile.Open()
+	if err != nil {
+		return err
+	}
+	defer inFile.Close()
+
+	outFile, err := os.Create(filepath.Join(dst, zipFile.Name))
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	_, err = io.Copy(outFile, inFile)
+	if err != nil {
+		return err
+	}
+
+	return outFile.Chmod(zipFile.FileInfo().Mode())
 }
 
 // IsDir reports whether the named file is a directory.
@@ -158,9 +178,6 @@ func IsDir(filepath string) bool {
 	return f.IsDir()
 }
 
-// IsDirectory reports whether the named file is a directory.
-var IsDirectory = IsDir
-
 // GetSize 获取文件大小
 func GetSize(path string) (int64, error) {
 	fileInfo, err := os.Stat(path)
@@ -171,13 +188,13 @@ func GetSize(path string) (int64, error) {
 }
 
 const (
-	Byte         int64 = 1
-	Kilobyte           = 1024 * Byte
-	Megabyte           = 1024 * Kilobyte
-	Gigabyte           = 1024 * Megabyte
-	Trillionbyte       = 1024 * Gigabyte
-	Petabyte           = 1024 * Trillionbyte
-	Exabyte            = 1024 * Petabyte
+	Byte     int64 = 1
+	Kilobyte       = 1024 * Byte
+	Megabyte       = 1024 * Kilobyte
+	Gigabyte       = 1024 * Megabyte
+	Terabyte       = 1024 * Gigabyte
+	Petabyte       = 1024 * Terabyte
+	Exabyte        = 1024 * Petabyte
 	// Zettabyte          = 1024 * Exabyte
 	// Yottabyte          = 1024 * Zettabyte
 	// Brontobyte         = 1024 * Yottabyte
@@ -203,9 +220,9 @@ func HumanReadableSize(size int64) string {
 		_, _ = builder.WriteString("PB")
 	}
 
-	if s >= Trillionbyte {
-		tb := s / Trillionbyte
-		s = s % Trillionbyte
+	if s >= Terabyte {
+		tb := s / Terabyte
+		s = s % Terabyte
 		_ = builder.WriteInt(tb, 10)
 		_, _ = builder.WriteString("TB")
 	}
