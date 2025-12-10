@@ -149,13 +149,29 @@ func extractAndWriteFile(zipFile *zip.File, dst string) error {
 		return os.MkdirAll(filepath.Join(dst, zipFile.Name), zipFile.FileInfo().Mode())
 	}
 
+	dstFilePath := filepath.Join(dst, zipFile.Name)
+	dstFileDir := filepath.Dir(dstFilePath)
+	if dstDirInfo, err := os.Stat(dstFileDir); err != nil {
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(dstFileDir, zipFile.FileInfo().Mode()); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else {
+		if !dstDirInfo.IsDir() {
+			return &os.PathError{Op: "mkdir", Path: dstFileDir, Err: os.ErrExist}
+		}
+	}
+
 	inFile, err := zipFile.Open()
 	if err != nil {
 		return err
 	}
 	defer inFile.Close()
 
-	outFile, err := os.Create(filepath.Join(dst, zipFile.Name))
+	outFile, err := os.Create(dstFilePath)
 	if err != nil {
 		return err
 	}
