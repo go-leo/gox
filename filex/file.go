@@ -148,10 +148,10 @@ func extractAndWriteFile(zipFile *zip.File, dst string) error {
 	dstFilePath := filepath.Join(dst, zipFile.Name)
 
 	if zipFile.FileInfo().IsDir() {
-		return os.MkdirAll(dstFilePath, zipFile.FileInfo().Mode())
+		return os.MkdirAll(dstFilePath, os.ModeDir)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(dstFilePath), zipFile.FileInfo().Mode()); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dstFilePath), os.ModeDir); err != nil {
 		return err
 	}
 
