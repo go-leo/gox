@@ -145,24 +145,14 @@ func Unzip(src, dst string) (err error) {
 }
 
 func extractAndWriteFile(zipFile *zip.File, dst string) error {
+	dstFilePath := filepath.Join(dst, zipFile.Name)
+
 	if zipFile.FileInfo().IsDir() {
-		return os.MkdirAll(filepath.Join(dst, zipFile.Name), zipFile.FileInfo().Mode())
+		return os.MkdirAll(dstFilePath, zipFile.FileInfo().Mode())
 	}
 
-	dstFilePath := filepath.Join(dst, zipFile.Name)
-	dstFileDir := filepath.Dir(dstFilePath)
-	if dstDirInfo, err := os.Stat(dstFileDir); err != nil {
-		if os.IsNotExist(err) {
-			if err := os.MkdirAll(dstFileDir, zipFile.FileInfo().Mode()); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	} else {
-		if !dstDirInfo.IsDir() {
-			return &os.PathError{Op: "mkdir", Path: dstFileDir, Err: os.ErrExist}
-		}
+	if err := os.MkdirAll(filepath.Dir(dstFilePath), zipFile.FileInfo().Mode()); err != nil {
+		return err
 	}
 
 	inFile, err := zipFile.Open()
