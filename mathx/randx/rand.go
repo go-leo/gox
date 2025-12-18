@@ -7,7 +7,9 @@ import (
 	randv2 "math/rand/v2" // The version 2 of Go's math/rand package, offering better PRNGs.
 	"sync"                // For synchronization primitives like sync.Pool.
 
-	"github.com/go-leo/gox/bytex" // A custom package for managing byte buffers.
+	"github.com/go-leo/goconc/poolx"
+	"github.com/go-leo/gox/errorx"
+	// A custom package for managing byte buffers.
 )
 
 // Constants define common character sets for generating random strings.
@@ -33,9 +35,6 @@ const (
 	// URL-safe Base64 encoding character set (replaces '+' with '-', '/' with '_').
 	URLSafeBase64 = Uppercase + Lowercase + Numeric + "-_"
 )
-
-// stringPool is a pool of byte buffers used to minimize allocations during string generation.
-var stringPool = bytex.New(16, 16*1024)
 
 // chacha8Pool manages a pool of ChaCha8 pseudo-random number generators.
 var chacha8Pool = &sync.Pool{
@@ -251,6 +250,9 @@ func Float64() float64 {
 		return rng.Float64()
 	})
 }
+
+// stringPool is a pool of byte buffers used to minimize allocations during string generation.
+var stringPool = errorx.Ignore(poolx.NewBucketBufferPool(16, 16*1024))
 
 // String generates a random string of specified length using the provided character set.
 func String(length int, charset string) string {
