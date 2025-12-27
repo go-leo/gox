@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-leo/gox/logx/slogx"
+	"github.com/go-leo/gox/slogx"
 )
 
 func TestFormatLogger(t *testing.T) {

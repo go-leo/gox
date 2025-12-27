@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-leo/gox/logx/slogx"
+	"github.com/go-leo/gox/slogx"
 )
 
 func TestAppendContext(t *testing.T) {
