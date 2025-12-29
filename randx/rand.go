@@ -12,6 +12,9 @@ import (
 	// A custom package for managing byte buffers.
 )
 
+// stringPool is a pool of byte buffers used to minimize allocations during string generation.
+var stringPool = errorx.Ignore(poolx.NewBucketBufferPool(16, 16*1024))
+
 // Constants define common character sets for generating random strings.
 const (
 	// Lowercase alphabetic characters.
@@ -34,6 +37,12 @@ const (
 
 	// URL-safe Base64 encoding character set (replaces '+' with '-', '/' with '_').
 	URLSafeBase64 = Uppercase + Lowercase + Numeric + "-_"
+)
+
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
 // chacha8Pool manages a pool of ChaCha8 pseudo-random number generators.
@@ -251,9 +260,6 @@ func Float64() float64 {
 	})
 }
 
-// stringPool is a pool of byte buffers used to minimize allocations during string generation.
-var stringPool = errorx.Ignore(poolx.NewBucketBufferPool(16, 16*1024))
-
 // String generates a random string of specified length using the provided character set.
 func String(length int, charset string) string {
 	if length <= 0 {
@@ -262,12 +268,17 @@ func String(length int, charset string) string {
 	return WithPCG(func(rng *randv2.Rand) string {
 		buf := stringPool.Get(length) // Acquire a buffer from the pool.
 		defer stringPool.Put(buf)     // Return the buffer to the pool after use.
-
-		// Generate each character by selecting randomly from the charset.
-		for i := 0; i < length; i++ {
-			buf.WriteByte(charset[rng.IntN(len(charset))])
+		for i, cache, remain := length-1, rng.Int64(), letterIdxMax; i >= 0; {
+			if remain == 0 {
+				cache, remain = rng.Int64(), letterIdxMax
+			}
+			if idx := int(cache & letterIdxMask); idx < len(charset) {
+				buf.WriteByte(charset[idx])
+				i--
+			}
+			cache >>= letterIdxBits
+			remain--
 		}
-
 		return buf.String() // Convert buffer to string before returning.
 	})
 }
