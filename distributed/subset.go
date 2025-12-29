@@ -54,3 +54,20 @@ func DeterministicSubSetting(backends []string, clientID, subsetSize int) []stri
 	// 根据起始索引和子集大小返回选定的子集。
 	return backends[start : start+subsetSize]
 }
+
+// https://colobu.com/2016/03/22/jump-consistent-hash/
+func JumpHash(key uint64, buckets int, checkAlive func(int) bool) int {
+	var b, j int64 = -1, 0
+	if buckets <= 0 {
+		buckets = 1
+	}
+	for j < int64(buckets) {
+		b = j
+		key = key*2862933555777941757 + 1
+		j = int64(float64(b+1) * (float64(int64(1)<<31) / float64((key>>33)+1)))
+	}
+	if checkAlive != nil && !checkAlive(int(b)) {
+		return JumpHash(key+1, buckets, checkAlive) // 最好设置深度，避免key+1一直返回当掉的服务器
+	}
+	return int(b)
+}
